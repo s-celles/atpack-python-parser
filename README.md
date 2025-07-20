@@ -1,6 +1,10 @@
 # AtPack Parser
 
-A Python library and CLI tool for parsing ATMEL and Microchip AtPack files.
+A Python library and CLI tool for parsing AtPack files.
+
+## Legal Notice
+
+⚠️ **IMPORTANT**: This project is unofficial and not affiliated with Microchip Technology Inc. ATMEL and Microchip are registered trademarks. AtPack files contain proprietary data and are not distributed with this project. Users must obtain AtPack files from official sources and comply with all applicable licenses.
 
 ## Documentation
 

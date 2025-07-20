@@ -1,5 +1,16 @@
 # Installation
 
+!!! info "AtPack Files Required"
+    
+    **AtPack files are NOT included** with this package due to licensing restrictions.
+    
+    You must download AtPack files separately from the official sources:
+    
+    - **ATMEL AtPacks**: [Microchip Packs Repository](https://packs.download.microchip.com/)
+    - **PIC AtPacks**: [Microchip Packs Repository](https://packs.download.microchip.com/)
+    
+    See the [Getting AtPack Files](#getting-atpack-files) section below for detailed instructions.
+
 ## Requirements
 
 - Python 3.9 or higher
@@ -116,3 +127,29 @@ brew install libxml2 libxslt
 pip uninstall lxml
 pip install lxml
 ```
+
+## Legal Notice
+
+!!! warning "Important Legal Information"
+    
+    ### Trademark Notice
+    - **ATMEL** and **Microchip** are registered trademarks of Microchip Technology Inc.
+    - This project is **unofficial** and is **not supported, endorsed, or affiliated** with Microchip Technology Inc. or its subsidiaries.
+    
+    ### AtPack File Licensing
+    - **AtPack files contain proprietary data** owned by Microchip Technology Inc.
+    - AtPack files are subject to **individual licenses and terms of use** set by Microchip.
+    - **AtPack files are NOT distributed** with this project due to licensing restrictions.
+    - Users must **download AtPack files directly** from official Microchip sources.
+    
+    ### Disclaimer
+    - This parser is provided **"as-is"** for educational and development purposes only.
+    - The authors assume **no responsibility** for any misuse or license violations.
+    - Users are responsible for **ensuring compliance** with all applicable licenses and terms of service.
+    
+    ### Recommended Usage
+    - Use only for **personal development and learning**
+    - Respect all **license terms** when using AtPack files
+    - Obtain AtPack files only from **official sources**
+    
+    By using this software, you acknowledge that you have read and understood these legal notices.
