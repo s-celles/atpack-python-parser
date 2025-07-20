@@ -16,7 +16,7 @@ from .models import DeviceFamily
 # Create Typer app with hierarchical commands
 app = typer.Typer(
     name="atpack",
-    help="🔧 AtPack Parser - Parse ATMEL and Microchip AtPack files",
+    help="🔧 AtPack Parser - Parse AtPack files",
     rich_markup_mode="rich",
 )
 
@@ -51,7 +51,21 @@ def main(
         bool, typer.Option("--version", "-v", help="Show version")
     ] = False,
 ):
-    """AtPack Parser CLI - Parse ATMEL and Microchip AtPack files."""
+    """
+    🔧 AtPack Parser CLI - Parse AtPack files
+    
+    Available command groups:
+    • files    - Manage AtPack files (list, info)
+    • devices  - Device information (list, info)  
+    • memory   - Memory layouts (show)
+    • registers - Register details (list, show)
+    • config   - Configuration data (show)
+    • scan     - Directory scanning
+    • help-tree - Show command structure
+    
+    Use 'atpack COMMAND --help' for detailed help on each command.
+    Use 'atpack help-tree' to see the complete command structure.
+    """
     if version:
         from . import __version__
 
@@ -671,6 +685,177 @@ def scan_directory(
         console.print(f"[red]Error scanning directory: {e}[/red]")
         raise typer.Exit(1)
 
+
+@app.command("help-tree")
+def help_tree_command():
+    """🌳 Show the complete command tree structure with examples."""
+    show_command_tree_content()
+
+
+def show_command_tree_content():
+    """Show the complete command tree structure."""
+    tree_text = generate_command_tree()
+    
+    examples_text = """
+
+📚 Usage Examples:
+  atpack files list mypack.atpack
+  atpack files info mypack.atpack
+  
+  atpack devices list mypack.atpack
+  atpack devices info ATmega16 mypack.atpack
+  
+  atpack memory show ATmega16 mypack.atpack
+  
+  atpack registers list ATmega16 mypack.atpack
+  atpack registers list ATmega16 mypack.atpack --module GPIO
+  atpack registers show ATmega16 PORTB mypack.atpack
+  
+  atpack config show PIC16F876A mypack.atpack
+  atpack config show PIC16F876A mypack.atpack --type fuses
+  
+  atpack scan ./atpacks/ --format json
+    """
+    tree_text += examples_text
+    
+    panel = Panel(
+        tree_text,
+        title="🌳 Command Tree with Examples",
+        border_style="green",
+        padding=(1, 2)
+    )
+    console.print(panel)
+
+def generate_command_tree() -> str:
+    """Generate a dynamic command tree from the Typer app structure."""
+    lines = ["🔧 atpack - AtPack Parser CLI"]
+    
+    # Get all registered sub-apps
+    sub_apps = {
+        "files": ("📁", "AtPack file management"),
+        "devices": ("🔌", "Device information"), 
+        "memory": ("💾", "Memory information"),
+        "registers": ("📋", "Register information"),
+        "config": ("⚙️", "Configuration information"),
+    }
+    
+    # Commands for each sub-app
+    sub_commands = {
+        "files": [("list", "List files in an AtPack"), ("info", "Show AtPack file information")],
+        "devices": [("list", "List all devices"), ("info", "Show device details")],
+        "memory": [("show", "Show memory layout")],
+        "registers": [("list", "List registers"), ("show", "Show register details")],
+        "config": [("show", "Show configuration information")],
+    }
+    
+    # Global commands
+    global_commands = [
+        ("scan", "🔍", "Scan directory for AtPack files"),
+        ("help-tree", "🌳", "Show command tree structure")
+    ]
+    
+    # Build tree for sub-apps
+    sub_app_count = len(sub_apps)
+    for i, (name, (emoji, desc)) in enumerate(sub_apps.items()):
+        is_last_sub_app = i == sub_app_count - 1 and not global_commands
+        prefix = "└── " if is_last_sub_app else "├── "
+        lines.append(f"{prefix}{emoji} {name} - {desc}")
+        
+        if name in sub_commands:
+            cmd_count = len(sub_commands[name])
+            for j, (cmd_name, cmd_desc) in enumerate(sub_commands[name]):
+                is_last_cmd = j == cmd_count - 1
+                if is_last_sub_app:
+                    sub_prefix = "    └── " if is_last_cmd else "    ├── "
+                else:
+                    sub_prefix = "│   └── " if is_last_cmd else "│   ├── "
+                lines.append(f"{sub_prefix}{cmd_name} - {cmd_desc}")
+    
+    # Add global commands
+    for i, (cmd_name, emoji, desc) in enumerate(global_commands):
+        is_last = i == len(global_commands) - 1
+        prefix = "└── " if is_last else "├── "
+        lines.append(f"{prefix}{emoji} {cmd_name} - {desc}")
+    
+    return "\n".join(lines)
+
+@app.command("help")
+def interactive_help(
+    command: Annotated[
+        Optional[str], typer.Argument(help="Specific command for detailed help")
+    ] = None,
+):
+    """❓ Get interactive help for commands."""
+    
+    if not command:
+        # Show overview
+        console.print("\n[bold blue]🔧 AtPack Parser CLI Help[/bold blue]\n")
+        
+        help_table = Table(show_header=True, header_style="bold magenta")
+        help_table.add_column("Command Group", style="cyan", min_width=12)
+        help_table.add_column("Commands", style="green")
+        help_table.add_column("Description", style="white")
+        
+        help_table.add_row(
+            "📁 files", 
+            "list, info", 
+            "Manage AtPack files and show metadata"
+        )
+        help_table.add_row(
+            "🔌 devices", 
+            "list, info", 
+            "Browse devices and get detailed specs"
+        )
+        help_table.add_row(
+            "💾 memory", 
+            "show", 
+            "Analyze memory layouts and segments"
+        )
+        help_table.add_row(
+            "📋 registers", 
+            "list, show", 
+            "Explore registers and bitfields"
+        )
+        help_table.add_row(
+            "⚙️ config", 
+            "show", 
+            "View fuses, config words, interrupts"
+        )
+        help_table.add_row(
+            "🔍 Global", 
+            "scan, help-tree", 
+            "Utility commands"
+        )
+        
+        console.print(help_table)
+        
+        console.print(f"\n[dim]💡 Use [/dim][bold]atpack help COMMAND[/bold][dim] for specific help[/dim]")
+        console.print(f"[dim]💡 Use [/dim][bold]atpack help-tree[/bold][dim] to see the complete structure[/dim]")
+        console.print(f"[dim]💡 Use [/dim][bold]atpack COMMAND --help[/bold][dim] for detailed options[/dim]\n")
+        
+    else:
+        # Show specific command help
+        help_map = {
+            "files": "📁 Files: list, info - Manage AtPack files\n  Example: atpack files list mypack.atpack",
+            "devices": "🔌 Devices: list, info - Device information\n  Example: atpack devices info ATmega16 mypack.atpack", 
+            "memory": "💾 Memory: show - Memory layouts\n  Example: atpack memory show ATmega16 mypack.atpack",
+            "registers": "📋 Registers: list, show - Register details\n  Example: atpack registers list ATmega16 mypack.atpack",
+            "config": "⚙️ Config: show - Configuration data\n  Example: atpack config show ATmega16 mypack.atpack",
+            "scan": "🔍 Scan: Search for AtPack files\n  Example: atpack scan ./atpacks/",
+            "help-tree": "🌳 Help Tree: Show command structure\n  Example: atpack help-tree"
+        }
+        
+        if command in help_map:
+            panel = Panel(
+                help_map[command],
+                title=f"❓ Help for '{command}'",
+                border_style="blue"
+            )
+            console.print(panel)
+        else:
+            console.print(f"[red]Unknown command: {command}[/red]")
+            console.print("[dim]Available commands: files, devices, memory, registers, config, scan, help-tree[/dim]")
+            console.print("[dim]Use 'atpack help-tree' to see the complete command structure[/dim]")
 
 if __name__ == "__main__":
     app()

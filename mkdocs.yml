@@ -1,5 +1,5 @@
 site_name: AtPack Parser
-site_description: A Python library and CLI tool for parsing ATMEL and Microchip AtPack files
+site_description: A Python library and CLI tool for parsing AtPack files
 site_author: Sébastien Celles
 site_url: https://s-celles.github.io/atpack-python-parser/
 

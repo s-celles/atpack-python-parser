@@ -1,6 +1,6 @@
 # AtPack Parser
 
-A Python library and CLI tool for parsing ATMEL and Microchip AtPack files.
+A Python library and CLI tool for parsing AtPack files.
 
 !!! warning "Legal Notice"
     
@@ -18,7 +18,7 @@ A Python library and CLI tool for parsing ATMEL and Microchip AtPack files.
 
 ## Overview
 
-AtPack Parser is a comprehensive Python library that enables you to extract and analyze information from ATMEL and Microchip AtPack files. These files contain detailed information about microcontrollers including device specifications, memory layouts, registers, peripherals, and fuse settings.
+AtPack Parser is a comprehensive Python library that enables you to extract and analyze information from AtPack files. These files contain detailed information about microcontrollers including device specifications, memory layouts, registers, peripherals, and fuse settings. Currently, AtPack Parser supports (at least partially) ATDF (ATMEL) and PIC formats (Microchip).
 
 ## Key Features
 

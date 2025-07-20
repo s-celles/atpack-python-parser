@@ -1,4 +1,4 @@
-"""Main AtPack parser that handles both ATMEL and Microchip formats."""
+"""Main AtPack parser."""
 
 from pathlib import Path
 from typing import Any, Dict, List, Optional

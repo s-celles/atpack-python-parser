@@ -3,7 +3,7 @@
 Example usage of AtPack Parser library.
 
 This example demonstrates how to use the AtPack parser to extract
-information from ATMEL and Microchip AtPack files.
+information from AtPack files.
 """
 
 import sys

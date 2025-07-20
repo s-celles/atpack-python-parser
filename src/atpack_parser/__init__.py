@@ -1,4 +1,4 @@
-"""AtPack Parser - A library for parsing ATMEL and Microchip AtPack files."""
+"""AtPack Parser - A library for parsing AtPack files."""
 
 __version__ = "0.1.0"
 
