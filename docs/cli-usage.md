@@ -13,7 +13,96 @@ atpack [OPTIONS] COMMAND [ARGS]...
 - `--help` - Show help message
 - `--version` - Show version information
 
+```
+atpack --help
+
+ Usage: atpack [OPTIONS] COMMAND [ARGS]...
+
+ 🔧 AtPack Parser - Parse AtPack files
+
+
+╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --version             -v        Show version                                                                                                                                                                  │
+│ --install-completion            Install completion for the current shell.                                                                                                                                     │
+│ --show-completion               Show completion for the current shell, to copy it or customize the installation.                                                                                              │
+│ --help                          Show this message and exit.                                                                                                                                                   │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ scan        🔍 Scan directory for AtPack files.                                                                                                                                                               │
+│ help-tree   🌳 Show the complete command tree structure with examples.                                                                                                                                        │
+│ help        ❓ Get interactive help for commands.                                                                                                                                                             │
+│ files       📁 AtPack file management                                                                                                                                                                         │
+│ devices     🔌 Device information                                                                                                                                                                             │
+│ memory      💾 Memory information                                                                                                                                                                             │
+│ registers   📋 Register information                                                                                                                                                                           │
+│ config      ⚙️ Configuration information                                                                                                                                                                       │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+## Help tree command
+
+```
+
+atpack help-tree
+╭──────────────────────────────────────────────────────────────────────────────────────── 🌳 Command Tree with Examples ────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                                                                                               │
+│  🔧 atpack - AtPack Parser CLI                                                                                                                                                                                │
+│  ├── 📁 files - AtPack file management                                                                                                                                                                        │
+│  │   ├── list - List files in an AtPack                                                                                                                                                                       │
+│  │   └── info - Show AtPack file information                                                                                                                                                                  │
+│  ├── 🔌 devices - Device information                                                                                                                                                                          │
+│  │   ├── list - List all devices                                                                                                                                                                              │
+│  │   └── info - Show device details                                                                                                                                                                           │
+│  ├── 💾 memory - Memory information                                                                                                                                                                           │
+│  │   └── show - Show memory layout                                                                                                                                                                            │
+│  ├── 📋 registers - Register information                                                                                                                                                                      │
+│  │   ├── list - List registers                                                                                                                                                                                │
+│  │   └── show - Show register details                                                                                                                                                                         │
+│  ├── ⚙️ config - Configuration information                                                                                                                                                                     │
+│  │   └── show - Show configuration information                                                                                                                                                                │
+│  ├── 🔍 scan - Scan directory for AtPack files                                                                                                                                                                │
+│  └── 🌳 help-tree - Show command tree structure                                                                                                                                                               │
+│                                                                                                                                                                                                               │
+│  📚 Usage Examples:                                                                                                                                                                                           │
+│    atpack files list mypack.atpack                                                                                                                                                                            │
+│    atpack files info mypack.atpack                                                                                                                                                                            │
+│                                                                                                                                                                                                               │
+│    atpack devices list mypack.atpack                                                                                                                                                                          │
+│    atpack devices info ATmega16 mypack.atpack                                                                                                                                                                 │
+│                                                                                                                                                                                                               │
+│    atpack memory show ATmega16 mypack.atpack                                                                                                                                                                  │
+│                                                                                                                                                                                                               │
+│    atpack registers list ATmega16 mypack.atpack                                                                                                                                                               │
+│    atpack registers list ATmega16 mypack.atpack --module GPIO                                                                                                                                                 │
+│    atpack registers show ATmega16 PORTB mypack.atpack                                                                                                                                                         │
+│                                                                                                                                                                                                               │
+│    atpack config show PIC16F876A mypack.atpack                                                                                                                                                                │
+│    atpack config show PIC16F876A mypack.atpack --type fuses                                                                                                                                                   │
+│                                                                                                                                                                                                               │
+│    atpack scan ./atpacks/ --format json                                                                                                                                                                       │
+│                                                                                                                                                                                                               │
+│                                                                                                                                                                                                               │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
 ## Commands Overview
+
+### Scan for AtPack Files in a Directory
+
+
+```
+atpack scan .\atpacks\
+                            🔍 AtPack Files in atpacks
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┓
+┃ Path                                   ┃ Name    ┃ Vendor  ┃ Family   ┃ Devices ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━┩
+│ Atmel.ATmega_DFP.2.2.509.atpack        │ Unknown │ Unknown │ 🔵 ATMEL │ 133     │
+│ Microchip.PIC16Fxxx_DFP.1.7.162.atpack │ Unknown │ Unknown │ 🟡 PIC   │ 164     │
+└────────────────────────────────────────┴─────────┴─────────┴──────────┴─────────┘
+
+Found 2 AtPack files
+```
+
 
 ### Files Commands
 
@@ -34,12 +123,71 @@ Extract and display device information:
 ```bash
 # List all devices in an AtPack file
 atpack devices list /path/to/file.atpack
+```
 
+Example:
+```
+atpack devices list .\atpacks\Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+         🟡 PIC Devices in
+Microchip.PIC16Fxxx_DFP.1.7.162.atp
+                ack
+┏━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┓
+┃ Device Name             ┃ Index ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━┩
+│ AC162052_AS_PIC16F630   │ 1     │
+│ AC162052_AS_PIC16F676   │ 2     │
+│ AC162053_AS_PIC16F627A  │ 3     │
+│ AC162053_AS_PIC16F628A  │ 4     │
+...
+│ PIC16LF876A             │ 161   │
+│ PIC16LF877              │ 162   │
+│ PIC16LF877A             │ 163   │
+│ PIC16LF88               │ 164   │
+└─────────────────────────┴───────┘
+
+Total: 164 devices
+```
+
+
+```bash
 # Get detailed information about a specific device
 atpack devices info DEVICE_NAME /path/to/file.atpack
-
-# Search for devices by name pattern
-atpack devices search "ATmega*" /path/to/file.atpack
+```
+Example:
+```
+atpack devices info PIC16F877 .\atpacks\Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+╭──────────────────────────────────────────────────────────────────────────────────────────── 🔌 Device: PIC16F877 ─────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Family: 🟡 PIC                                                                                                                                                                                                │
+│ Architecture: PIC                                                                                                                                                                                             │
+│ Series: PIC16                                                                                                                                                                                                 │
+│ Memory Segments: 8                                                                                                                                                                                            │
+│ Modules: 5                                                                                                                                                                                                    │
+│ Interrupts: 17                                                                                                                                                                                                │
+│ Signatures: 1                                                                                                                                                                                                 │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+              💾 Memory Overview
+┏━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━┓
+┃ Segment   ┃ Start  ┃ Size        ┃ Type    ┃
+┡━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━┩
+│ PROG1     │ 0x0000 │ 2,048 bytes │ program │
+│ SFR_BANK0 │ 0x0000 │ 32 bytes    │ sfr     │
+│ SFR_BANK1 │ 0x0080 │ 32 bytes    │ sfr     │
+│ SFR_BANK2 │ 0x0100 │ 16 bytes    │ sfr     │
+│ SFR_BANK3 │ 0x0180 │ 16 bytes    │ sfr     │
+│ PROG2     │ 0x0800 │ 2,048 bytes │ program │
+│ PROG3     │ 0x1000 │ 2,048 bytes │ program │
+│ PROG4     │ 0x1800 │ 2,048 bytes │ program │
+└───────────┴────────┴─────────────┴─────────┘
+             🔧 Modules Overview
+┏━━━━━━━━┳━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
+┃ Module ┃ Register Groups ┃ Total Registers ┃
+┡━━━━━━━━╇━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
+│ BANK0  │ 1               │ 32              │
+│ BANK1  │ 1               │ 17              │
+│ BANK2  │ 1               │ 4               │
+│ BANK3  │ 1               │ 2               │
+│ CORE   │ 1               │ 1               │
+└────────┴─────────────────┴─────────────────┘
 ```
 
 ### Memory Commands
@@ -48,13 +196,7 @@ Analyze device memory layout:
 
 ```bash
 # Show memory map for a device
-atpack memory DEVICE_NAME /path/to/file.atpack
-
-# Show specific memory segment
-atpack memory DEVICE_NAME /path/to/file.atpack --segment flash
-
-# Export memory layout to file
-atpack memory DEVICE_NAME /path/to/file.atpack --output memory.json
+atpack memory show DEVICE_NAME /path/to/file.atpack
 ```
 
 ### Register Commands
@@ -63,25 +205,25 @@ Work with device registers and peripherals:
 
 ```bash
 # List all registers for a device
-atpack registers DEVICE_NAME /path/to/file.atpack
+atpack registers list DEVICE_NAME /path/to/file.atpack
 
-# Show specific peripheral registers
-atpack registers DEVICE_NAME /path/to/file.atpack --peripheral USART
+# Show details for a specific register
+atpack registers show DEVICE_NAME REGISTER_NAME /path/to/file.atpack
 
-# Export registers to file
-atpack registers DEVICE_NAME /path/to/file.atpack --output registers.json
+# Filter registers by module
+atpack registers list DEVICE_NAME /path/to/file.atpack --module MODULE_NAME
 ```
 
-### Fuse Commands
+### Configuration Commands
 
-Extract fuse bit information:
+Extract device configuration information:
 
 ```bash
-# Show fuse configuration for a device
-atpack fuses DEVICE_NAME /path/to/file.atpack
+# Show all configuration information for a device
+atpack config show DEVICE_NAME /path/to/file.atpack
 
-# Export fuse information
-atpack fuses DEVICE_NAME /path/to/file.atpack --output fuses.json
+# Show specific configuration type (fuses, config, interrupts, signatures)
+atpack config show DEVICE_NAME /path/to/file.atpack --type fuses
 ```
 
 ## Detailed Examples
@@ -89,9 +231,6 @@ atpack fuses DEVICE_NAME /path/to/file.atpack --output fuses.json
 ### Working with ATMEL AtPacks
 
 ```bash
-# Download an ATMEL AtPack (example)
-wget http://packs.download.atmel.com/Atmel.ATmega_DFP.2.2.509.atpack
-
 # List all ATmega devices
 atpack devices list Atmel.ATmega_DFP.2.2.509.atpack
 
@@ -99,10 +238,16 @@ atpack devices list Atmel.ATmega_DFP.2.2.509.atpack
 atpack devices info ATmega16 Atmel.ATmega_DFP.2.2.509.atpack
 
 # Show ATmega16 memory layout
-atpack memory ATmega16 Atmel.ATmega_DFP.2.2.509.atpack
+atpack memory show ATmega16 Atmel.ATmega_DFP.2.2.509.atpack
 
 # List ATmega16 registers
-atpack registers ATmega16 Atmel.ATmega_DFP.2.2.509.atpack
+atpack registers list ATmega16 Atmel.ATmega_DFP.2.2.509.atpack
+
+# Show specific register details
+atpack registers show ATmega16 PORTB Atmel.ATmega_DFP.2.2.509.atpack
+
+# Show configuration information
+atpack config show ATmega16 Atmel.ATmega_DFP.2.2.509.atpack
 ```
 
 ### Working with Microchip AtPacks
@@ -115,85 +260,56 @@ atpack devices list Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 atpack devices info PIC16F877A Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 
 # Show memory layout
-atpack memory PIC16F877A Microchip.PIC16Fxxx_DFP.1.7.162.atpack
-```
+atpack memory show PIC16F877A Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 
-### Batch Operations
+# Show registers
+atpack registers list PIC16F877A Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 
-```bash
-# Process all AtPacks in a directory
-for pack in *.atpack; do
-    echo "Processing $pack"
-    atpack devices list "$pack" > "${pack%.atpack}_devices.txt"
-done
+# Show fuses and configuration
+atpack config show PIC16F877A Microchip.PIC16Fxxx_DFP.1.7.162.atpack --type fuses
 ```
 
 ### Output Formatting
 
-The CLI supports rich terminal output with colors and tables. You can control the output format:
+Most commands support JSON output format:
 
 ```bash
 # JSON output
 atpack devices info ATmega16 file.atpack --format json
-
-# Plain text output (no colors)
-atpack devices info ATmega16 file.atpack --no-color
-
-# Verbose output
-atpack devices info ATmega16 file.atpack --verbose
+atpack devices list file.atpack --format json
+atpack memory show ATmega16 file.atpack --format json
+atpack registers list ATmega16 file.atpack --format json
+atpack config show ATmega16 file.atpack --format json
 ```
 
-### Export Options
+### Filtering Options
 
-Most commands support exporting data to files:
+Some commands provide filtering options:
 
 ```bash
-# Export device list to JSON
-atpack devices list file.atpack --output devices.json
+# Filter registers by module
+atpack registers list ATmega16 file.atpack --module GPIO
 
-# Export to CSV
-atpack devices list file.atpack --output devices.csv --format csv
-
-# Export to XML
-atpack registers ATmega16 file.atpack --output registers.xml --format xml
+# Show specific configuration types
+atpack config show PIC16F877A file.atpack --type fuses
+atpack config show PIC16F877A file.atpack --type interrupts
+atpack config show PIC16F877A file.atpack --type signatures
 ```
 
-## Advanced Usage
+## Pipeline Integration
 
-### Pipeline Integration
-
-The CLI is designed to work well in scripts and pipelines:
+The CLI JSON output works well in scripts and pipelines:
 
 ```bash
 # Count devices in an AtPack
 atpack devices list file.atpack --format json | jq length
 
 # Extract device names only
-atpack devices list file.atpack --format json | jq -r '.[].name'
+atpack devices list file.atpack --format json | jq -r '.devices[]'
 
-# Find devices with specific memory size
-atpack devices list file.atpack --format json | jq '.[] | select(.flash_size == 16384)'
+# Get basic device information
+atpack scan ./atpacks/ --format json | jq '.[] | {name, family, device_count}'
 ```
-
-### Configuration Files
-
-You can create configuration files to avoid repeating common options:
-
-```bash
-# Create ~/.atpack_config.yaml
-default_format: json
-output_directory: ./exports
-verbose: true
-```
-
-## Error Handling
-
-The CLI provides helpful error messages:
-
-- **File not found** - Clear message about missing AtPack files
-- **Invalid device** - Suggestions for similar device names
-- **Parse errors** - Details about XML parsing issues
-- **Permission errors** - Instructions for resolving access issues
 
 ## Getting Help
 
@@ -201,6 +317,8 @@ Use `--help` with any command to get detailed usage information:
 
 ```bash
 atpack --help
+atpack help-tree          # Show complete command structure
+atpack help               # Interactive help
 atpack devices --help
 atpack devices info --help
 ```
