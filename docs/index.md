@@ -68,7 +68,13 @@ parser = AtPackParser("path/to/atpack.atpack")
 
 # Get device information
 device = parser.get_device("PIC16F877")
-print(f"Device: {device.name}, Family: {device.family}")
+print(f"Device: {device.name}")
+print(f"Family: {device.family}")
+print(f"Architecture: {device.architecture}")
+
+# Access memory segments
+for segment in device.memory_segments:
+    print(f"{segment.name}: {segment.size} bytes at 0x{segment.start:04X}")
 ```
 
 ## Supported Formats

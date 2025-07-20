@@ -68,13 +68,13 @@ atpack help-tree
 │    atpack files info mypack.atpack                                                                                                                                                                            │
 │                                                                                                                                                                                                               │
 │    atpack devices list mypack.atpack                                                                                                                                                                          │
-│    atpack devices info ATmega16 mypack.atpack                                                                                                                                                                 │
+│    atpack devices info PIC16F877 mypack.atpack                                                                                                                                                                │
 │                                                                                                                                                                                                               │
-│    atpack memory show ATmega16 mypack.atpack                                                                                                                                                                  │
+│    atpack memory show PIC16F877 mypack.atpack                                                                                                                                                                 │
 │                                                                                                                                                                                                               │
-│    atpack registers list ATmega16 mypack.atpack                                                                                                                                                               │
-│    atpack registers list ATmega16 mypack.atpack --module GPIO                                                                                                                                                 │
-│    atpack registers show ATmega16 PORTB mypack.atpack                                                                                                                                                         │
+│    atpack registers list PIC16F877 mypack.atpack                                                                                                                                                              │
+│    atpack registers list PIC16F877 mypack.atpack --module GPIO                                                                                                                                                │
+│    atpack registers show PIC16F877 OPTION_REG mypack.atpack                                                                                                                                                   │
 │                                                                                                                                                                                                               │
 │    atpack config show PIC16F876A mypack.atpack                                                                                                                                                                │
 │    atpack config show PIC16F876A mypack.atpack --type fuses                                                                                                                                                   │
@@ -387,11 +387,11 @@ Most commands support JSON output format:
 
 ```bash
 # JSON output
-atpack devices info ATmega16 file.atpack --format json
+atpack devices info PIC16F877 file.atpack --format json
 atpack devices list file.atpack --format json
-atpack memory show ATmega16 file.atpack --format json
-atpack registers list ATmega16 file.atpack --format json
-atpack config show ATmega16 file.atpack --format json
+atpack memory show PIC16F877 file.atpack --format json
+atpack registers list PIC16F877 file.atpack --format json
+atpack config show PIC16F877 file.atpack --format json
 ```
 
 ### Filtering Options
@@ -400,7 +400,7 @@ Some commands provide filtering options:
 
 ```bash
 # Filter registers by module
-atpack registers list ATmega16 file.atpack --module GPIO
+atpack registers list PIC16F877 file.atpack --module GPIO
 
 # Show specific configuration types
 atpack config show PIC16F877A file.atpack --type fuses

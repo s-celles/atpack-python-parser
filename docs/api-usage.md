@@ -30,14 +30,14 @@ devices = parser.get_devices()
 print(f"Found {len(devices)} devices")
 
 # Get a specific device
-device = parser.get_device("ATmega16")
+device = parser.get_device("PIC16F877")
 if device:
     print(f"Device: {device.name}")
     print(f"Family: {device.family}")
     print(f"Architecture: {device.architecture}")
-    print(f"Flash size: {device.flash_size} bytes")
-    print(f"RAM size: {device.ram_size} bytes")
-    print(f"EEPROM size: {device.eeprom_size} bytes")
+    # Access memory segments instead of direct flash/ram/eeprom properties
+    for segment in device.memory_segments:
+        print(f"{segment.name}: {segment.size} bytes at 0x{segment.start:04X}")
 ```
 
 ## Working with Device Data

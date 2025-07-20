@@ -10,6 +10,26 @@ This page provides practical examples of using AtPack Parser for common tasks.
 ```python
 from atpack_parser import AtPackParser
 
+# Parse a Microchip PIC AtPack file
+parser = AtPackParser("Microchip.PIC16Fxxx_DFP.1.7.162.atpack")
+device = parser.get_device("PIC16F877")
+
+print(f"""
+PIC Device Information:
+- Name: {device.name}
+- Family: {device.family}  
+- Architecture: {device.architecture}
+- Series: {device.series}
+- Memory segments: {len(device.memory_segments)}
+- Modules: {len(device.modules)} peripherals
+""")
+```
+
+### ATMEL Device Example
+
+```python
+from atpack_parser import AtPackParser
+
 # Parse an ATMEL AtPack file
 parser = AtPackParser("Atmel.ATmega_DFP.2.2.509.atpack")
 device = parser.get_device("ATmega16")

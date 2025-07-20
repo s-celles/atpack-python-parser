@@ -78,11 +78,11 @@ parser = AtPackParser("path/to/atpack.atpack")
 
 # Get devices
 devices = parser.get_devices()
-device = parser.get_device("ATmega16")
+device = parser.get_device("PIC16F877")
 
 # Get device data
-registers = parser.get_device_registers("ATmega16")
-memory = parser.get_device_memory("ATmega16")
+registers = parser.get_device_registers("PIC16F877")
+memory = parser.get_device_memory("PIC16F877")
 ```
 
 ### Error Handling
@@ -106,7 +106,7 @@ except DeviceNotFoundError as e:
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `name` | `str` | Device name (e.g., "ATmega16") |
+| `name` | `str` | Device name (e.g., "PIC16F877") |
 | `family` | `DeviceFamily` | Device family (ATMEL/PIC) |
 | `architecture` | `Optional[str]` | CPU architecture |
 | `series` | `Optional[str]` | Device series |
