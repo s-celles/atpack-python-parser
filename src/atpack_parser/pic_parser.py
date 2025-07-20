@@ -795,19 +795,25 @@ class PicParser:
                                 if osc_name:
                                     # Look for legacy aliases
                                     legacy_alias = None
-                                    aliases = semantic.findall(
-                                        ".//edc:LegacyAlias",
-                                        {"edc": "http://crownking/edc"},
-                                    )
-                                    if not aliases:
+                                    try:
                                         aliases = semantic.findall(
-                                            './/*[local-name()="LegacyAlias"]'
+                                            ".//edc:LegacyAlias",
+                                            {"edc": "http://crownking/edc"},
                                         )
+                                        if not aliases:
+                                            # Use safer XPath without predicates
+                                            aliases = []
+                                            for elem in semantic.iter():
+                                                if elem.tag.endswith("LegacyAlias") or "LegacyAlias" in elem.tag:
+                                                    aliases.append(elem)
 
-                                    if aliases:
-                                        legacy_alias = self.parser.get_attr(
-                                            aliases[0], "cname", ""
-                                        )
+                                        if aliases:
+                                            legacy_alias = self.parser.get_attr(
+                                                aliases[0], "cname", ""
+                                            )
+                                    except (SyntaxError, Exception):
+                                        # Skip legacy alias parsing if XPath fails
+                                        legacy_alias = None
 
                                     osc_config = OscillatorConfig(
                                         name=osc_name,
