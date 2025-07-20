@@ -311,35 +311,100 @@ class PicParser:
             './/edc:SFRMode | .//*[local-name()="SFRMode"]', sfr_def
         )
 
+        # Process DS.0 mode first (main definitions with proper masks)
+        main_bitfields = {}
         for mode in sfr_modes:
-            field_defs = self.parser.xpath(
-                './/edc:SFRFieldDef | .//*[local-name()="SFRFieldDef"]', mode
-            )
+            mode_id = self.parser.get_attr(mode, "id", "")
+            if mode_id == "DS.0":
+                field_defs = self.parser.xpath(
+                    './/edc:SFRFieldDef | .//*[local-name()="SFRFieldDef"]', mode
+                )
 
-            bit_offset = 0  # Track bit position
+                current_bit_pos = 0  # Track sequential bit position for DS.0 mode
 
-            for field_def in field_defs:
-                field_name = self.parser.get_attr(field_def, "name", "")
-                field_mask = self.parser.get_attr_hex(field_def, "mask", 0)
-                field_width = self.parser.get_attr_hex(field_def, "nzwidth", 1)
-                field_desc = self.parser.get_attr(field_def, "desc", "")
+                for field_def in field_defs:
+                    field_name = self.parser.get_attr(field_def, "name", "")
+                    field_mask = self.parser.get_attr_hex(field_def, "mask", 0)
+                    field_width = self.parser.get_attr_hex(field_def, "nzwidth", 1)
+                    field_desc = self.parser.get_attr(field_def, "desc", "")
 
-                if field_name and field_mask > 0:
-                    # Calculate bit position from mask
-                    bit_pos = 0
-                    temp_mask = field_mask
-                    while temp_mask and (temp_mask & 1) == 0:
-                        bit_pos += 1
-                        temp_mask >>= 1
+                    if field_name and field_mask > 0:
+                        # For DS.0 mode, calculate bit position from mask
+                        # But for single-bit masks (0x1), use sequential positioning
+                        if field_mask == 0x1:
+                            # Single bit field - use current position and calculate proper mask
+                            bit_pos = current_bit_pos
+                            actual_mask = 1 << bit_pos
+                        else:
+                            # Multi-bit field - use the provided mask
+                            bit_pos = 0
+                            temp_mask = field_mask
+                            while temp_mask and (temp_mask & 1) == 0:
+                                bit_pos += 1
+                                temp_mask >>= 1
+                            actual_mask = field_mask
 
-                    bitfield = RegisterBitfield(
-                        name=field_name,
-                        caption=field_desc or field_name,
-                        mask=field_mask,
-                        bit_offset=bit_pos,
-                        bit_width=field_width,
-                    )
-                    bitfields.append(bitfield)
+                        bitfield = RegisterBitfield(
+                            name=field_name,
+                            caption=field_desc or field_name,
+                            mask=actual_mask,
+                            bit_offset=bit_pos,
+                            bit_width=field_width,
+                        )
+                        bitfields.append(bitfield)
+                        main_bitfields[field_name] = bitfield
+                        
+                        current_bit_pos += field_width
+
+        # Process other modes (like LT.0) for individual bit aliases
+        for mode in sfr_modes:
+            mode_id = self.parser.get_attr(mode, "id", "")
+            if mode_id != "DS.0":  # Skip the main mode we already processed
+                field_defs = self.parser.xpath(
+                    './/edc:SFRFieldDef | .//*[local-name()="SFRFieldDef"]', mode
+                )
+                adjust_points = self.parser.xpath(
+                    './/edc:AdjustPoint | .//*[local-name()="AdjustPoint"]', mode
+                )
+
+                current_bit_pos = 0  # Track current bit position for this mode
+
+                # Build a list of all elements (fields and adjust points) in document order
+                mode_elements = []
+                for child in mode:
+                    if child.tag.endswith('SFRFieldDef') or 'SFRFieldDef' in child.tag:
+                        mode_elements.append(('field', child))
+                    elif child.tag.endswith('AdjustPoint') or 'AdjustPoint' in child.tag:
+                        mode_elements.append(('adjust', child))
+
+                for elem_type, elem in mode_elements:
+                    if elem_type == 'adjust':
+                        # Handle AdjustPoint to skip bits
+                        offset = self.parser.get_attr_hex(elem, "offset", 1)
+                        current_bit_pos += offset
+                    elif elem_type == 'field':
+                        field_name = self.parser.get_attr(elem, "name", "")
+                        field_mask = self.parser.get_attr_hex(elem, "mask", 0)
+                        field_width = self.parser.get_attr_hex(elem, "nzwidth", 1)
+                        field_desc = self.parser.get_attr(elem, "desc", "")
+
+                        if field_name and field_mask > 0:
+                            # For individual bit aliases, use sequential positioning
+                            # but only if we don't already have this field from DS.0 mode
+                            if field_name not in main_bitfields:
+                                # Create proper mask based on current bit position
+                                actual_mask = field_mask << current_bit_pos if field_mask == 1 else field_mask
+                                
+                                bitfield = RegisterBitfield(
+                                    name=field_name,
+                                    caption=field_desc or field_name,
+                                    mask=actual_mask,
+                                    bit_offset=current_bit_pos,
+                                    bit_width=field_width,
+                                )
+                                bitfields.append(bitfield)
+                            
+                            current_bit_pos += field_width
 
         # Create the register
         if reg_addr > 0 or reg_name in [

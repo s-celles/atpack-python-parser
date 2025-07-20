@@ -151,6 +151,12 @@ def list_devices(
     format: Annotated[
         str, typer.Option("--format", "-f", help="Output format")
     ] = "table",
+    output: Annotated[
+        Optional[Path], typer.Option("--output", "-o", help="Export to file")
+    ] = None,
+    no_color: Annotated[
+        bool, typer.Option("--no-color", help="Disable colored output")
+    ] = False,
 ):
     """📋 List all devices in an AtPack."""
     try:
@@ -158,36 +164,54 @@ def list_devices(
         devices = parser.get_devices()
         device_family = parser.device_family
 
+        data = {
+            "device_family": device_family.value,
+            "device_count": len(devices),
+            "devices": devices,
+        }
+
         if format == "json":
-            data = {
-                "device_family": device_family.value,
-                "device_count": len(devices),
-                "devices": devices,
-            }
-            console.print_json(json.dumps(data, indent=2))
+            json_output = json.dumps(data, indent=2)
+            if output:
+                output.write_text(json_output, encoding='utf-8')
+                console.print(f"[green]Exported {len(devices)} devices to {output}[/green]")
+            else:
+                console.print_json(json_output)
         else:
+            # Create console with color control
+            output_console = Console(force_terminal=not no_color) if not no_color else Console(force_terminal=False)
+            
             # Family emoji
             family_emoji = {
-                DeviceFamily.ATMEL: "🔵",
-                DeviceFamily.PIC: "🟡",
-                DeviceFamily.UNSUPPORTED: "⚫",
+                DeviceFamily.ATMEL: "🔵" if not no_color else "[ATMEL]",
+                DeviceFamily.PIC: "🟡" if not no_color else "[PIC]", 
+                DeviceFamily.UNSUPPORTED: "⚫" if not no_color else "[UNSUPPORTED]",
             }
 
             table = Table(
                 title=f"{family_emoji[device_family]} {device_family.value} "
                 f"Devices in {atpack_path.name}"
             )
-            table.add_column("Device Name", style="cyan")
-            table.add_column("Index", style="dim")
+            table.add_column("Device Name", style="cyan" if not no_color else None)
+            table.add_column("Index", style="dim" if not no_color else None)
 
             for i, device in enumerate(devices, 1):
                 table.add_row(device, str(i))
 
-            console.print(table)
-            console.print(f"\n[green]Total: {len(devices)} devices[/green]")
+            if output:
+                # Export table as text
+                with output_console.capture() as capture:
+                    output_console.print(table)
+                    output_console.print(f"\nTotal: {len(devices)} devices")
+                
+                output.write_text(capture.get(), encoding='utf-8')
+                console.print(f"[green]Exported {len(devices)} devices to {output}[/green]")
+            else:
+                output_console.print(table)
+                output_console.print(f"\n[green]Total: {len(devices)} devices[/green]" if not no_color else f"\nTotal: {len(devices)} devices")
 
     except AtPackError as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}")
         raise typer.Exit(1)
 
 
@@ -279,24 +303,55 @@ def show_memory(
     format: Annotated[
         str, typer.Option("--format", "-f", help="Output format")
     ] = "table",
+    segment: Annotated[
+        Optional[str], typer.Option("--segment", "-s", help="Show specific memory segment")
+    ] = None,
+    output: Annotated[
+        Optional[Path], typer.Option("--output", "-o", help="Export to file")
+    ] = None,
+    no_color: Annotated[
+        bool, typer.Option("--no-color", help="Disable colored output")
+    ] = False,
 ):
     """💾 Show memory layout for a device."""
     try:
         parser = AtPackParser(atpack_path)
         memory_segments = parser.get_device_memory(device_name)
 
+        # Filter by segment if specified
+        if segment:
+            memory_segments = [
+                seg for seg in memory_segments 
+                if seg.name.upper() == segment.upper()
+            ]
+            if not memory_segments:
+                console.print(f"[red]Memory segment '{segment}' not found[/red]" if not no_color else f"Memory segment '{segment}' not found")
+                raise typer.Exit(1)
+
         if format == "json":
             data = [seg.model_dump() for seg in memory_segments]
-            console.print_json(json.dumps(data, indent=2))
+            json_output = json.dumps(data, indent=2)
+            if output:
+                output.write_text(json_output, encoding='utf-8')
+                console.print(f"[green]Exported {len(memory_segments)} memory segments to {output}[/green]")
+            else:
+                console.print_json(json_output)
         else:
-            table = Table(title=f"💾 Memory Layout: {device_name}")
-            table.add_column("Segment", style="cyan")
-            table.add_column("Start Address", style="green")
-            table.add_column("End Address", style="green")
-            table.add_column("Size", style="yellow")
-            table.add_column("Type", style="magenta")
-            table.add_column("Page Size", style="blue")
-            table.add_column("Address Space", style="dim")
+            # Create console with color control
+            output_console = Console(force_terminal=not no_color) if not no_color else Console(force_terminal=False)
+            
+            title = f"💾 Memory Layout: {device_name}"
+            if segment:
+                title += f" (Segment: {segment})"
+            
+            table = Table(title=title)
+            table.add_column("Segment", style="cyan" if not no_color else None)
+            table.add_column("Start Address", style="green" if not no_color else None)
+            table.add_column("End Address", style="green" if not no_color else None)
+            table.add_column("Size", style="yellow" if not no_color else None)
+            table.add_column("Type", style="magenta" if not no_color else None)
+            table.add_column("Page Size", style="blue" if not no_color else None)
+            table.add_column("Address Space", style="dim" if not no_color else None)
 
             for seg in memory_segments:
                 end_addr = seg.start + seg.size - 1
@@ -312,13 +367,21 @@ def show_memory(
                     seg.address_space or "N/A",
                 )
 
-            console.print(table)
+            if output:
+                # Export table as text
+                with output_console.capture() as capture:
+                    output_console.print(table)
+                
+                output.write_text(capture.get(), encoding='utf-8')
+                console.print(f"[green]Exported {len(memory_segments)} memory segments to {output}[/green]")
+            else:
+                output_console.print(table)
 
     except DeviceNotFoundError as e:
-        console.print(f"[red]Device not found: {e}[/red]")
+        console.print(f"[red]Device not found: {e}[/red]" if not no_color else f"Device not found: {e}")
         raise typer.Exit(1)
     except AtPackError as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}")
         raise typer.Exit(1)
 
 
@@ -333,6 +396,12 @@ def list_registers(
     format: Annotated[
         str, typer.Option("--format", "-f", help="Output format")
     ] = "table",
+    output: Annotated[
+        Optional[Path], typer.Option("--output", "-o", help="Export to file")
+    ] = None,
+    no_color: Annotated[
+        bool, typer.Option("--no-color", help="Disable colored output")
+    ] = False,
 ):
     """📋 List registers for a device."""
     try:
@@ -357,18 +426,27 @@ def list_registers(
                 reg_data["module"] = item["module"]
                 reg_data["group"] = item["group"]
                 data.append(reg_data)
-            console.print_json(json.dumps(data, indent=2))
+            
+            json_output = json.dumps(data, indent=2)
+            if output:
+                output.write_text(json_output, encoding='utf-8')
+                console.print(f"[green]Exported {len(registers)} registers to {output}[/green]")
+            else:
+                console.print_json(json_output)
         else:
+            # Create console with color control
+            output_console = Console(force_terminal=not no_color) if not no_color else Console(force_terminal=False)
+            
             table = Table(
                 title=f"📋 Registers: {device_name}"
                 + (f" (Module: {module})" if module else "")
             )
-            table.add_column("Module", style="cyan")
-            table.add_column("Register", style="green")
-            table.add_column("Offset", style="yellow")
-            table.add_column("Size", style="blue")
-            table.add_column("Access", style="magenta")
-            table.add_column("Bitfields", style="dim")
+            table.add_column("Module", style="cyan" if not no_color else None)
+            table.add_column("Register", style="green" if not no_color else None)
+            table.add_column("Offset", style="yellow" if not no_color else None)
+            table.add_column("Size", style="blue" if not no_color else None)
+            table.add_column("Access", style="magenta" if not no_color else None)
+            table.add_column("Bitfields", style="dim" if not no_color else None)
 
             for item in sorted(registers, key=lambda x: x["register"].offset):
                 reg = item["register"]
@@ -381,13 +459,21 @@ def list_registers(
                     str(len(reg.bitfields)),
                 )
 
-            console.print(table)
+            if output:
+                # Export table as text
+                with output_console.capture() as capture:
+                    output_console.print(table)
+                
+                output.write_text(capture.get(), encoding='utf-8')
+                console.print(f"[green]Exported {len(registers)} registers to {output}[/green]")
+            else:
+                output_console.print(table)
 
     except DeviceNotFoundError as e:
-        console.print(f"[red]Device not found: {e}[/red]")
+        console.print(f"[red]Device not found: {e}[/red]" if not no_color else f"Device not found: {e}")
         raise typer.Exit(1)
     except AtPackError as e:
-        console.print(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}")
         raise typer.Exit(1)
 
 
@@ -455,21 +541,106 @@ def show_register(
                 table.add_column("Description", style="white")
                 table.add_column("Values", style="dim")
 
-                for bf in found_register.bitfields:
-                    bit_range = (
-                        f"{bf.bit_offset}"
-                        if bf.bit_width == 1
-                        else f"{bf.bit_offset + bf.bit_width - 1}:{bf.bit_offset}"
-                    )
-                    values_str = f"{len(bf.values)} values" if bf.values else "N/A"
+                # Sort bitfields by bit position (ascending order)
+                sorted_bitfields = sorted(found_register.bitfields, key=lambda bf: bf.bit_offset)
+                
+                # Group bitfields by bit position to identify primary fields and aliases
+                bit_groups = {}  # Maps bit_position -> [list of bitfields at that position]
+                
+                for bf in sorted_bitfields:
+                    if bf.bit_width > 1:
+                        # Multi-bit field - create entry for each bit it covers
+                        for bit_pos in range(bf.bit_offset, bf.bit_offset + bf.bit_width):
+                            if bit_pos not in bit_groups:
+                                bit_groups[bit_pos] = []
+                            bit_groups[bit_pos].append(bf)
+                    else:
+                        # Single-bit field
+                        if bf.bit_offset not in bit_groups:
+                            bit_groups[bf.bit_offset] = []
+                        bit_groups[bf.bit_offset].append(bf)
 
-                    table.add_row(
-                        bf.name,
-                        bit_range,
-                        f"0x{bf.mask:0{found_register.size * 2}X}",
-                        bf.caption or "N/A",
-                        values_str,
-                    )
+                # Process each bit position in order
+                displayed_multibit_fields = set()  # Track multi-bit fields we've already shown
+                
+                for bit_pos in sorted(bit_groups.keys()):
+                    fields_at_this_bit = bit_groups[bit_pos]
+                    
+                    # Separate multi-bit fields from single-bit fields
+                    multi_bit_fields = [bf for bf in fields_at_this_bit if bf.bit_width > 1]
+                    single_bit_fields = [bf for bf in fields_at_this_bit if bf.bit_width == 1]
+                    
+                    # Show multi-bit fields first (only once per field)
+                    for bf in multi_bit_fields:
+                        if bf.name not in displayed_multibit_fields:
+                            displayed_multibit_fields.add(bf.name)
+                            
+                            bit_range = f"{bf.bit_offset + bf.bit_width - 1}:{bf.bit_offset}"
+                            values_str = f"{len(bf.values)} values" if bf.values else "N/A"
+                            
+                            table.add_row(
+                                bf.name,
+                                bit_range,
+                                f"0x{bf.mask:0{found_register.size * 2}X}",
+                                bf.caption or "N/A",
+                                values_str,
+                            )
+                    
+                    # Show single-bit fields
+                    if single_bit_fields:
+                        # Check if this bit is part of a multi-bit field
+                        parent_multibit = None
+                        for bf in multi_bit_fields:
+                            if bf.bit_offset <= bit_pos < bf.bit_offset + bf.bit_width:
+                                parent_multibit = bf.name
+                                break
+                        
+                        if parent_multibit:
+                            # This bit is part of a multi-bit field - show as indented aliases
+                            for bf in single_bit_fields:
+                                bit_range = f"{bf.bit_offset}"
+                                values_str = f"{len(bf.values)} values" if bf.values else "N/A"
+                                
+                                table.add_row(
+                                    f"├─ {bf.name}",
+                                    bit_range,
+                                    f"0x{bf.mask:0{found_register.size * 2}X}",
+                                    bf.caption or "N/A",
+                                    values_str,
+                                )
+                        else:
+                            # This bit is NOT part of a multi-bit field - show as primary fields
+                            # Find the primary field (first one, or one that's not obviously an alias)
+                            primary_field = single_bit_fields[0]
+                            for bf in single_bit_fields:
+                                # Prefer shorter, simpler names as primary (e.g., "R" over "I2C_READ")
+                                if len(bf.name) < len(primary_field.name) and '_' not in bf.name:
+                                    primary_field = bf
+                            
+                            # Show primary field
+                            bit_range = f"{primary_field.bit_offset}"
+                            values_str = f"{len(primary_field.values)} values" if primary_field.values else "N/A"
+                            
+                            table.add_row(
+                                primary_field.name,
+                                bit_range,
+                                f"0x{primary_field.mask:0{found_register.size * 2}X}",
+                                primary_field.caption or "N/A",
+                                values_str,
+                            )
+                            
+                            # Show aliases indented
+                            aliases = [bf for bf in single_bit_fields if bf != primary_field]
+                            for alias in aliases:
+                                alias_values_str = f"{len(alias.values)} values" if alias.values else "N/A"
+                                
+                                table.add_row(
+                                    f"├─ {alias.name}",
+                                    bit_range,
+                                    f"0x{alias.mask:0{found_register.size * 2}X}",
+                                    alias.caption or "N/A",
+                                    alias_values_str,
+                                )
 
                 console.print(table)
 
@@ -742,7 +913,7 @@ def generate_command_tree() -> str:
     # Commands for each sub-app
     sub_commands = {
         "files": [("list", "List files in an AtPack"), ("info", "Show AtPack file information")],
-        "devices": [("list", "List all devices"), ("info", "Show device details")],
+        "devices": [("list", "List all devices"), ("info", "Show device details"), ("search", "Search devices by pattern")],
         "memory": [("show", "Show memory layout")],
         "registers": [("list", "List registers"), ("show", "Show register details")],
         "config": [("show", "Show configuration information")],
@@ -803,7 +974,7 @@ def interactive_help(
         )
         help_table.add_row(
             "🔌 devices", 
-            "list, info", 
+            "list, info, search", 
             "Browse devices and get detailed specs"
         )
         help_table.add_row(
@@ -837,7 +1008,7 @@ def interactive_help(
         # Show specific command help
         help_map = {
             "files": "📁 Files: list, info - Manage AtPack files\n  Example: atpack files list mypack.atpack",
-            "devices": "🔌 Devices: list, info - Device information\n  Example: atpack devices info ATmega16 mypack.atpack", 
+            "devices": "🔌 Devices: list, info, search - Device information\n  Example: atpack devices search '*877*' mypack.atpack", 
             "memory": "💾 Memory: show - Memory layouts\n  Example: atpack memory show ATmega16 mypack.atpack",
             "registers": "📋 Registers: list, show - Register details\n  Example: atpack registers list ATmega16 mypack.atpack",
             "config": "⚙️ Config: show - Configuration data\n  Example: atpack config show ATmega16 mypack.atpack",
@@ -856,6 +1027,93 @@ def interactive_help(
             console.print(f"[red]Unknown command: {command}[/red]")
             console.print("[dim]Available commands: files, devices, memory, registers, config, scan, help-tree[/dim]")
             console.print("[dim]Use 'atpack help-tree' to see the complete command structure[/dim]")
+
+@devices_app.command("search")
+def search_devices(
+    pattern: Annotated[str, typer.Argument(help="Search pattern (supports wildcards * and ?)")],
+    atpack_path: AtPackPath,
+    format: Annotated[
+        str, typer.Option("--format", "-f", help="Output format")
+    ] = "table",
+    output: Annotated[
+        Optional[Path], typer.Option("--output", "-o", help="Export to file")
+    ] = None,
+    no_color: Annotated[
+        bool, typer.Option("--no-color", help="Disable colored output")
+    ] = False,
+):
+    """🔍 Search for devices by name pattern (supports * and ? wildcards)."""
+    import fnmatch
+    
+    try:
+        parser = AtPackParser(atpack_path)
+        all_devices = parser.get_devices()
+        device_family = parser.device_family
+        
+        # Filter devices using pattern matching
+        matching_devices = [
+            device for device in all_devices
+            if fnmatch.fnmatch(device.upper(), pattern.upper())
+        ]
+        
+        if not matching_devices:
+            console.print(f"[yellow]No devices found matching pattern '{pattern}'[/yellow]")
+            console.print(f"[dim]Total devices in AtPack: {len(all_devices)}[/dim]")
+            return
+        
+        data = {
+            "search_pattern": pattern,
+            "device_family": device_family.value,
+            "total_devices": len(all_devices),
+            "matching_count": len(matching_devices),
+            "matching_devices": matching_devices,
+        }
+
+        if format == "json":
+            json_output = json.dumps(data, indent=2)
+            if output:
+                output.write_text(json_output, encoding='utf-8')
+                console.print(f"[green]Exported {len(matching_devices)} matching devices to {output}[/green]")
+            else:
+                console.print_json(json_output)
+        else:
+            # Create console with color control
+            output_console = Console(force_terminal=not no_color) if not no_color else Console(force_terminal=False)
+            
+            # Family emoji
+            family_emoji = {
+                DeviceFamily.ATMEL: "🔵" if not no_color else "[ATMEL]",
+                DeviceFamily.PIC: "🟡" if not no_color else "[PIC]", 
+                DeviceFamily.UNSUPPORTED: "⚫" if not no_color else "[UNSUPPORTED]",
+            }
+
+            table = Table(
+                title=f"{family_emoji[device_family]} {device_family.value} Devices matching '{pattern}'"
+            )
+            table.add_column("Device Name", style="cyan" if not no_color else None)
+            table.add_column("Index", style="dim" if not no_color else None)
+
+            for i, device in enumerate(matching_devices, 1):
+                table.add_row(device, str(i))
+
+            if output:
+                # Export table as text
+                with output_console.capture() as capture:
+                    output_console.print(table)
+                    output_console.print(f"\nMatching: {len(matching_devices)}/{len(all_devices)} devices")
+                
+                output.write_text(capture.get(), encoding='utf-8')
+                console.print(f"[green]Exported {len(matching_devices)} matching devices to {output}[/green]")
+            else:
+                output_console.print(table)
+                success_msg = f"[green]Matching: {len(matching_devices)}/{len(all_devices)} devices[/green]" if not no_color else f"Matching: {len(matching_devices)}/{len(all_devices)} devices"
+                output_console.print(f"\n{success_msg}")
+
+    except AtPackError as e:
+        error_msg = f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}"
+        console.print(error_msg)
+        raise typer.Exit(1)
+
 
 if __name__ == "__main__":
     app()

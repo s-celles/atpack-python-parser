@@ -91,7 +91,7 @@ atpack help-tree
 
 
 ```
-atpack scan .\atpacks\
+atpack scan ./atpacks/
                             🔍 AtPack Files in atpacks
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┓
 ┃ Path                                   ┃ Name    ┃ Vendor  ┃ Family   ┃ Devices ┃
@@ -111,7 +111,26 @@ Work with AtPack files and directories:
 ```bash
 # List all AtPack files in a directory
 atpack files list /path/to/atpack/directory
+```
+Example:
+```
+atpack files list ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+      Files in Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
+┃ File Path                              ┃ Size            ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
+│ edc/                                   │ 0 bytes         │
+│ hwtools/                               │ 0 bytes         │
+│ hwtools/mplab/                         │ 0 bytes         │
+...
+│ xc8/pic/include/proc/pic16lf877a.inc   │ 90,175 bytes    │
+│ xc8/pic/include/proc/pic16lf88.h       │ 142,857 bytes   │
+│ xc8/pic/include/proc/pic16lf88.inc     │ 80,519 bytes    │
+└────────────────────────────────────────┴─────────────────┘
+```
 
+
+```
 # Show information about a specific AtPack file
 atpack files info /path/to/file.atpack
 ```
@@ -120,14 +139,15 @@ atpack files info /path/to/file.atpack
 
 Extract and display device information:
 
+#### List all devices in an AtPack file
+
 ```bash
-# List all devices in an AtPack file
 atpack devices list /path/to/file.atpack
 ```
 
 Example:
 ```
-atpack devices list .\atpacks\Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+atpack devices list ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
          🟡 PIC Devices in
 Microchip.PIC16Fxxx_DFP.1.7.162.atp
                 ack
@@ -148,6 +168,26 @@ Microchip.PIC16Fxxx_DFP.1.7.162.atp
 Total: 164 devices
 ```
 
+#### List all devices in an AtPack file matching a pattern
+
+```bash
+atpack search "*YourPattern*" /path/to/file.atpack
+```
+
+Example:
+```
+atpack devices search "*877*" ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+🟡 PIC Devices matching
+        '*877*'        
+┏━━━━━━━━━━━━━┳━━━━━━━┓
+┃ Device Name ┃ Index ┃
+┡━━━━━━━━━━━━━╇━━━━━━━┩
+│ PIC16F877   │ 1     │
+│ PIC16F877A  │ 2     │
+│ PIC16LF877  │ 3     │
+│ PIC16LF877A │ 4     │
+└─────────────┴───────┘
+```
 
 ```bash
 # Get detailed information about a specific device
@@ -155,7 +195,7 @@ atpack devices info DEVICE_NAME /path/to/file.atpack
 ```
 Example:
 ```
-atpack devices info PIC16F877 .\atpacks\Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+atpack devices info PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 ╭──────────────────────────────────────────────────────────────────────────────────────────── 🔌 Device: PIC16F877 ─────────────────────────────────────────────────────────────────────────────────────────────╮
 │ Family: 🟡 PIC                                                                                                                                                                                                │
 │ Architecture: PIC                                                                                                                                                                                             │
@@ -198,20 +238,99 @@ Analyze device memory layout:
 # Show memory map for a device
 atpack memory show DEVICE_NAME /path/to/file.atpack
 ```
+Example:
+```
+atpack memory show PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+                               💾 Memory Layout: PIC16F877
+┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃ Segment   ┃ Start Address ┃ End Address ┃ Size  ┃ Type    ┃ Page Size ┃ Address Space ┃
+┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ PROG1     │ 0x0000        │ 0x07FF      │ 2,048 │ program │ N/A       │ program       │
+│ SFR_BANK0 │ 0x0000        │ 0x001F      │ 32    │ sfr     │ N/A       │ data          │
+│ SFR_BANK1 │ 0x0080        │ 0x009F      │ 32    │ sfr     │ N/A       │ data          │
+│ SFR_BANK2 │ 0x0100        │ 0x010F      │ 16    │ sfr     │ N/A       │ data          │
+│ SFR_BANK3 │ 0x0180        │ 0x018F      │ 16    │ sfr     │ N/A       │ data          │
+│ PROG2     │ 0x0800        │ 0x0FFF      │ 2,048 │ program │ N/A       │ program       │
+│ PROG3     │ 0x1000        │ 0x17FF      │ 2,048 │ program │ N/A       │ program       │
+│ PROG4     │ 0x1800        │ 0x1FFF      │ 2,048 │ program │ N/A       │ program       │
+└───────────┴───────────────┴─────────────┴───────┴─────────┴───────────┴───────────────┘
+```
 
 ### Register Commands
 
 Work with device registers and peripherals:
 
-```bash
-# List all registers for a device
-atpack registers list DEVICE_NAME /path/to/file.atpack
+#### List all registers for a device
 
-# Show details for a specific register
+```bash
+atpack registers list DEVICE_NAME /path/to/file.atpack
+```
+
+Example:
+```
+atpack registers list PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+                  📋 Registers: PIC16F877
+┏━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
+┃ Module ┃ Register   ┃ Offset ┃ Size ┃ Access ┃ Bitfields ┃
+┡━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
+│ BANK0  │ INDF       │ 0x0000 │ 1    │ R      │ 1         │
+│ CORE   │ WREG       │ 0x0000 │ 1    │ RW     │ 0         │
+│ BANK0  │ TMR0       │ 0x0001 │ 1    │ RW     │ 1         │
+...
+│ BANK2  │ EEADRH     │ 0x010F │ 1    │ R      │ 1         │
+│ BANK3  │ EECON1     │ 0x018C │ 1    │ R      │ 5         │
+│ BANK3  │ EECON2     │ 0x018D │ 1    │ W      │ 1         │
+└────────┴────────────┴────────┴──────┴────────┴───────────┘
+```
+
+
+#### Show details for a specific register
+```bash
 atpack registers show DEVICE_NAME REGISTER_NAME /path/to/file.atpack
+```
+
+Example:
+```
+atpack registers show PIC16F877 OPTION_REG ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+╭─────────────────────────────────────────────────────────────────────────────────────────── 📋 Register: OPTION_REG ───────────────────────────────────────────────────────────────────────────────────────────╮
+│ Name: OPTION_REG                                                                                                                                                                                              │
+│ Caption: OPTION_REG                                                                                                                                                                                           │
+│ Offset: 0x0081                                                                                                                                                                                                │
+│ Size: 1 bytes                                                                                                                                                                                                 │
+│ Access: RW                                                                                                                                                                                                    │
+│ Mask: N/A                                                                                                                                                                                                     │
+│ Initial Value: N/A                                                                                                                                                                                            │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+                 🔧 Bitfields
+┏━━━━━━━━┳━━━━━━┳━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━┓
+┃ Name   ┃ Bits ┃ Mask ┃ Description ┃ Values ┃
+┡━━━━━━━━╇━━━━━━╇━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━┩
+│ PS     │ 2:0  │ 0x07 │ PS          │ N/A    │
+│ ├─ PS0 │ 0    │ 0x01 │ PS0         │ N/A    │
+│ ├─ PS1 │ 1    │ 0x02 │ PS1         │ N/A    │
+│ ├─ PS2 │ 2    │ 0x04 │ PS2         │ N/A    │
+│ PSA    │ 3    │ 0x08 │ PSA         │ N/A    │
+│ T0SE   │ 4    │ 0x10 │ T0SE        │ N/A    │
+│ T0CS   │ 5    │ 0x20 │ T0CS        │ N/A    │
+│ INTEDG │ 6    │ 0x40 │ INTEDG      │ N/A    │
+│ nRBPU  │ 7    │ 0x80 │ nRBPU       │ N/A    │
+└────────┴──────┴──────┴─────────────┴────────┘
+```
 
 # Filter registers by module
+```bash
 atpack registers list DEVICE_NAME /path/to/file.atpack --module MODULE_NAME
+```
+
+Example:
+```
+atpack registers list PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack --module CORE
+          📋 Registers: PIC16F877 (Module: CORE)
+┏━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━┳━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┓
+┃ Module ┃ Register ┃ Offset ┃ Size ┃ Access ┃ Bitfields ┃
+┡━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━╇━━━━━━╇━━━━━━━━╇━━━━━━━━━━━┩
+│ CORE   │ WREG     │ 0x0000 │ 1    │ RW     │ 0         │
+└────────┴──────────┴────────┴──────┴────────┴───────────┘
 ```
 
 ### Configuration Commands
@@ -221,52 +340,45 @@ Extract device configuration information:
 ```bash
 # Show all configuration information for a device
 atpack config show DEVICE_NAME /path/to/file.atpack
+```
+
+Example:
+```
+atpack config show PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+            ⚡ Interrupts
+┏━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━┓
+┃ Index ┃ Name     ┃ Description    ┃
+┡━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━┩
+│ 0     │ AD_INT   │ AD Interrupt   │
+│ 1     │ BCL_INT  │ BCL Interrupt  │
+│ 2     │ CCP1_INT │ CCP1 Interrupt │
+│ 3     │ CCP2_INT │ CCP2 Interrupt │
+│ 4     │ EE_INT   │ EE Interrupt   │
+│ 5     │ G_INT    │ G Interrupt    │
+│ 6     │ INTE_INT │ INTE Interrupt │
+│ 7     │ PE_INT   │ PE Interrupt   │
+│ 8     │ PSP_INT  │ PSP Interrupt  │
+│ 9     │ RB_INT   │ RB Interrupt   │
+│ 10    │ RC_INT   │ RC Interrupt   │
+│ 11    │ SSP_INT  │ SSP Interrupt  │
+│ 12    │ T0_INT   │ T0 Interrupt   │
+│ 13    │ TMR0_INT │ TMR0 Interrupt │
+│ 14    │ TMR1_INT │ TMR1 Interrupt │
+│ 15    │ TMR2_INT │ TMR2 Interrupt │
+│ 16    │ TX_INT   │ TX Interrupt   │
+└───────┴──────────┴────────────────┘
+       ✍️ Device Signatures
+┏━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┓
+┃ Name        ┃ Address ┃ Value ┃
+┡━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━┩
+│ DEVID_DEVID │ 0x2006  │ 0x9A0 │
+└─────────────┴─────────┴───────┘
+```
+
 
 # Show specific configuration type (fuses, config, interrupts, signatures)
+```bash
 atpack config show DEVICE_NAME /path/to/file.atpack --type fuses
-```
-
-## Detailed Examples
-
-### Working with ATMEL AtPacks
-
-```bash
-# List all ATmega devices
-atpack devices list Atmel.ATmega_DFP.2.2.509.atpack
-
-# Get ATmega16 information
-atpack devices info ATmega16 Atmel.ATmega_DFP.2.2.509.atpack
-
-# Show ATmega16 memory layout
-atpack memory show ATmega16 Atmel.ATmega_DFP.2.2.509.atpack
-
-# List ATmega16 registers
-atpack registers list ATmega16 Atmel.ATmega_DFP.2.2.509.atpack
-
-# Show specific register details
-atpack registers show ATmega16 PORTB Atmel.ATmega_DFP.2.2.509.atpack
-
-# Show configuration information
-atpack config show ATmega16 Atmel.ATmega_DFP.2.2.509.atpack
-```
-
-### Working with Microchip AtPacks
-
-```bash
-# Work with a PIC AtPack
-atpack devices list Microchip.PIC16Fxxx_DFP.1.7.162.atpack
-
-# Get PIC16F877A information  
-atpack devices info PIC16F877A Microchip.PIC16Fxxx_DFP.1.7.162.atpack
-
-# Show memory layout
-atpack memory show PIC16F877A Microchip.PIC16Fxxx_DFP.1.7.162.atpack
-
-# Show registers
-atpack registers list PIC16F877A Microchip.PIC16Fxxx_DFP.1.7.162.atpack
-
-# Show fuses and configuration
-atpack config show PIC16F877A Microchip.PIC16Fxxx_DFP.1.7.162.atpack --type fuses
 ```
 
 ### Output Formatting
