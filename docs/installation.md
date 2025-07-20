@@ -6,8 +6,8 @@
     
     You must download AtPack files separately from the official sources:
     
-    - **ATMEL AtPacks**: [Microchip Packs Repository](https://packs.download.microchip.com/)
     - **PIC AtPacks**: [Microchip Packs Repository](https://packs.download.microchip.com/)
+    - **ATMEL AtPacks (legacy)**: [Microchip Packs Repository](http://packs.download.atmel.com/)
     
     See the [Getting AtPack Files](#getting-atpack-files) section below for detailed instructions.
 
