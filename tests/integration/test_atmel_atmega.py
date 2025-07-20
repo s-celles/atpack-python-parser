@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Enhanced test script for ATMEL parser with PlatformIO-useful information.
+Enhanced test script for ATMEL parser.
 """
 
 import pytest
@@ -10,7 +10,7 @@ from src.atpack_parser.atdf_parser import AtdfParser
 @pytest.mark.integration
 @pytest.mark.atpack_required
 def test_enhanced_atmel_parser(atmel_content: str):
-    """Test the enhanced ATMEL parser with PlatformIO-useful information."""
+    """Test the enhanced ATMEL parser."""
     print("=== Enhanced ATMEL Parser Test ===\n")
 
     # Parse the device
