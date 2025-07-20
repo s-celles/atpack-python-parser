@@ -14,7 +14,9 @@ from src.atpack_parser.atdf_parser import AtdfParser
 def test_enhanced_atmel_parser():
     """Test the enhanced ATMEL parser with PlatformIO-useful information."""
 
-    atpack_file = Path(__file__).parent.parent / "atpacks" / "Atmel.ATmega_DFP.2.2.509.atpack"
+    atpack_file = (
+        Path(__file__).parent.parent / "atpacks" / "Atmel.ATmega_DFP.2.2.509.atpack"
+    )
     atdf_file = "atdf/ATmega16.atdf"
 
     # Skip test if atpack file is not available (e.g., in CI)
@@ -32,9 +34,9 @@ def test_enhanced_atmel_parser():
 
     # Read the ATDF file from the zipped atpack
     try:
-        with zipfile.ZipFile(atpack_file, 'r') as zf:
+        with zipfile.ZipFile(atpack_file, "r") as zf:
             with zf.open(atdf_file) as f:
-                atdf_content = f.read().decode('utf-8')
+                atdf_content = f.read().decode("utf-8")
     except (zipfile.BadZipFile, KeyError) as e:
         warning_msg = (
             f"⚠️  Could not read ATDF file from AtPack: {e}\n"

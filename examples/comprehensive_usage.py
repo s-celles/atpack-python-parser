@@ -37,12 +37,12 @@ def demonstrate_atmel_parsing():
         # Initialize parser
         parser = AtPackParser(str(atpack_path))
         print(f"✅ Loaded AtPack from: {atpack_path.name}")
-        
+
         # List all devices
         devices = parser.get_devices()
         print(f"📦 Found {len(devices)} devices")
         print(f"First 5 devices: {devices[:5]}")
-        
+
         # Get detailed information for ATmega16
         device_name = "ATmega16"
         try:

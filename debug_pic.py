@@ -5,12 +5,14 @@ from pathlib import Path
 from src.atpack_parser.pic_parser import PicParser
 
 try:
-    atpack_file = Path(__file__).parent / "atpacks" / "Microchip.PIC16Fxxx_DFP.1.7.162.atpack"
+    atpack_file = (
+        Path(__file__).parent / "atpacks" / "Microchip.PIC16Fxxx_DFP.1.7.162.atpack"
+    )
     pic_file = "edc/PIC16F876A.PIC"
-    
-    with zipfile.ZipFile(atpack_file, 'r') as zf:
+
+    with zipfile.ZipFile(atpack_file, "r") as zf:
         with zf.open(pic_file) as f:
-            pic_content = f.read().decode('utf-8')
+            pic_content = f.read().decode("utf-8")
 
     pic_parser = PicParser(pic_content)
 

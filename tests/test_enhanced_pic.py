@@ -14,7 +14,11 @@ from src.atpack_parser.pic_parser import PicParser
 def test_enhanced_pic_parser():
     """Test the enhanced PIC parser with PlatformIO-useful information."""
 
-    atpack_file = Path(__file__).parent.parent / "atpacks" / "Microchip.PIC16Fxxx_DFP.1.7.162.atpack"
+    atpack_file = (
+        Path(__file__).parent.parent
+        / "atpacks"
+        / "Microchip.PIC16Fxxx_DFP.1.7.162.atpack"
+    )
     pic_file = "edc/PIC16F876A.PIC"
 
     # Skip test if atpack file is not available (e.g., in CI)
@@ -32,9 +36,9 @@ def test_enhanced_pic_parser():
 
     # Read the PIC file from the .atpack zip archive
     try:
-        with zipfile.ZipFile(atpack_file, 'r') as zip_file:
+        with zipfile.ZipFile(atpack_file, "r") as zip_file:
             with zip_file.open(pic_file) as f:
-                pic_content = f.read().decode('utf-8')
+                pic_content = f.read().decode("utf-8")
     except (zipfile.BadZipFile, KeyError) as e:
         warning_msg = (
             f"⚠️  Could not read PIC file from AtPack: {e}\n"

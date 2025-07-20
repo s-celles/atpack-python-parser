@@ -12,7 +12,12 @@ from atpack_parser import AtPackParser
 
 
 def test_pic_parsing():
-    atpack_path = os.path.join(os.path.dirname(__file__), "..", "atpacks", "Microchip.PIC16Fxxx_DFP.1.7.162.atpack")
+    atpack_path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "atpacks",
+        "Microchip.PIC16Fxxx_DFP.1.7.162.atpack",
+    )
 
     print(f"Testing AtPack: {atpack_path}")
 
