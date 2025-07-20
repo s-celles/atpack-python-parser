@@ -53,16 +53,16 @@ def main(
 ):
     """
     🔧 AtPack Parser CLI - Parse AtPack files
-    
+
     Available command groups:
     • files    - Manage AtPack files (list, info)
-    • devices  - Device information (list, info)  
+    • devices  - Device information (list, info)
     • memory   - Memory layouts (show)
     • registers - Register details (list, show)
     • config   - Configuration data (show)
     • scan     - Directory scanning
     • help-tree - Show command structure
-    
+
     Use 'atpack COMMAND --help' for detailed help on each command.
     Use 'atpack help-tree' to see the complete command structure.
     """
@@ -173,18 +173,24 @@ def list_devices(
         if format == "json":
             json_output = json.dumps(data, indent=2)
             if output:
-                output.write_text(json_output, encoding='utf-8')
-                console.print(f"[green]Exported {len(devices)} devices to {output}[/green]")
+                output.write_text(json_output, encoding="utf-8")
+                console.print(
+                    f"[green]Exported {len(devices)} devices to {output}[/green]"
+                )
             else:
                 console.print_json(json_output)
         else:
             # Create console with color control
-            output_console = Console(force_terminal=not no_color) if not no_color else Console(force_terminal=False)
-            
+            output_console = (
+                Console(force_terminal=not no_color)
+                if not no_color
+                else Console(force_terminal=False)
+            )
+
             # Family emoji
             family_emoji = {
                 DeviceFamily.ATMEL: "🔵" if not no_color else "[ATMEL]",
-                DeviceFamily.PIC: "🟡" if not no_color else "[PIC]", 
+                DeviceFamily.PIC: "🟡" if not no_color else "[PIC]",
                 DeviceFamily.UNSUPPORTED: "⚫" if not no_color else "[UNSUPPORTED]",
             }
 
@@ -203,12 +209,18 @@ def list_devices(
                 with output_console.capture() as capture:
                     output_console.print(table)
                     output_console.print(f"\nTotal: {len(devices)} devices")
-                
-                output.write_text(capture.get(), encoding='utf-8')
-                console.print(f"[green]Exported {len(devices)} devices to {output}[/green]")
+
+                output.write_text(capture.get(), encoding="utf-8")
+                console.print(
+                    f"[green]Exported {len(devices)} devices to {output}[/green]"
+                )
             else:
                 output_console.print(table)
-                output_console.print(f"\n[green]Total: {len(devices)} devices[/green]" if not no_color else f"\nTotal: {len(devices)} devices")
+                output_console.print(
+                    f"\n[green]Total: {len(devices)} devices[/green]"
+                    if not no_color
+                    else f"\nTotal: {len(devices)} devices"
+                )
 
     except AtPackError as e:
         console.print(f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}")
@@ -304,7 +316,8 @@ def show_memory(
         str, typer.Option("--format", "-f", help="Output format")
     ] = "table",
     segment: Annotated[
-        Optional[str], typer.Option("--segment", "-s", help="Show specific memory segment")
+        Optional[str],
+        typer.Option("--segment", "-s", help="Show specific memory segment"),
     ] = None,
     output: Annotated[
         Optional[Path], typer.Option("--output", "-o", help="Export to file")
@@ -321,29 +334,38 @@ def show_memory(
         # Filter by segment if specified
         if segment:
             memory_segments = [
-                seg for seg in memory_segments 
-                if seg.name.upper() == segment.upper()
+                seg for seg in memory_segments if seg.name.upper() == segment.upper()
             ]
             if not memory_segments:
-                console.print(f"[red]Memory segment '{segment}' not found[/red]" if not no_color else f"Memory segment '{segment}' not found")
+                console.print(
+                    f"[red]Memory segment '{segment}' not found[/red]"
+                    if not no_color
+                    else f"Memory segment '{segment}' not found"
+                )
                 raise typer.Exit(1)
 
         if format == "json":
             data = [seg.model_dump() for seg in memory_segments]
             json_output = json.dumps(data, indent=2)
             if output:
-                output.write_text(json_output, encoding='utf-8')
-                console.print(f"[green]Exported {len(memory_segments)} memory segments to {output}[/green]")
+                output.write_text(json_output, encoding="utf-8")
+                console.print(
+                    f"[green]Exported {len(memory_segments)} memory segments to {output}[/green]"
+                )
             else:
                 console.print_json(json_output)
         else:
             # Create console with color control
-            output_console = Console(force_terminal=not no_color) if not no_color else Console(force_terminal=False)
-            
+            output_console = (
+                Console(force_terminal=not no_color)
+                if not no_color
+                else Console(force_terminal=False)
+            )
+
             title = f"💾 Memory Layout: {device_name}"
             if segment:
                 title += f" (Segment: {segment})"
-            
+
             table = Table(title=title)
             table.add_column("Segment", style="cyan" if not no_color else None)
             table.add_column("Start Address", style="green" if not no_color else None)
@@ -371,14 +393,20 @@ def show_memory(
                 # Export table as text
                 with output_console.capture() as capture:
                     output_console.print(table)
-                
-                output.write_text(capture.get(), encoding='utf-8')
-                console.print(f"[green]Exported {len(memory_segments)} memory segments to {output}[/green]")
+
+                output.write_text(capture.get(), encoding="utf-8")
+                console.print(
+                    f"[green]Exported {len(memory_segments)} memory segments to {output}[/green]"
+                )
             else:
                 output_console.print(table)
 
     except DeviceNotFoundError as e:
-        console.print(f"[red]Device not found: {e}[/red]" if not no_color else f"Device not found: {e}")
+        console.print(
+            f"[red]Device not found: {e}[/red]"
+            if not no_color
+            else f"Device not found: {e}"
+        )
         raise typer.Exit(1)
     except AtPackError as e:
         console.print(f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}")
@@ -426,17 +454,23 @@ def list_registers(
                 reg_data["module"] = item["module"]
                 reg_data["group"] = item["group"]
                 data.append(reg_data)
-            
+
             json_output = json.dumps(data, indent=2)
             if output:
-                output.write_text(json_output, encoding='utf-8')
-                console.print(f"[green]Exported {len(registers)} registers to {output}[/green]")
+                output.write_text(json_output, encoding="utf-8")
+                console.print(
+                    f"[green]Exported {len(registers)} registers to {output}[/green]"
+                )
             else:
                 console.print_json(json_output)
         else:
             # Create console with color control
-            output_console = Console(force_terminal=not no_color) if not no_color else Console(force_terminal=False)
-            
+            output_console = (
+                Console(force_terminal=not no_color)
+                if not no_color
+                else Console(force_terminal=False)
+            )
+
             table = Table(
                 title=f"📋 Registers: {device_name}"
                 + (f" (Module: {module})" if module else "")
@@ -463,14 +497,20 @@ def list_registers(
                 # Export table as text
                 with output_console.capture() as capture:
                     output_console.print(table)
-                
-                output.write_text(capture.get(), encoding='utf-8')
-                console.print(f"[green]Exported {len(registers)} registers to {output}[/green]")
+
+                output.write_text(capture.get(), encoding="utf-8")
+                console.print(
+                    f"[green]Exported {len(registers)} registers to {output}[/green]"
+                )
             else:
                 output_console.print(table)
 
     except DeviceNotFoundError as e:
-        console.print(f"[red]Device not found: {e}[/red]" if not no_color else f"Device not found: {e}")
+        console.print(
+            f"[red]Device not found: {e}[/red]"
+            if not no_color
+            else f"Device not found: {e}"
+        )
         raise typer.Exit(1)
     except AtPackError as e:
         console.print(f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}")
@@ -542,15 +582,19 @@ def show_register(
                 table.add_column("Values", style="dim")
 
                 # Sort bitfields by bit position (ascending order)
-                sorted_bitfields = sorted(found_register.bitfields, key=lambda bf: bf.bit_offset)
-                
+                sorted_bitfields = sorted(
+                    found_register.bitfields, key=lambda bf: bf.bit_offset
+                )
+
                 # Group bitfields by bit position to identify primary fields and aliases
                 bit_groups = {}  # Maps bit_position -> [list of bitfields at that position]
-                
+
                 for bf in sorted_bitfields:
                     if bf.bit_width > 1:
                         # Multi-bit field - create entry for each bit it covers
-                        for bit_pos in range(bf.bit_offset, bf.bit_offset + bf.bit_width):
+                        for bit_pos in range(
+                            bf.bit_offset, bf.bit_offset + bf.bit_width
+                        ):
                             if bit_pos not in bit_groups:
                                 bit_groups[bit_pos] = []
                             bit_groups[bit_pos].append(bf)
@@ -561,23 +605,33 @@ def show_register(
                         bit_groups[bf.bit_offset].append(bf)
 
                 # Process each bit position in order
-                displayed_multibit_fields = set()  # Track multi-bit fields we've already shown
-                
+                displayed_multibit_fields = (
+                    set()
+                )  # Track multi-bit fields we've already shown
+
                 for bit_pos in sorted(bit_groups.keys()):
                     fields_at_this_bit = bit_groups[bit_pos]
-                    
+
                     # Separate multi-bit fields from single-bit fields
-                    multi_bit_fields = [bf for bf in fields_at_this_bit if bf.bit_width > 1]
-                    single_bit_fields = [bf for bf in fields_at_this_bit if bf.bit_width == 1]
-                    
+                    multi_bit_fields = [
+                        bf for bf in fields_at_this_bit if bf.bit_width > 1
+                    ]
+                    single_bit_fields = [
+                        bf for bf in fields_at_this_bit if bf.bit_width == 1
+                    ]
+
                     # Show multi-bit fields first (only once per field)
                     for bf in multi_bit_fields:
                         if bf.name not in displayed_multibit_fields:
                             displayed_multibit_fields.add(bf.name)
-                            
-                            bit_range = f"{bf.bit_offset + bf.bit_width - 1}:{bf.bit_offset}"
-                            values_str = f"{len(bf.values)} values" if bf.values else "N/A"
-                            
+
+                            bit_range = (
+                                f"{bf.bit_offset + bf.bit_width - 1}:{bf.bit_offset}"
+                            )
+                            values_str = (
+                                f"{len(bf.values)} values" if bf.values else "N/A"
+                            )
+
                             table.add_row(
                                 bf.name,
                                 bit_range,
@@ -585,7 +639,7 @@ def show_register(
                                 bf.caption or "N/A",
                                 values_str,
                             )
-                    
+
                     # Show single-bit fields
                     if single_bit_fields:
                         # Check if this bit is part of a multi-bit field
@@ -594,13 +648,15 @@ def show_register(
                             if bf.bit_offset <= bit_pos < bf.bit_offset + bf.bit_width:
                                 parent_multibit = bf.name
                                 break
-                        
+
                         if parent_multibit:
                             # This bit is part of a multi-bit field - show as indented aliases
                             for bf in single_bit_fields:
                                 bit_range = f"{bf.bit_offset}"
-                                values_str = f"{len(bf.values)} values" if bf.values else "N/A"
-                                
+                                values_str = (
+                                    f"{len(bf.values)} values" if bf.values else "N/A"
+                                )
+
                                 table.add_row(
                                     f"├─ {bf.name}",
                                     bit_range,
@@ -614,13 +670,20 @@ def show_register(
                             primary_field = single_bit_fields[0]
                             for bf in single_bit_fields:
                                 # Prefer shorter, simpler names as primary (e.g., "R" over "I2C_READ")
-                                if len(bf.name) < len(primary_field.name) and '_' not in bf.name:
+                                if (
+                                    len(bf.name) < len(primary_field.name)
+                                    and "_" not in bf.name
+                                ):
                                     primary_field = bf
-                            
+
                             # Show primary field
                             bit_range = f"{primary_field.bit_offset}"
-                            values_str = f"{len(primary_field.values)} values" if primary_field.values else "N/A"
-                            
+                            values_str = (
+                                f"{len(primary_field.values)} values"
+                                if primary_field.values
+                                else "N/A"
+                            )
+
                             table.add_row(
                                 primary_field.name,
                                 bit_range,
@@ -628,12 +691,18 @@ def show_register(
                                 primary_field.caption or "N/A",
                                 values_str,
                             )
-                            
+
                             # Show aliases indented
-                            aliases = [bf for bf in single_bit_fields if bf != primary_field]
+                            aliases = [
+                                bf for bf in single_bit_fields if bf != primary_field
+                            ]
                             for alias in aliases:
-                                alias_values_str = f"{len(alias.values)} values" if alias.values else "N/A"
-                                
+                                alias_values_str = (
+                                    f"{len(alias.values)} values"
+                                    if alias.values
+                                    else "N/A"
+                                )
+
                                 table.add_row(
                                     f"├─ {alias.name}",
                                     bit_range,
@@ -866,7 +935,7 @@ def help_tree_command():
 def show_command_tree_content():
     """Show the complete command tree structure."""
     tree_text = generate_command_tree()
-    
+
     examples_text = """
 
 📚 Usage Examples:
@@ -888,50 +957,58 @@ def show_command_tree_content():
   atpack scan ./atpacks/ --format json
     """
     tree_text += examples_text
-    
+
     panel = Panel(
         tree_text,
         title="🌳 Command Tree with Examples",
         border_style="green",
-        padding=(1, 2)
+        padding=(1, 2),
     )
     console.print(panel)
+
 
 def generate_command_tree() -> str:
     """Generate a dynamic command tree from the Typer app structure."""
     lines = ["🔧 atpack - AtPack Parser CLI"]
-    
+
     # Get all registered sub-apps
     sub_apps = {
         "files": ("📁", "AtPack file management"),
-        "devices": ("🔌", "Device information"), 
+        "devices": ("🔌", "Device information"),
         "memory": ("💾", "Memory information"),
         "registers": ("📋", "Register information"),
         "config": ("⚙️", "Configuration information"),
     }
-    
+
     # Commands for each sub-app
     sub_commands = {
-        "files": [("list", "List files in an AtPack"), ("info", "Show AtPack file information")],
-        "devices": [("list", "List all devices"), ("info", "Show device details"), ("search", "Search devices by pattern")],
+        "files": [
+            ("list", "List files in an AtPack"),
+            ("info", "Show AtPack file information"),
+        ],
+        "devices": [
+            ("list", "List all devices"),
+            ("info", "Show device details"),
+            ("search", "Search devices by pattern"),
+        ],
         "memory": [("show", "Show memory layout")],
         "registers": [("list", "List registers"), ("show", "Show register details")],
         "config": [("show", "Show configuration information")],
     }
-    
+
     # Global commands
     global_commands = [
         ("scan", "🔍", "Scan directory for AtPack files"),
-        ("help-tree", "🌳", "Show command tree structure")
+        ("help-tree", "🌳", "Show command tree structure"),
     ]
-    
+
     # Build tree for sub-apps
     sub_app_count = len(sub_apps)
     for i, (name, (emoji, desc)) in enumerate(sub_apps.items()):
         is_last_sub_app = i == sub_app_count - 1 and not global_commands
         prefix = "└── " if is_last_sub_app else "├── "
         lines.append(f"{prefix}{emoji} {name} - {desc}")
-        
+
         if name in sub_commands:
             cmd_count = len(sub_commands[name])
             for j, (cmd_name, cmd_desc) in enumerate(sub_commands[name]):
@@ -941,14 +1018,15 @@ def generate_command_tree() -> str:
                 else:
                     sub_prefix = "│   └── " if is_last_cmd else "│   ├── "
                 lines.append(f"{sub_prefix}{cmd_name} - {cmd_desc}")
-    
+
     # Add global commands
     for i, (cmd_name, emoji, desc) in enumerate(global_commands):
         is_last = i == len(global_commands) - 1
         prefix = "└── " if is_last else "├── "
         lines.append(f"{prefix}{emoji} {cmd_name} - {desc}")
-    
+
     return "\n".join(lines)
+
 
 @app.command("help")
 def interactive_help(
@@ -957,80 +1035,73 @@ def interactive_help(
     ] = None,
 ):
     """❓ Get interactive help for commands."""
-    
+
     if not command:
         # Show overview
         console.print("\n[bold blue]🔧 AtPack Parser CLI Help[/bold blue]\n")
-        
+
         help_table = Table(show_header=True, header_style="bold magenta")
         help_table.add_column("Command Group", style="cyan", min_width=12)
         help_table.add_column("Commands", style="green")
         help_table.add_column("Description", style="white")
-        
+
         help_table.add_row(
-            "📁 files", 
-            "list, info", 
-            "Manage AtPack files and show metadata"
+            "📁 files", "list, info", "Manage AtPack files and show metadata"
         )
         help_table.add_row(
-            "🔌 devices", 
-            "list, info, search", 
-            "Browse devices and get detailed specs"
+            "🔌 devices", "list, info, search", "Browse devices and get detailed specs"
         )
+        help_table.add_row("💾 memory", "show", "Analyze memory layouts and segments")
         help_table.add_row(
-            "💾 memory", 
-            "show", 
-            "Analyze memory layouts and segments"
+            "📋 registers", "list, show", "Explore registers and bitfields"
         )
-        help_table.add_row(
-            "📋 registers", 
-            "list, show", 
-            "Explore registers and bitfields"
-        )
-        help_table.add_row(
-            "⚙️ config", 
-            "show", 
-            "View fuses, config words, interrupts"
-        )
-        help_table.add_row(
-            "🔍 Global", 
-            "scan, help-tree", 
-            "Utility commands"
-        )
-        
+        help_table.add_row("⚙️ config", "show", "View fuses, config words, interrupts")
+        help_table.add_row("🔍 Global", "scan, help-tree", "Utility commands")
+
         console.print(help_table)
-        
-        console.print(f"\n[dim]💡 Use [/dim][bold]atpack help COMMAND[/bold][dim] for specific help[/dim]")
-        console.print(f"[dim]💡 Use [/dim][bold]atpack help-tree[/bold][dim] to see the complete structure[/dim]")
-        console.print(f"[dim]💡 Use [/dim][bold]atpack COMMAND --help[/bold][dim] for detailed options[/dim]\n")
-        
+
+        console.print(
+            f"\n[dim]💡 Use [/dim][bold]atpack help COMMAND[/bold][dim] for specific help[/dim]"
+        )
+        console.print(
+            f"[dim]💡 Use [/dim][bold]atpack help-tree[/bold][dim] to see the complete structure[/dim]"
+        )
+        console.print(
+            f"[dim]💡 Use [/dim][bold]atpack COMMAND --help[/bold][dim] for detailed options[/dim]\n"
+        )
+
     else:
         # Show specific command help
         help_map = {
             "files": "📁 Files: list, info - Manage AtPack files\n  Example: atpack files list mypack.atpack",
-            "devices": "🔌 Devices: list, info, search - Device information\n  Example: atpack devices search '*877*' mypack.atpack", 
+            "devices": "🔌 Devices: list, info, search - Device information\n  Example: atpack devices search '*877*' mypack.atpack",
             "memory": "💾 Memory: show - Memory layouts\n  Example: atpack memory show ATmega16 mypack.atpack",
             "registers": "📋 Registers: list, show - Register details\n  Example: atpack registers list ATmega16 mypack.atpack",
             "config": "⚙️ Config: show - Configuration data\n  Example: atpack config show ATmega16 mypack.atpack",
             "scan": "🔍 Scan: Search for AtPack files\n  Example: atpack scan ./atpacks/",
-            "help-tree": "🌳 Help Tree: Show command structure\n  Example: atpack help-tree"
+            "help-tree": "🌳 Help Tree: Show command structure\n  Example: atpack help-tree",
         }
-        
+
         if command in help_map:
             panel = Panel(
-                help_map[command],
-                title=f"❓ Help for '{command}'",
-                border_style="blue"
+                help_map[command], title=f"❓ Help for '{command}'", border_style="blue"
             )
             console.print(panel)
         else:
             console.print(f"[red]Unknown command: {command}[/red]")
-            console.print("[dim]Available commands: files, devices, memory, registers, config, scan, help-tree[/dim]")
-            console.print("[dim]Use 'atpack help-tree' to see the complete command structure[/dim]")
+            console.print(
+                "[dim]Available commands: files, devices, memory, registers, config, scan, help-tree[/dim]"
+            )
+            console.print(
+                "[dim]Use 'atpack help-tree' to see the complete command structure[/dim]"
+            )
+
 
 @devices_app.command("search")
 def search_devices(
-    pattern: Annotated[str, typer.Argument(help="Search pattern (supports wildcards * and ?)")],
+    pattern: Annotated[
+        str, typer.Argument(help="Search pattern (supports wildcards * and ?)")
+    ],
     atpack_path: AtPackPath,
     format: Annotated[
         str, typer.Option("--format", "-f", help="Output format")
@@ -1044,23 +1115,26 @@ def search_devices(
 ):
     """🔍 Search for devices by name pattern (supports * and ? wildcards)."""
     import fnmatch
-    
+
     try:
         parser = AtPackParser(atpack_path)
         all_devices = parser.get_devices()
         device_family = parser.device_family
-        
+
         # Filter devices using pattern matching
         matching_devices = [
-            device for device in all_devices
+            device
+            for device in all_devices
             if fnmatch.fnmatch(device.upper(), pattern.upper())
         ]
-        
+
         if not matching_devices:
-            console.print(f"[yellow]No devices found matching pattern '{pattern}'[/yellow]")
+            console.print(
+                f"[yellow]No devices found matching pattern '{pattern}'[/yellow]"
+            )
             console.print(f"[dim]Total devices in AtPack: {len(all_devices)}[/dim]")
             return
-        
+
         data = {
             "search_pattern": pattern,
             "device_family": device_family.value,
@@ -1072,18 +1146,24 @@ def search_devices(
         if format == "json":
             json_output = json.dumps(data, indent=2)
             if output:
-                output.write_text(json_output, encoding='utf-8')
-                console.print(f"[green]Exported {len(matching_devices)} matching devices to {output}[/green]")
+                output.write_text(json_output, encoding="utf-8")
+                console.print(
+                    f"[green]Exported {len(matching_devices)} matching devices to {output}[/green]"
+                )
             else:
                 console.print_json(json_output)
         else:
             # Create console with color control
-            output_console = Console(force_terminal=not no_color) if not no_color else Console(force_terminal=False)
-            
+            output_console = (
+                Console(force_terminal=not no_color)
+                if not no_color
+                else Console(force_terminal=False)
+            )
+
             # Family emoji
             family_emoji = {
                 DeviceFamily.ATMEL: "🔵" if not no_color else "[ATMEL]",
-                DeviceFamily.PIC: "🟡" if not no_color else "[PIC]", 
+                DeviceFamily.PIC: "🟡" if not no_color else "[PIC]",
                 DeviceFamily.UNSUPPORTED: "⚫" if not no_color else "[UNSUPPORTED]",
             }
 
@@ -1100,13 +1180,21 @@ def search_devices(
                 # Export table as text
                 with output_console.capture() as capture:
                     output_console.print(table)
-                    output_console.print(f"\nMatching: {len(matching_devices)}/{len(all_devices)} devices")
-                
-                output.write_text(capture.get(), encoding='utf-8')
-                console.print(f"[green]Exported {len(matching_devices)} matching devices to {output}[/green]")
+                    output_console.print(
+                        f"\nMatching: {len(matching_devices)}/{len(all_devices)} devices"
+                    )
+
+                output.write_text(capture.get(), encoding="utf-8")
+                console.print(
+                    f"[green]Exported {len(matching_devices)} matching devices to {output}[/green]"
+                )
             else:
                 output_console.print(table)
-                success_msg = f"[green]Matching: {len(matching_devices)}/{len(all_devices)} devices[/green]" if not no_color else f"Matching: {len(matching_devices)}/{len(all_devices)} devices"
+                success_msg = (
+                    f"[green]Matching: {len(matching_devices)}/{len(all_devices)} devices[/green]"
+                    if not no_color
+                    else f"Matching: {len(matching_devices)}/{len(all_devices)} devices"
+                )
                 output_console.print(f"\n{success_msg}")
 
     except AtPackError as e:

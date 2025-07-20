@@ -353,7 +353,7 @@ class PicParser:
                         )
                         bitfields.append(bitfield)
                         main_bitfields[field_name] = bitfield
-                        
+
                         current_bit_pos += field_width
 
         # Process other modes (like LT.0) for individual bit aliases
@@ -372,17 +372,19 @@ class PicParser:
                 # Build a list of all elements (fields and adjust points) in document order
                 mode_elements = []
                 for child in mode:
-                    if child.tag.endswith('SFRFieldDef') or 'SFRFieldDef' in child.tag:
-                        mode_elements.append(('field', child))
-                    elif child.tag.endswith('AdjustPoint') or 'AdjustPoint' in child.tag:
-                        mode_elements.append(('adjust', child))
+                    if child.tag.endswith("SFRFieldDef") or "SFRFieldDef" in child.tag:
+                        mode_elements.append(("field", child))
+                    elif (
+                        child.tag.endswith("AdjustPoint") or "AdjustPoint" in child.tag
+                    ):
+                        mode_elements.append(("adjust", child))
 
                 for elem_type, elem in mode_elements:
-                    if elem_type == 'adjust':
+                    if elem_type == "adjust":
                         # Handle AdjustPoint to skip bits
                         offset = self.parser.get_attr_hex(elem, "offset", 1)
                         current_bit_pos += offset
-                    elif elem_type == 'field':
+                    elif elem_type == "field":
                         field_name = self.parser.get_attr(elem, "name", "")
                         field_mask = self.parser.get_attr_hex(elem, "mask", 0)
                         field_width = self.parser.get_attr_hex(elem, "nzwidth", 1)
@@ -393,8 +395,12 @@ class PicParser:
                             # but only if we don't already have this field from DS.0 mode
                             if field_name not in main_bitfields:
                                 # Create proper mask based on current bit position
-                                actual_mask = field_mask << current_bit_pos if field_mask == 1 else field_mask
-                                
+                                actual_mask = (
+                                    field_mask << current_bit_pos
+                                    if field_mask == 1
+                                    else field_mask
+                                )
+
                                 bitfield = RegisterBitfield(
                                     name=field_name,
                                     caption=field_desc or field_name,
@@ -403,7 +409,7 @@ class PicParser:
                                     bit_width=field_width,
                                 )
                                 bitfields.append(bitfield)
-                            
+
                             current_bit_pos += field_width
 
         # Create the register
