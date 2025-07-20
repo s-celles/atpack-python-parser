@@ -943,16 +943,16 @@ def show_command_tree_content():
   atpack files info mypack.atpack
   
   atpack devices list mypack.atpack
-  atpack devices info ATmega16 mypack.atpack
+  atpack devices info PIC16F877 mypack.atpack
   
-  atpack memory show ATmega16 mypack.atpack
+  atpack memory show PIC16F877 mypack.atpack
   
-  atpack registers list ATmega16 mypack.atpack
-  atpack registers list ATmega16 mypack.atpack --module GPIO
-  atpack registers show ATmega16 PORTB mypack.atpack
+  atpack registers list PIC16F877 mypack.atpack
+  atpack registers list PIC16F877 mypack.atpack --module GPIO
+  atpack registers show PIC16F877 PORTB mypack.atpack
   
-  atpack config show PIC16F876A mypack.atpack
-  atpack config show PIC16F876A mypack.atpack --type fuses
+  atpack config show PIC16F877 mypack.atpack
+  atpack config show PIC16F877 mypack.atpack --type fuses
   
   atpack scan ./atpacks/ --format json
     """

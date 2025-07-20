@@ -3,51 +3,18 @@
 Enhanced test script for ATMEL parser with PlatformIO-useful information.
 """
 
-import zipfile
-from pathlib import Path
 import pytest
 from src.atpack_parser.atdf_parser import AtdfParser
 
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_enhanced_atmel_parser():
+def test_enhanced_atmel_parser(atmel_content: str):
     """Test the enhanced ATMEL parser with PlatformIO-useful information."""
-
-    atpack_file = (
-        Path(__file__).parent.parent / "atpacks" / "Atmel.ATmega_DFP.2.2.509.atpack"
-    )
-    atdf_file = "atdf/ATmega16.atdf"
-
-    # Skip test if atpack file is not available (e.g., in CI)
-    if not atpack_file.exists():
-        warning_msg = (
-            f"⚠️  ATMEL AtPack file not available: {atpack_file}\n"
-            f"   This integration test requires AtPack files.\n"
-            f"   See atpacks/README.md for download instructions.\n"
-            f"   Test will be SKIPPED."
-        )
-        print(warning_msg)
-        pytest.skip(f"AtPack file not available: {atpack_file}")
-
     print("=== Enhanced ATMEL Parser Test ===\n")
 
-    # Read the ATDF file from the zipped atpack
-    try:
-        with zipfile.ZipFile(atpack_file, "r") as zf:
-            with zf.open(atdf_file) as f:
-                atdf_content = f.read().decode("utf-8")
-    except (zipfile.BadZipFile, KeyError) as e:
-        warning_msg = (
-            f"⚠️  Could not read ATDF file from AtPack: {e}\n"
-            f"   The AtPack file may be corrupted or have a different structure.\n"
-            f"   Test will be SKIPPED."
-        )
-        print(warning_msg)
-        pytest.skip(f"Could not read ATDF file from atpack: {e}")
-
     # Parse the device
-    parser = AtdfParser(atdf_content)
+    parser = AtdfParser(atmel_content)
     device = parser.parse_device("ATmega16")
 
     print(f"Device: {device.name}")

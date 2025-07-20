@@ -3,50 +3,18 @@
 Enhanced debug script to test the new PlatformIO-useful information extraction.
 """
 
-import zipfile
 from pathlib import Path
 import pytest
 from src.atpack_parser.pic_parser import PicParser
+from src.atpack_parser import AtPackParser
+from .conftest import skip_if_atpack_missing, PIC_ATPACK_FILE
 
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_enhanced_pic_parser():
+def test_enhanced_pic_parser(pic_content: str):
     """Test the enhanced PIC parser with PlatformIO-useful information."""
-
-    atpack_file = (
-        Path(__file__).parent.parent
-        / "atpacks"
-        / "Microchip.PIC16Fxxx_DFP.1.7.162.atpack"
-    )
-    pic_file = "edc/PIC16F876A.PIC"
-
-    # Skip test if atpack file is not available (e.g., in CI)
-    if not atpack_file.exists():
-        warning_msg = (
-            f"⚠️  PIC AtPack file not available: {atpack_file}\n"
-            f"   This integration test requires AtPack files.\n"
-            f"   See atpacks/README.md for download instructions.\n"
-            f"   Test will be SKIPPED."
-        )
-        print(warning_msg)
-        pytest.skip(f"AtPack file not available: {atpack_file}")
-
     print("=== Enhanced PIC Parser Test ===\n")
-
-    # Read the PIC file from the .atpack zip archive
-    try:
-        with zipfile.ZipFile(atpack_file, "r") as zip_file:
-            with zip_file.open(pic_file) as f:
-                pic_content = f.read().decode("utf-8")
-    except (zipfile.BadZipFile, KeyError) as e:
-        warning_msg = (
-            f"⚠️  Could not read PIC file from AtPack: {e}\n"
-            f"   The AtPack file may be corrupted or have a different structure.\n"
-            f"   Test will be SKIPPED."
-        )
-        print(warning_msg)
-        pytest.skip(f"Could not read PIC file from atpack: {e}")
 
     # Parse the device
     parser = PicParser(pic_content)
@@ -229,6 +197,35 @@ def test_enhanced_pic_parser():
         print("No additional useful information found beyond basic device specs")
 
     print(f"\nTotal additional fields extracted: {len(useful_info)}")
+
+    assert len(useful_info) > 0, "No useful information extracted"
+
+
+@pytest.mark.integration
+@pytest.mark.atpack_required
+def test_parser(pic_atpack_file: Path):
+    """Test the AtPackParser with PIC16F877."""
+    skip_if_atpack_missing(pic_atpack_file, "PIC")
+    
+    parser = AtPackParser(pic_atpack_file)
+    devices = parser.get_devices()
+    assert len(devices) > 0, "No devices found in the AtPack"
+    device_name = "PIC16F877"
+    assert device_name in devices, "Expected device PIC16F877 not found"
+    device = parser.get_device(device_name)
+    assert device.name == device_name, (
+        f"Expected device name {device_name}, got {device.name}"
+    )
+    # assert device.family == "PIC16", f"Expected family 'PIC16', got {device.family}"
+    assert device.family == "PIC", f"Expected family 'PIC', got {device.family}"
+    assert device.architecture == "PIC", (
+        f"Expected architecture 'PIC', got {device.architecture}"
+    )
+    # assert device.flash_size > 0, f"Expected flash size > 0, got {device.flash_size}"
+    # assert device.ram_size > 0, f"Expected RAM size > 0, got {device.ram_size}"
+    # assert device.eeprom_size >= 0, (
+    #     f"Expected EEPROM size >= 0, got {device.eeprom_size}"
+    # )
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 """Test script to debug the PIC parser issue."""
 
 import sys
-import os
+import pytest
 from pathlib import Path
 
 # Add the src directory to the Python path
@@ -10,19 +10,32 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from atpack_parser import AtPackParser
 
+# Import helpers conditionally for pytest vs standalone execution
+try:
+    from .conftest import skip_if_atpack_missing, PIC_ATPACK_FILE
+except ImportError:
+    # Standalone execution - define helpers locally
+    def skip_if_atpack_missing(atpack_file: Path, vendor: str) -> None:
+        if not atpack_file.exists():
+            print(f"⚠️ {vendor} AtPack file not found: {atpack_file}")
+            print("See atpacks/README.md for download instructions.")
+            exit(1)
+    
+    PIC_ATPACK_FILE = Path(__file__).parent.parent / "atpacks" / "Microchip.PIC16Fxxx_DFP.1.7.162.atpack"
 
-def test_pic_parsing():
-    atpack_path = os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "atpacks",
-        "Microchip.PIC16Fxxx_DFP.1.7.162.atpack",
-    )
 
-    print(f"Testing AtPack: {atpack_path}")
+@pytest.mark.integration
+@pytest.mark.atpack_required
+def test_pic_parsing(pic_atpack_file: Path = None):
+    """Debug test for PIC parsing functionality."""
+    # Use provided fixture or fallback to direct path for standalone execution
+    atpack_file = pic_atpack_file if pic_atpack_file is not None else PIC_ATPACK_FILE
+    skip_if_atpack_missing(atpack_file, "PIC")
+    
+    print(f"Testing AtPack: {atpack_file}")
 
     try:
-        parser = AtPackParser(atpack_path)
+        parser = AtPackParser(atpack_file)
 
         print(f"Device family detected: {parser.device_family}")
         print(f"Metadata: {parser.metadata.name}")
@@ -70,4 +83,5 @@ def test_pic_parsing():
 
 
 if __name__ == "__main__":
+    # Standalone execution
     test_pic_parsing()
