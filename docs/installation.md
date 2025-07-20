@@ -1,0 +1,118 @@
+# Installation
+
+## Requirements
+
+- Python 3.9 or higher
+- Operating System: Windows, macOS, or Linux
+
+## Install from PyPI
+
+The easiest way to install AtPack Parser is from PyPI using pip:
+
+```bash
+pip install git+https://github.com/s-celles/atpack-python-parser
+# or when (if) registered on PyPI
+pip install atpack-parser
+```
+
+## Install from Source
+
+If you want the latest development version or want to contribute:
+
+```bash
+git clone https://github.com/s-celles/atpack-python-parser.git
+cd atpack-python-parser
+pip install -e .
+```
+
+## Development Installation
+
+For development work, install with development dependencies:
+
+```bash
+git clone https://github.com/s-celles/atpack-python-parser.git
+cd atpack-python-parser
+pip install -e ".[dev]"
+```
+
+This installs additional tools for:
+
+- Testing (pytest, pytest-cov)
+- Code formatting (black)
+- Linting (ruff)
+- Type checking (mypy)
+
+## Verify Installation
+
+After installation, verify that AtPack Parser is working correctly:
+
+```bash
+# Check CLI is available
+atpack --help
+
+# Check version
+atpack --version
+```
+
+You can also test the Python API:
+
+```python
+import atpack_parser
+print(f"AtPack Parser version: {atpack_parser.__version__}")
+```
+
+## Dependencies
+
+AtPack Parser depends on the following packages:
+
+- **typer** - CLI framework
+- **lxml** - XML parsing
+- **rich** - Terminal formatting
+- **pydantic** - Data validation
+- **pathlib** - Path handling
+
+These are automatically installed when you install AtPack Parser.
+
+## Troubleshooting
+
+### Permission Issues
+
+If you encounter permission issues during installation:
+
+```bash
+# Use --user flag to install for current user only
+pip install --user atpack-parser
+
+# Or use a virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install atpack-parser
+```
+
+### Import Errors
+
+If you get import errors, make sure you're using the correct Python environment:
+
+```bash
+# Check Python version
+python --version
+
+# Check installed packages
+pip list | grep atpack
+```
+
+### XML Parser Issues
+
+If you encounter XML parsing issues, you might need to install additional XML libraries:
+
+```bash
+# On Ubuntu/Debian
+sudo apt-get install libxml2-dev libxslt-dev
+
+# On macOS with Homebrew
+brew install libxml2 libxslt
+
+# Then reinstall lxml
+pip uninstall lxml
+pip install lxml
+```
