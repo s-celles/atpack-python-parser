@@ -42,7 +42,6 @@ atpack --help
 ## Help tree command
 
 ```
-
 atpack help-tree
 ╭──────────────────────────────────────────────────────────────────────────────────────── 🌳 Command Tree with Examples ────────────────────────────────────────────────────────────────────────────────────────╮
 │                                                                                                                                                                                                               │
@@ -52,7 +51,8 @@ atpack help-tree
 │  │   └── info - Show AtPack file information                                                                                                                                                                  │
 │  ├── 🔌 devices - Device information                                                                                                                                                                          │
 │  │   ├── list - List all devices                                                                                                                                                                              │
-│  │   └── info - Show device details                                                                                                                                                                           │
+│  │   ├── info - Show device details                                                                                                                                                                           │
+│  │   └── search - Search devices by pattern                                                                                                                                                                   │
 │  ├── 💾 memory - Memory information                                                                                                                                                                           │
 │  │   └── show - Show memory layout                                                                                                                                                                            │
 │  ├── 📋 registers - Register information                                                                                                                                                                      │
@@ -74,10 +74,10 @@ atpack help-tree
 │                                                                                                                                                                                                               │
 │    atpack registers list PIC16F877 mypack.atpack                                                                                                                                                              │
 │    atpack registers list PIC16F877 mypack.atpack --module GPIO                                                                                                                                                │
-│    atpack registers show PIC16F877 OPTION_REG mypack.atpack                                                                                                                                                   │
+│    atpack registers show PIC16F877 PORTB mypack.atpack                                                                                                                                                        │
 │                                                                                                                                                                                                               │
-│    atpack config show PIC16F876A mypack.atpack                                                                                                                                                                │
-│    atpack config show PIC16F876A mypack.atpack --type fuses                                                                                                                                                   │
+│    atpack config show PIC16F877 mypack.atpack                                                                                                                                                                 │
+│    atpack config show PIC16F877 mypack.atpack --type fuses                                                                                                                                                    │
 │                                                                                                                                                                                                               │
 │    atpack scan ./atpacks/ --format json                                                                                                                                                                       │
 │                                                                                                                                                                                                               │
