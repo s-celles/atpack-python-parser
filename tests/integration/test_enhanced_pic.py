@@ -7,7 +7,13 @@ from pathlib import Path
 import pytest
 from src.atpack_parser.pic_parser import PicParser
 from src.atpack_parser import AtPackParser
-from .conftest import skip_if_atpack_missing, PIC_ATPACK_FILE
+
+# Import helper functions from parent conftest
+import sys
+from pathlib import Path
+test_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(test_dir))
+from conftest import skip_if_atpack_missing, PIC_ATPACK_FILE
 
 
 @pytest.mark.integration

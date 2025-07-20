@@ -90,7 +90,7 @@ def list_files(
         files = parser.list_files(pattern)
 
         if format == "json":
-            console.print_json(json.dumps(files, indent=2))
+            print(json.dumps(files, indent=2))
         else:
             table = Table(title=f"Files in {atpack_path.name}")
             table.add_column("File Path", style="cyan")
@@ -178,7 +178,7 @@ def list_devices(
                     f"[green]Exported {len(devices)} devices to {output}[/green]"
                 )
             else:
-                console.print_json(json_output)
+                print(json_output)
         else:
             # Create console with color control
             output_console = (
@@ -241,7 +241,7 @@ def device_info(
         device = parser.get_device(device_name)
 
         if format == "json":
-            console.print_json(device.model_dump_json(indent=2))
+            print(device.model_dump_json(indent=2))
         else:
             # Family emoji
             family_emoji = {
@@ -353,7 +353,7 @@ def show_memory(
                     f"[green]Exported {len(memory_segments)} memory segments to {output}[/green]"
                 )
             else:
-                console.print_json(json_output)
+                print(json_output)
         else:
             # Create console with color control
             output_console = (
@@ -462,7 +462,7 @@ def list_registers(
                     f"[green]Exported {len(registers)} registers to {output}[/green]"
                 )
             else:
-                console.print_json(json_output)
+                print(json_output)
         else:
             # Create console with color control
             output_console = (
@@ -552,7 +552,7 @@ def show_register(
             raise typer.Exit(1)
 
         if format == "json":
-            console.print_json(found_register.model_dump_json(indent=2))
+            print(found_register.model_dump_json(indent=2))
         else:
             # Register info panel
             info_text = f"""
@@ -745,18 +745,22 @@ def show_config(
             if config_type == "all":
                 data = {}
                 for key, value in config.items():
-                    if hasattr(value, "model_dump"):
+                    if isinstance(value, list) and value and hasattr(value[0], "model_dump"):
                         data[key] = [item.model_dump() for item in value]
+                    elif hasattr(value, "model_dump"):
+                        data[key] = value.model_dump()
                     else:
                         data[key] = value
-                console.print_json(json.dumps(data, indent=2))
+                print(json.dumps(data, indent=2))
             else:
                 items = config.get(config_type, [])
-                if hasattr(items, "model_dump"):
+                if isinstance(items, list) and items and hasattr(items[0], "model_dump"):
                     data = [item.model_dump() for item in items]
+                elif hasattr(items, "model_dump"):
+                    data = items.model_dump()
                 else:
                     data = items
-                console.print_json(json.dumps(data, indent=2))
+                print(json.dumps(data, indent=2))
         else:
             if config_type in ["all", "fuses"] and config["fuses"]:
                 table = Table(title="🔒 Fuse Configuration")
@@ -882,7 +886,7 @@ def scan_directory(
                             "device_count": 0,
                         }
                     )
-            console.print_json(json.dumps(data, indent=2))
+            print(json.dumps(data, indent=2))
         else:
             table = Table(title=f"🔍 AtPack Files in {directory}")
             table.add_column("Path", style="cyan")
@@ -1151,7 +1155,7 @@ def search_devices(
                     f"[green]Exported {len(matching_devices)} matching devices to {output}[/green]"
                 )
             else:
-                console.print_json(json_output)
+                print(json_output)
         else:
             # Create console with color control
             output_console = (

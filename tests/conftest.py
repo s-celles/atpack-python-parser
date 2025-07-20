@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 # AtPack file paths
 ATPACKS_DIR = Path(__file__).parent.parent / "atpacks"
 PIC_ATPACK_FILE = ATPACKS_DIR / "Microchip.PIC16Fxxx_DFP.1.7.162.atpack"
+PIC24F_ATPACK_FILE = ATPACKS_DIR / "Microchip.PIC24F-KA-KL-KM_DFP.1.5.253.atpack"
 ATMEL_ATPACK_FILE = ATPACKS_DIR / "Atmel.ATmega_DFP.2.2.509.atpack"
 
 
@@ -73,6 +74,12 @@ def pic_atpack_file() -> Path:
 
 
 @pytest.fixture
+def pic24f_atpack_file() -> Path:
+    """Fixture that provides the PIC24F AtPack file path."""
+    return PIC24F_ATPACK_FILE
+
+
+@pytest.fixture
 def atmel_atpack_file() -> Path:
     """Fixture that provides the ATMEL AtPack file path."""
     return ATMEL_ATPACK_FILE
@@ -83,6 +90,13 @@ def pic_content(pic_atpack_file: Path) -> str:
     """Fixture that provides PIC16F876A content from the AtPack file."""
     skip_if_atpack_missing(pic_atpack_file, "PIC")
     return read_from_atpack(pic_atpack_file, "edc/PIC16F876A.PIC", "PIC")
+
+
+@pytest.fixture
+def pic24f_content(pic24f_atpack_file: Path) -> str:
+    """Fixture that provides PIC24F content from the AtPack file."""
+    skip_if_atpack_missing(pic24f_atpack_file, "PIC24F")
+    return read_from_atpack(pic24f_atpack_file, "edc/PIC24F.PIC", "PIC24F")
 
 
 @pytest.fixture
