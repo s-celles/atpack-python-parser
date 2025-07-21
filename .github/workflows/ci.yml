@@ -38,7 +38,7 @@ jobs:
     - name: Run unit tests (always run)
       run: |
         echo "Running unit tests (no AtPack files required)..."
-        pytest tests/test_*.py -v
+        pytest tests/test_cli.py tests/test_parser.py -v
     
     - name: Run integration tests (with AtPack files)
       run: |

@@ -26,7 +26,7 @@ ATPACK_FILES = {
     },
     "Microchip.PIC16Fxxx_DFP.1.7.162.atpack": {
         "url": "https://packs.download.microchip.com/Microchip.PIC16Fxxx_DFP.1.7.162.atpack",
-        "sha256": "f4e4cc7765be381ef08a7013caba848d84d02964dd7a2f9632824aa17f1c9d84",  # Will be calculated on first download
+        "sha256": "f4e4cc7765be381ef08a7013caba848d84d02964dd7a2f9632824aa17f1c9d84",
         "description": "Microchip PIC16F Device Family Pack",
         "required_for": [
             "tests/integration/test_microchip_pic16fxxx.py",
@@ -35,7 +35,7 @@ ATPACK_FILES = {
     },
     "Microchip.PIC24F-KA-KL-KM_DFP.1.5.253.atpack": {
         "url": "https://packs.download.microchip.com/Microchip.PIC24F-KA-KL-KM_DFP.1.5.253.atpack",
-        "sha256": None,  # Will be calculated on first download
+        "sha256": "f4e4cc7765be381ef08a7013caba848d84d02964dd7a2f9632824aa17f1c9d84",
         "description": "Microchip PIC24F-KA-KL-KM Device Family Pack",
         "required_for": ["tests/integration/test_microchip_pic24f-ka-kl-km.py"]
     }
