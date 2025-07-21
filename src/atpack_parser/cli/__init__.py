@@ -35,8 +35,9 @@ app.command("help-tree")(help_tree_command)
 app.command("help")(interactive_help)
 
 
-@app.callback()
+@app.callback(invoke_without_command=True)
 def main(
+    ctx: typer.Context,
     version: Annotated[
         bool, typer.Option("--version", "-v", help="Show version")
     ] = False,
@@ -60,6 +61,11 @@ def main(
         from .. import __version__
 
         console.print(f"AtPack Parser v{__version__}")
+        raise typer.Exit()
+    
+    # If no command is provided, show help
+    if ctx.invoked_subcommand is None:
+        console.print(ctx.get_help())
         raise typer.Exit()
 
 
