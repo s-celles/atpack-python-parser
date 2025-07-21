@@ -48,6 +48,15 @@ publish: ## Publish to PyPI (requires build first)
 setup: ## Run development setup script
 	python setup_dev.py
 
+download-atpacks: ## Download AtPack files for testing
+	python download_atpacks.py
+
+download-atpacks-list: ## List available AtPack files
+	python download_atpacks.py --list
+
+download-atpacks-force: ## Force re-download all AtPack files
+	python download_atpacks.py --force
+
 example: ## Run example script (requires ATPACK_FILE environment variable)
 	@if [ -z "$(ATPACK_FILE)" ]; then \
 		echo "Please set ATPACK_FILE environment variable"; \

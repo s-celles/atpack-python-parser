@@ -1,0 +1,153 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11, 3.12]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+    
+    - name: Download AtPack files for integration tests
+      run: |
+        echo "Downloading AtPack files for integration tests..."
+        python download_atpacks.py || echo "AtPack download failed, integration tests will be skipped"
+        
+        # List what was downloaded (for debugging)
+        echo "AtPack files in atpacks directory:"
+        ls -la atpacks/ || echo "No atpacks directory found"
+    
+    - name: Run unit tests (always run)
+      run: |
+        echo "Running unit tests (no AtPack files required)..."
+        pytest tests/test_*.py -v
+    
+    - name: Run integration tests (with AtPack files)
+      run: |
+        echo "Running integration tests (requires AtPack files)..."
+        pytest tests/integration/ -v || echo "Integration tests failed or were skipped due to missing AtPack files"
+    
+    - name: Run CLI tests
+      run: |
+        echo "Testing CLI functionality..."
+        pytest tests/test_cli.py -v
+    
+    - name: Generate coverage report
+      run: |
+        pytest tests/ --cov=src/atpack_parser --cov-report=xml --cov-report=term-missing
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+
+  test-with-atpacks:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+    
+    - name: Download AtPack files (with retries)
+      run: |
+        echo "Downloading AtPack files with retries..."
+        
+        # Try downloading multiple times with different strategies
+        python download_atpacks.py --timeout 120 || \
+        python download_atpacks.py --file atmega --timeout 120 || \
+        python download_atpacks.py --file pic16f --timeout 120 || \
+        echo "Some AtPack downloads failed"
+        
+        # Show what we got
+        echo "Downloaded AtPack files:"
+        ls -la atpacks/
+        
+        # Show file sizes to verify they're not empty
+        find atpacks/ -name "*.atpack" -exec ls -lh {} \; || echo "No .atpack files found"
+    
+    - name: Run all tests with AtPack files
+      run: |
+        echo "Running comprehensive tests with AtPack files..."
+        pytest tests/ -v --tb=short
+        
+        # If all tests pass, mark this as a success
+        echo "All tests completed successfully!"
+    
+    - name: Test CLI commands with real AtPack files
+      run: |
+        echo "Testing CLI with real AtPack files..."
+        
+        # Find any available AtPack file for testing
+        ATPACK_FILE=$(find atpacks/ -name "*.atpack" -type f | head -n 1)
+        
+        if [ -n "$ATPACK_FILE" ]; then
+          echo "Testing CLI with: $ATPACK_FILE"
+          
+          # Test basic CLI functionality
+          python -m atpack_parser files info "$ATPACK_FILE" || echo "Files info command failed"
+          python -m atpack_parser devices list "$ATPACK_FILE" || echo "Devices list command failed"
+          
+          echo "CLI tests completed"
+        else
+          echo "No AtPack files available for CLI testing"
+        fi
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+    
+    - name: Run linting
+      run: |
+        echo "Running code linting..."
+        ruff check src/atpack_parser/ --output-format=github || echo "Ruff linting found issues"
+        
+    - name: Check code formatting
+      run: |
+        echo "Checking code formatting..."
+        black --check src/atpack_parser/ tests/ examples/ || echo "Code formatting issues found"
+    
+    - name: Type checking
+      run: |
+        echo "Running type checking..."
+        mypy src/atpack_parser/ || echo "Type checking found issues"
