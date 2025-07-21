@@ -191,21 +191,26 @@ def parse_temperature(temperature_str: str) -> Union[pint.Quantity, str]:
         return temperature_str
 
     try:
-        # Handle common temperature formats
-        temp_str = temperature_str.replace("°", " ")  # Convert °C to  C for pint
-        return ureg.Quantity(temp_str)
-    except (ValueError, pint.UndefinedUnitError):
-        # Try to parse as number + C if no unit specified
-        try:
-            # Extract numeric value
-            import re
-
-            match = re.search(r"([+-]?\d+(?:\.\d+)?)", temperature_str)
-            if match:
-                value = float(match.group(1))
+        import re
+        
+        # Extract numeric value and unit
+        match = re.search(r"([+-]?\d+(?:\.\d+)?)\s*([°]?[CcFf]?)", temperature_str)
+        if match:
+            value = float(match.group(1))
+            unit_part = match.group(2).upper()
+            
+            # Handle temperature units - always interpret C as celsius, not coulomb
+            if unit_part in ["C", "°C"]:
                 return ureg.Quantity(value, "celsius")
-        except ValueError:
-            pass
+            elif unit_part in ["F", "°F"]:
+                return ureg.Quantity(value, "fahrenheit")
+            else:
+                # No unit specified, assume celsius
+                return ureg.Quantity(value, "celsius")
+        else:
+            # Fallback to original behavior for other formats
+            return ureg.Quantity(temperature_str.replace("°", " "))
+    except (ValueError, pint.UndefinedUnitError):
         return temperature_str
 
 
