@@ -144,14 +144,17 @@ def device_info(
             if device.memory_segments:
                 memory_table = Table(title="💾 Memory Overview")
                 memory_table.add_column("Segment", style="cyan")
-                memory_table.add_column("Start", style="green")
+                memory_table.add_column("Start Address", style="green")
+                memory_table.add_column("End Address", style="green")
                 memory_table.add_column("Size", style="yellow")
                 memory_table.add_column("Type", style="magenta")
 
                 for seg in sorted(device.memory_segments, key=lambda x: x.start):
+                    end_addr = seg.start + seg.size - 1
                     memory_table.add_row(
                         seg.name,
                         f"0x{seg.start:04X}",
+                        f"0x{end_addr:04X}",
                         f"{seg.size:,} bytes",
                         seg.type or "N/A",
                     )

@@ -156,6 +156,19 @@ class MemorySegment(BaseModel):
     page_size: Optional[int] = None
     section: Optional[str] = None
     address_space: Optional[str] = None
+    parent_name: Optional[str] = None  # Name of parent container (e.g., "ProgramSpace", "DataSpace")
+    children: List["MemorySegment"] = Field(default_factory=list)  # Child segments
+    level: int = 0  # Hierarchy level (0=top level, 1=child, etc.)
+
+
+class MemorySpace(BaseModel):
+    """Memory space/container information for hierarchical memory layout."""
+    
+    name: str
+    space_type: str  # "ProgramSpace", "DataSpace", "EEDataSpace", "address-space", etc.
+    start: Optional[int] = None
+    size: Optional[int] = None
+    segments: List[MemorySegment] = Field(default_factory=list)
 
 
 class RegisterBitfield(BaseModel):
@@ -269,6 +282,7 @@ class Device(BaseModel):
 
     # Memory information
     memory_segments: List[MemorySegment] = Field(default_factory=list)
+    memory_spaces: List[MemorySpace] = Field(default_factory=list)  # Hierarchical memory layout
 
     # Modules and peripherals
     modules: List[Module] = Field(default_factory=list)
@@ -322,47 +336,5 @@ class AtPack(BaseModel):
     device_family: DeviceFamily = DeviceFamily.UNSUPPORTED
 
 
-class AtmelPackageVariant(BaseModel):
-    """ATMEL package variant information."""
-
-    package: str
-    pinout: str
-    order_code: Optional[str] = None
-    temp_min: Optional[float] = None
-    temp_max: Optional[float] = None
-    speed_max: Optional[int] = None  # Hz
-    vcc_min: Optional[float] = None
-    vcc_max: Optional[float] = None
-
-
-class AtmelPinoutInfo(BaseModel):
-    """ATMEL pinout information."""
-
-    name: str
-    caption: Optional[str] = None
-    pin_count: int
-    pins: List[Dict[str, str]] = Field(default_factory=list)  # position -> pad mapping
-
-
-class AtmelProgrammingInterface(BaseModel):
-    """ATMEL programming interface specifications."""
-
-    name: str
-    interface_type: str
-    properties: Dict[str, Any] = Field(default_factory=dict)
-
-
-class AtmelClockInfo(BaseModel):
-    """ATMEL clock system information."""
-
-    clock_modules: List[Dict[str, Any]] = Field(default_factory=list)
-    clock_properties: List[Dict[str, Any]] = Field(default_factory=list)
-    max_frequency: Optional[int] = None
-
-
-class AtmelGpioInfo(BaseModel):
-    """ATMEL GPIO port information."""
-
-    port_name: str
-    instances: List[Dict[str, Any]] = Field(default_factory=list)
-    pin_count: Optional[int] = None
+# Forward reference for self-referential MemorySegment
+MemorySegment.model_rebuild()

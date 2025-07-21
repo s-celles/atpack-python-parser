@@ -108,6 +108,11 @@ class AtPackParser:
         device = self.get_device(device_name)
         return sorted(device.memory_segments, key=lambda x: x.start)
 
+    def get_device_memory_hierarchical(self, device_name: str) -> List[Any]:
+        """Get hierarchical memory layout for a specific device."""
+        device = self.get_device(device_name)
+        return device.memory_spaces
+
     def get_device_config(self, device_name: str) -> Dict[str, Any]:
         """Get configuration information for a specific device."""
         device = self.get_device(device_name)

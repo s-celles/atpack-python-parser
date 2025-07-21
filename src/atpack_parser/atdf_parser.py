@@ -19,6 +19,7 @@ from .models import (
     FuseBitfield,
     Interrupt,
     MemorySegment,
+    MemorySpace,
     Module,
     Register,
     RegisterBitfield,
@@ -62,6 +63,7 @@ class AtdfParser:
 
         # Parse memory segments
         device.memory_segments = self._parse_memory_segments(device_element)
+        device.memory_spaces = self._parse_memory_spaces(device_element)
 
         # Parse modules/peripherals
         device.modules = self._parse_modules()
@@ -137,6 +139,80 @@ class AtdfParser:
                     )
 
         return segments
+
+    def _parse_memory_spaces(
+        self, device_element: etree._Element
+    ) -> List[MemorySpace]:
+        """Parse hierarchical memory spaces from ATMEL device."""
+        memory_spaces = []
+
+        # Find address spaces
+        address_spaces = self.parser.xpath(".//address-space", device_element)
+        for addr_space in address_spaces:
+            space_name = self.parser.get_attr(addr_space, "name", "")
+            space_start = self.parser.get_attr_hex(addr_space, "start", 0)
+            space_size = self.parser.get_attr_hex(addr_space, "size", 0)
+
+            segments = []
+
+            # Find memory segments within this address space
+            memory_segments = self.parser.xpath(".//memory-segment", addr_space)
+            if memory_segments:
+                for mem_seg in memory_segments:
+                    seg_name = self.parser.get_attr(mem_seg, "name", "")
+                    seg_start = self.parser.get_attr_hex(mem_seg, "start", 0)
+                    seg_size = self.parser.get_attr_hex(mem_seg, "size", 0)
+                    seg_type = self.parser.get_attr(mem_seg, "type", "")
+                    page_size = self.parser.get_attr_hex(mem_seg, "pagesize", 0)
+
+                    segments.append(
+                        MemorySegment(
+                            name=seg_name,
+                            start=seg_start,
+                            size=seg_size,
+                            type=seg_type,
+                            page_size=page_size if page_size > 0 else None,
+                            address_space=space_name,
+                            parent_name=space_name,
+                            level=1,
+                        )
+                    )
+
+                # Create memory space with hierarchical segments
+                memory_spaces.append(
+                    MemorySpace(
+                        name=space_name,
+                        space_type="address-space",
+                        start=space_start,
+                        size=space_size,
+                        segments=sorted(segments, key=lambda x: x.start),
+                    )
+                )
+            else:
+                # Create a single-segment memory space if no sub-segments
+                segments.append(
+                    MemorySegment(
+                        name=space_name,
+                        start=space_start,
+                        size=space_size,
+                        type=space_name,
+                        address_space=space_name,
+                        parent_name=None,  # Top-level
+                        level=0,
+                    )
+                )
+
+                memory_spaces.append(
+                    MemorySpace(
+                        name=space_name,
+                        space_type="address-space",
+                        start=space_start,
+                        size=space_size,
+                        segments=segments,
+                    )
+                )
+
+        return memory_spaces
 
     def _parse_modules(self) -> List[Module]:
         """Parse modules/peripherals."""

@@ -48,7 +48,8 @@ atpack help-tree
 │  🔧 atpack - AtPack Parser CLI                                                                                                                                                                                │
 │  ├── 📁 files - AtPack file management                                                                                                                                                                        │
 │  │   ├── list - List files in an AtPack                                                                                                                                                                       │
-│  │   └── info - Show AtPack file information                                                                                                                                                                  │
+│  │   ├── info - Show AtPack file information                                                                                                                                                                  │
+│  │   └── extract - Extract AtPack file                                                                                                                                                                        │
 │  ├── 🔌 devices - Device information                                                                                                                                                                          │
 │  │   ├── list - List all devices                                                                                                                                                                              │
 │  │   ├── info - Show device details                                                                                                                                                                           │
@@ -66,11 +67,14 @@ atpack help-tree
 │  📚 Usage Examples:                                                                                                                                                                                           │
 │    atpack files list mypack.atpack                                                                                                                                                                            │
 │    atpack files info mypack.atpack                                                                                                                                                                            │
+│    atpack files extract mypack.atpack                                                                                                                                                                         │
 │                                                                                                                                                                                                               │
 │    atpack devices list mypack.atpack                                                                                                                                                                          │
 │    atpack devices info PIC16F877 mypack.atpack                                                                                                                                                                │
+│    atpack devices search '*877*' mypack.atpack                                                                                                                                                                │
 │                                                                                                                                                                                                               │
 │    atpack memory show PIC16F877 mypack.atpack                                                                                                                                                                 │
+│    atpack memory show PIC16F877 mypack.atpack --flat                                                                                                                                                          │
 │                                                                                                                                                                                                               │
 │    atpack registers list PIC16F877 mypack.atpack                                                                                                                                                              │
 │    atpack registers list PIC16F877 mypack.atpack --module GPIO                                                                                                                                                │
@@ -205,19 +209,19 @@ atpack devices info PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 │ Interrupts: 17                                                                                                                                                                                                │
 │ Signatures: 1                                                                                                                                                                                                 │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-              💾 Memory Overview
-┏━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━┓
-┃ Segment   ┃ Start  ┃ Size        ┃ Type    ┃
-┡━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━┩
-│ PROG1     │ 0x0000 │ 2,048 bytes │ program │
-│ SFR_BANK0 │ 0x0000 │ 32 bytes    │ sfr     │
-│ SFR_BANK1 │ 0x0080 │ 32 bytes    │ sfr     │
-│ SFR_BANK2 │ 0x0100 │ 16 bytes    │ sfr     │
-│ SFR_BANK3 │ 0x0180 │ 16 bytes    │ sfr     │
-│ PROG2     │ 0x0800 │ 2,048 bytes │ program │
-│ PROG3     │ 0x1000 │ 2,048 bytes │ program │
-│ PROG4     │ 0x1800 │ 2,048 bytes │ program │
-└───────────┴────────┴─────────────┴─────────┘
+                        💾 Memory Overview
+┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━┓
+┃ Segment   ┃ Start Address ┃ End Address ┃ Size        ┃ Type    ┃
+┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━┩
+│ PROG1     │ 0x0000        │ 0x07FF      │ 2,048 bytes │ program │
+│ SFR_BANK0 │ 0x0000        │ 0x001F      │ 32 bytes    │ sfr     │
+│ SFR_BANK1 │ 0x0080        │ 0x009F      │ 32 bytes    │ sfr     │
+│ SFR_BANK2 │ 0x0100        │ 0x010F      │ 16 bytes    │ sfr     │
+│ SFR_BANK3 │ 0x0180        │ 0x018F      │ 16 bytes    │ sfr     │
+│ PROG2     │ 0x0800        │ 0x0FFF      │ 2,048 bytes │ program │
+│ PROG3     │ 0x1000        │ 0x17FF      │ 2,048 bytes │ program │
+│ PROG4     │ 0x1800        │ 0x1FFF      │ 2,048 bytes │ program │
+└───────────┴───────────────┴─────────────┴─────────────┴─────────┘
              🔧 Modules Overview
 ┏━━━━━━━━┳━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
 ┃ Module ┃ Register Groups ┃ Total Registers ┃
@@ -235,13 +239,43 @@ atpack devices info PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 Analyze device memory layout:
 
 ```bash
-# Show memory map for a device
+# Show hierarchical memory map for a device (default)
 atpack memory show DEVICE_NAME /path/to/file.atpack
 ```
 Example:
 ```
 atpack memory show PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
-                               💾 Memory Layout: PIC16F877
+                                       💾 Memory Layout: PIC16F877 (Hierarchical)
+┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Memory Space/Segment ┃ Start Address ┃ End Address ┃ Size  ┃ Type         ┃ Page Size ┃ Description                  ┃
+┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 📁 ProgramSpace      │ N/A           │ N/A         │ N/A   │ ProgramSpace │ N/A       │ Container with 10 segment(s) │
+│   └── PROG1          │ 0x0000        │ 0x07FF      │ 2,048 │ program      │ N/A       │ ROM code space - page0       │
+│   └── PROG2          │ 0x0800        │ 0x0FFF      │ 2,048 │ program      │ N/A       │ ROM code space - page1       │
+│   └── PROG3          │ 0x1000        │ 0x17FF      │ 2,048 │ program      │ N/A       │ ROM code space - page2       │
+│   └── PROG4          │ 0x1800        │ 0x1FFF      │ 2,048 │ program      │ N/A       │ ROM code space - page3       │
+│   └── IDLOCS         │ 0x2000        │ 0x2003      │ 4     │ userid       │ N/A       │ ID locations                 │
+│   └── TEST           │ 0x2000        │ 0x20FF      │ 256   │ test         │ N/A       │ N/A                          │
+│   └── DEBUG          │ 0x2004        │ 0x2004      │ 1     │ debug        │ N/A       │ N/A                          │
+│   └── DEVICEID       │ 0x2006        │ 0x2006      │ 1     │ deviceid     │ N/A       │ N/A                          │
+│   └── CONFIG         │ 0x2007        │ 0x2007      │ 1     │ config       │ N/A       │ N/A                          │
+│   └── DEEPROM        │ 0x2100        │ 0x21FF      │ 256   │ eeprom       │ N/A       │ Data EEPROM                  │
+│ 📁 DataSpace         │ 0x0000        │ 0x01FF      │ 512   │ DataSpace    │ N/A       │ Container with 4 segment(s)  │
+│   └── SFR_BANK0      │ 0x0000        │ 0x001F      │ 32    │ sfr          │ N/A       │ N/A                          │
+│   └── SFR_BANK1      │ 0x0080        │ 0x009F      │ 32    │ sfr          │ N/A       │ N/A                          │
+│   └── SFR_BANK2      │ 0x0100        │ 0x010F      │ 16    │ sfr          │ N/A       │ N/A                          │
+│   └── SFR_BANK3      │ 0x0180        │ 0x018F      │ 16    │ sfr          │ N/A       │ N/A                          │
+└──────────────────────┴───────────────┴─────────────┴───────┴──────────────┴───────────┴──────────────────────────────┘
+```
+
+```bash
+# Show flat memory map for a device
+atpack memory show DEVICE_NAME /path/to/file.atpack --flat
+```
+Example:
+```
+atpack memory show PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack --flat
+                           💾 Memory Layout: PIC16F877 (Flat)
 ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
 ┃ Segment   ┃ Start Address ┃ End Address ┃ Size  ┃ Type    ┃ Page Size ┃ Address Space ┃
 ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩

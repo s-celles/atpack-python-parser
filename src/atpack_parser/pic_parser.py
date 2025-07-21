@@ -14,6 +14,7 @@ from .models import (
     DeviceSignature,
     Interrupt,
     MemorySegment,
+    MemorySpace,
     Module,
     OscillatorConfig,
     PinFunction,
@@ -89,6 +90,7 @@ class PicParser:
 
         # Parse memory segments
         device.memory_segments = self._parse_memory_segments(device_element)
+        device.memory_spaces = self._parse_memory_spaces(device_element)
 
         # Parse modules/peripherals
         device.modules = self._parse_modules(device_element)
@@ -1164,4 +1166,202 @@ class PicParser:
         except (ValueError, TypeError):
             return None
 
-    # ...existing methods...
+    def _parse_memory_spaces(
+        self, device_element: etree._Element
+    ) -> List[MemorySpace]:
+        """Parse hierarchical memory spaces from PIC device."""
+        memory_spaces = []
+
+        # Parse ProgramSpace - contains CodeSector elements for program memory
+        program_spaces = self.parser.xpath(
+            './/edc:ProgramSpace | .//*[local-name()="ProgramSpace"]', device_element
+        )
+        for ps in program_spaces:
+            segments = []
+            
+            # Parse all types of sectors within ProgramSpace
+            code_sectors = self.parser.xpath(
+                './/edc:CodeSector | .//*[local-name()="CodeSector"]', ps
+            )
+            for cs in code_sectors:
+                start = self.parser.get_attr_hex(cs, "beginaddr", 0)
+                end = self.parser.get_attr_hex(cs, "endaddr", 0)
+                name = self.parser.get_attr(cs, "sectionname", "PROG")
+                region_id = self.parser.get_attr(cs, "regionid", "")
+                section_desc = self.parser.get_attr(cs, "sectiondesc", "")
+
+                if end > start:
+                    size = end - start
+                    segments.append(
+                        MemorySegment(
+                            name=name,
+                            start=start,
+                            size=size,
+                            type="program",
+                            section=section_desc,
+                            address_space="program",
+                            parent_name="ProgramSpace",
+                            level=1
+                        )
+                    )
+
+            # Parse other sectors in ProgramSpace (UserIDSector, DeviceIDSector, ConfigFuseSector, etc.)
+            other_sectors = [
+                ('.//edc:UserIDSector | .//*[local-name()="UserIDSector"]', "userid"),
+                ('.//edc:DeviceIDSector | .//*[local-name()="DeviceIDSector"]', "deviceid"),
+                ('.//edc:ConfigFuseSector | .//*[local-name()="ConfigFuseSector"]', "config"),
+                ('.//edc:EEDataSector | .//*[local-name()="EEDataSector"]', "eeprom"),
+                ('.//edc:TestZone | .//*[local-name()="TestZone"]', "test"),
+                ('.//edc:BACKBUGVectorSector | .//*[local-name()="BACKBUGVectorSector"]', "debug")
+            ]
+
+            for xpath_expr, sector_type in other_sectors:
+                sector_elements = self.parser.xpath(xpath_expr, ps)
+                for elem in sector_elements:
+                    start = self.parser.get_attr_hex(elem, "beginaddr", 0)
+                    end = self.parser.get_attr_hex(elem, "endaddr", 0)
+                    name = self.parser.get_attr(elem, "sectionname", sector_type.upper())
+                    region_id = self.parser.get_attr(elem, "regionid", "")
+                    section_desc = self.parser.get_attr(elem, "sectiondesc", "")
+
+                    if end > start:
+                        size = end - start
+                        segments.append(
+                            MemorySegment(
+                                name=name,
+                                start=start,
+                                size=size,
+                                type=sector_type,
+                                section=section_desc,
+                                address_space="program",
+                                parent_name="ProgramSpace",
+                                level=1
+                            )
+                        )
+
+            if segments:
+                memory_spaces.append(
+                    MemorySpace(
+                        name="ProgramSpace",
+                        space_type="ProgramSpace",
+                        segments=sorted(segments, key=lambda x: x.start)
+                    )
+                )
+
+        # Parse DataSpace - contains SFRDataSector and other data memory
+        data_spaces = self.parser.xpath(
+            './/edc:DataSpace | .//*[local-name()="DataSpace"]', device_element
+        )
+        for ds in data_spaces:
+            segments = []
+
+            # Parse SFRDataSector elements
+            sfr_sectors = self.parser.xpath(
+                './/edc:SFRDataSector | .//*[local-name()="SFRDataSector"]', ds
+            )
+            for sfr in sfr_sectors:
+                start = self.parser.get_attr_hex(sfr, "beginaddr", 0)
+                end = self.parser.get_attr_hex(sfr, "endaddr", 0)
+                bank = self.parser.get_attr(sfr, "bank", "0")
+                region_id = self.parser.get_attr(sfr, "regionid", "")
+
+                if end > start:
+                    size = end - start
+                    segments.append(
+                        MemorySegment(
+                            name=f"SFR_BANK{bank}",
+                            start=start,
+                            size=size,
+                            type="sfr",
+                            address_space="data",
+                            parent_name="DataSpace",
+                            level=1
+                        )
+                    )
+
+            # Parse general DataSector elements
+            data_sectors = self.parser.xpath(
+                './/edc:DataSector | .//*[local-name()="DataSector"]', ds
+            )
+            for ds_elem in data_sectors:
+                start = self.parser.get_attr_hex(ds_elem, "beginaddr", 0)
+                end = self.parser.get_attr_hex(ds_elem, "endaddr", 0)
+                name = self.parser.get_attr(ds_elem, "sectionname", "DATA")
+                region_id = self.parser.get_attr(ds_elem, "regionid", "")
+                section_desc = self.parser.get_attr(ds_elem, "sectiondesc", "")
+
+                if end > start:
+                    size = end - start
+                    segments.append(
+                        MemorySegment(
+                            name=name,
+                            start=start,
+                            size=size,
+                            type="data",
+                            section=section_desc,
+                            address_space="data",
+                            parent_name="DataSpace",
+                            level=1
+                        )
+                    )
+
+            if segments:
+                # Calculate total data space bounds from the endaddr attribute if available
+                ds_end_attr = self.parser.get_attr(ds, "endaddr", None)
+                try:
+                    ds_size = int(ds_end_attr, 16) if ds_end_attr else None
+                except (ValueError, TypeError):
+                    ds_size = None
+
+                memory_spaces.append(
+                    MemorySpace(
+                        name="DataSpace",
+                        space_type="DataSpace",
+                        start=0,  # DataSpace typically starts at 0
+                        size=ds_size,
+                        segments=sorted(segments, key=lambda x: x.start)
+                    )
+                )
+
+        # Parse EEDataSpace for EEPROM (less common, but may exist)
+        ee_spaces = self.parser.xpath(
+            './/edc:EEDataSpace | .//*[local-name()="EEDataSpace"]', device_element
+        )
+        for es in ee_spaces:
+            segments = []
+
+            ee_sectors = self.parser.xpath(
+                './/edc:EESector | .//*[local-name()="EESector"]', es
+            )
+            for ee in ee_sectors:
+                start = self.parser.get_attr_hex(ee, "beginaddr", 0)
+                end = self.parser.get_attr_hex(ee, "endaddr", 0)
+                name = self.parser.get_attr(ee, "sectionname", "EEPROM")
+                region_id = self.parser.get_attr(ee, "regionid", "")
+                section_desc = self.parser.get_attr(ee, "sectiondesc", "")
+
+                if end > start:
+                    size = end - start
+                    segments.append(
+                        MemorySegment(
+                            name=name,
+                            start=start,
+                            size=size,
+                            type="eeprom",
+                            section=section_desc,
+                            address_space="eeprom",
+                            parent_name="EEDataSpace",
+                            level=1
+                        )
+                    )
+
+            if segments:
+                memory_spaces.append(
+                    MemorySpace(
+                        name="EEDataSpace",
+                        space_type="EEDataSpace",
+                        segments=sorted(segments, key=lambda x: x.start)
+                    )
+                )
+
+        return memory_spaces
