@@ -10,7 +10,7 @@ from rich.table import Table
 
 from .. import AtPackParser
 from .common import console
-
+from ..utils import get_family_emoji
 
 def scan(
     directory: Annotated[
@@ -73,8 +73,9 @@ def scan(
                     family = parser.device_family.value
 
                     # Family emoji
-                    family_emoji = {"ATMEL": "🔵", "PIC": "🟡", "UNSUPPORTED": "⚫"}
-                    family_display = f"{family_emoji.get(family, '⚫')} {family}"
+                    family_emoji = get_family_emoji(family)
+
+                    family_display = f"{family_emoji} {family}"
 
                     table.add_row(
                         str(atpack_path.relative_to(directory)),

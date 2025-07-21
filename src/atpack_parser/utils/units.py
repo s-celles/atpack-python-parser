@@ -7,7 +7,6 @@ from typing import Union, Optional
 # Create a unit registry instance
 ureg = pint.UnitRegistry()
 ureg.define('Hz = hertz')  # Ensure Hz is defined
-# Note: We'll handle celsius manually since '°C' can't be defined as a unit name
 
 
 def parse_frequency(frequency_str: str) -> pint.Quantity:
@@ -188,21 +187,21 @@ def parse_temperature(temperature_str: str) -> Union[pint.Quantity, str]:
         return temperature_str
         
     try:
-        # Extract numeric value and assume celsius if °C is present
-        import re
-        match = re.search(r'([+-]?\d+(?:\.\d+)?)', temperature_str)
-        if match:
-            value = float(match.group(1))
-            if '°C' in temperature_str or 'C' in temperature_str:
-                return ureg.Quantity(value, 'celsius')
-            elif '°F' in temperature_str or 'F' in temperature_str:
-                return ureg.Quantity(value, 'fahrenheit')
-            else:
-                # Default to celsius
-                return ureg.Quantity(value, 'celsius')
+        # Handle common temperature formats
+        temp_str = temperature_str.replace('°', ' ')  # Convert °C to  C for pint
+        return ureg.Quantity(temp_str)
     except (ValueError, pint.UndefinedUnitError):
-        pass
-    return temperature_str
+        # Try to parse as number + C if no unit specified
+        try:
+            # Extract numeric value
+            import re
+            match = re.search(r'([+-]?\d+(?:\.\d+)?)', temperature_str)
+            if match:
+                value = float(match.group(1))
+                return ureg.Quantity(value, 'celsius')
+        except ValueError:
+            pass
+        return temperature_str
 
 
 def format_temperature(temperature: Union[str, pint.Quantity]) -> str:
@@ -231,11 +230,8 @@ def format_temperature(temperature: Union[str, pint.Quantity]) -> str:
         
     try:
         # Format with degree symbol
-        if hasattr(temperature_qty, 'to'):
-            temp_c = temperature_qty.to('celsius')
-            return f"{temp_c.magnitude:g}°C"
-        else:
-            return str(temperature_qty)
+        temp_c = temperature_qty.to('celsius')
+        return f"{temp_c.magnitude:g}°C"
     except (AttributeError, TypeError, pint.UndefinedUnitError):
         return str(temperature_qty)
 
@@ -252,34 +248,26 @@ def parse_temperature_range(temp_range_str: str) -> str:
     if temp_range_str == "N/A" or not temp_range_str:
         return temp_range_str
         
-    # If it already looks properly formatted, keep it
-    if "°C" in temp_range_str and " to " in temp_range_str:
-        return temp_range_str
-        
-    # Handle range patterns like "X to Y°C" or "X°C to Y°C"
+    # Handle range patterns like "X°C to Y°C" or "X to Y°C"
     if " to " in temp_range_str:
         try:
-            import re
             parts = temp_range_str.split(" to ")
             if len(parts) == 2:
-                # Extract numbers from both parts
-                min_match = re.search(r'([+-]?\d+(?:\.\d+)?)', parts[0])
-                max_match = re.search(r'([+-]?\d+(?:\.\d+)?)', parts[1])
+                min_temp = parse_temperature(parts[0].strip())
+                max_temp = parse_temperature(parts[1].strip())
                 
-                if min_match and max_match:
-                    min_val = float(min_match.group(1))
-                    max_val = float(max_match.group(1))
-                    return f"{min_val:g}°C to {max_val:g}°C"
+                if hasattr(min_temp, 'magnitude') and hasattr(max_temp, 'magnitude'):
+                    min_formatted = format_temperature(min_temp)
+                    max_formatted = format_temperature(max_temp)
+                    return f"{min_formatted} to {max_formatted}"
         except Exception:
             pass
     
-    # Handle single temperature values
+    # Handle individual temperature values that might not be ranges
     try:
-        import re
-        match = re.search(r'([+-]?\d+(?:\.\d+)?)', temp_range_str)
-        if match:
-            value = float(match.group(1))
-            return f"{value:g}°C"
+        temp_qty = parse_temperature(temp_range_str)
+        if hasattr(temp_qty, 'magnitude'):
+            return format_temperature(temp_qty)
     except Exception:
         pass
         

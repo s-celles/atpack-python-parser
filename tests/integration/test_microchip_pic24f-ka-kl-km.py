@@ -131,7 +131,7 @@ class TestPIC24FCLI:
 
         assert result.exit_code == 0
         assert "PIC24F16KA301" in result.stdout
-        assert "🟡" in result.stdout or "[PIC]" in result.stdout
+        assert "🔴" in result.stdout or "[PIC]" in result.stdout
 
     def test_pic24f_devices_list_json_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
         """Test devices list command with JSON output for PIC24F AtPack."""
@@ -184,7 +184,7 @@ class TestPIC24FCLI:
 
         assert result.exit_code == 0
         assert "PIC24F16KA301" in result.stdout
-        assert "🟡" in result.stdout or "[PIC]" in result.stdout
+        assert " 🔴" in result.stdout or "[PIC]" in result.stdout
         assert "Memory Segments" in result.stdout
 
     def test_pic24f_device_info_json_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
