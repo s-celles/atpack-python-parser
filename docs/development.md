@@ -383,6 +383,153 @@ mkdocs build
 - Check existing issues and pull requests
 - Review the documentation
 
+## Error Handling Architecture
+
+The AtPack Parser implements a DRY (Don't Repeat Yourself) error handling system with intelligent device name suggestions.
+
+### Core Components
+
+#### Central Error Handlers (`src/atpack_parser/cli/common.py`)
+
+```python
+def handle_device_not_found_error(e: DeviceNotFoundError, parser=None, no_color: bool = False):
+    """Centralized handling of device not found errors with fuzzy suggestions."""
+    
+def handle_atpack_error(e: AtPackError, no_color: bool = False):
+    """Centralized handling of general AtPack errors."""
+```
+
+#### Fuzzy Matching Engine
+
+The suggestion system uses **rapidfuzz** (MIT licensed) with multiple algorithms:
+
+- **Exact matching**: Case-insensitive perfect matches get priority 0
+- **Ratio scoring**: Character-by-character similarity
+- **Partial ratio**: Handles substring matches
+- **Token sort**: Handles reordered tokens  
+- **Token set**: Handles partial token matches
+- **Weighted combination**: Optimized scoring for device names
+
+### Implementation Details
+
+#### Multi-Algorithm Scoring
+
+```python
+def _get_device_suggestions(target_device: str, parser, max_suggestions: int = 5):
+    # 1. Exact case-insensitive match gets highest priority
+    if target_upper == device_upper:
+        final_score = 0  # Perfect match
+    else:
+        # 2. Multiple fuzzy algorithms
+        ratio_score = fuzz.ratio(target_upper, device_upper)
+        partial_ratio_score = fuzz.partial_ratio(target_upper, device_upper)
+        token_sort_ratio_score = fuzz.token_sort_ratio(target_upper, device_upper)
+        token_set_ratio_score = fuzz.token_set_ratio(target_upper, device_upper)
+        
+        # 3. Weighted combination (optimized for device names)
+        combined_score = (
+            ratio_score * 0.4 +           # Character similarity
+            partial_ratio_score * 0.3 +   # Substring matches
+            token_sort_ratio_score * 0.2 + # Reordered tokens  
+            token_set_ratio_score * 0.1    # Partial tokens
+        )
+```
+
+#### DRY Pattern Usage
+
+All CLI commands use the centralized error handlers:
+
+```python
+# Before (repetitive code in each command)
+try:
+    device = parser.get_device(device_name)
+except DeviceNotFoundError as e:
+    console.print(f"[red]Device not found: {e}[/red]")
+    raise typer.Exit(1)
+
+# After (DRY pattern)
+try:
+    device = parser.get_device(device_name)  
+except DeviceNotFoundError as e:
+    handle_device_not_found_error(e, parser, no_color)
+```
+
+### Performance Characteristics
+
+- **Scalability**: Optimized for 1000+ device lists
+- **Memory efficiency**: Processes device lists on-demand
+- **Speed**: Sub-second suggestion generation for typical AtPack files
+- **Fallback safety**: Graceful handling when suggestions can't be generated
+
+### Testing the Error Handling
+
+#### Unit Testing
+
+```python
+def test_fuzzy_device_suggestions():
+    """Test that device suggestions are properly ranked."""
+    suggestions = _get_device_suggestions("PIC16f877", parser)
+    assert suggestions[0] == "PIC16F877"  # Exact match first
+    assert "PIC16F877A" in suggestions    # Similar devices included
+```
+
+#### Integration Testing
+
+```bash
+# Test actual CLI behavior
+atpack memory show PIC16f877 test.atpack  # Should suggest PIC16F877
+atpack devices info atmega16 test.atpack  # Should suggest ATmega16
+```
+
+### Extending the Error Handling
+
+#### Adding New Error Types
+
+1. Define the error handler in `common.py`:
+```python
+def handle_new_error(e: NewErrorType, context=None, no_color: bool = False):
+    # Implementation
+    pass
+```
+
+2. Use it consistently across CLI commands:
+```python
+try:
+    # Operation
+except NewErrorType as e:
+    handle_new_error(e, context, no_color)
+```
+
+#### Customizing Suggestion Algorithms
+
+The fuzzy matching weights can be tuned for specific use cases:
+
+```python
+# Device name focused (current)
+combined_score = (
+    ratio_score * 0.4 +           # High weight on character similarity
+    partial_ratio_score * 0.3 +   
+    token_sort_ratio_score * 0.2 + 
+    token_set_ratio_score * 0.1    
+)
+
+# Register name focused (hypothetical)
+combined_score = (
+    ratio_score * 0.3 +           
+    partial_ratio_score * 0.4 +   # Higher weight on substrings
+    token_sort_ratio_score * 0.2 + 
+    token_set_ratio_score * 0.1    
+)
+```
+
+### Dependencies
+
+- **rapidfuzz>=3.0.0**: MIT licensed fuzzy string matching
+- **rich**: Terminal formatting and colors
+- **typer**: CLI framework integration
+
+The system has **no GPL dependencies** and uses only MIT-compatible libraries.
+
 ## Contributing Checklist
 
 Before submitting a pull request:

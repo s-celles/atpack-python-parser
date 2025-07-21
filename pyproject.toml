@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "atpack-parser"
 version = "0.1.0"
-description = "A Python library and CLI tool for parsing ATMEL and Microchip AtPack files"
+description = "A Python library and CLI tool for parsing ATMEL and Microchip AtPack files with intelligent error handling and fuzzy device name suggestions"
 authors = [
     {name = "Sébastien Celles", email = "s.celles@gmail.com"},
 ]
@@ -30,6 +30,7 @@ dependencies = [
     "pydantic>=2.0.0",
     "pathlib",
     "pint>=0.20.0",
+    "rapidfuzz>=3.0.0",
 ]
 
 [project.optional-dependencies]

@@ -140,7 +140,7 @@ def show_memory(
                 )
 
     except DeviceNotFoundError as e:
-        handle_device_not_found_error(e, no_color)
+        handle_device_not_found_error(e, parser, no_color)
     except AtPackError as e:
         handle_atpack_error(e, no_color)
 

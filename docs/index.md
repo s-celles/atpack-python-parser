@@ -34,6 +34,8 @@ AtPack Parser is a comprehensive Python library that enables you to extract and 
 - 🐍 **Python API** - Full programmatic access for integration into your projects
 - ✨ **Rich output** - Beautiful formatting with colors and tables
 - 📊 **Export capabilities** - Generate reports and data exports
+- 🎯 **Intelligent error handling** - Fuzzy device name suggestions when devices are not found
+- 🔧 **DRY architecture** - Consistent error handling across all CLI commands
 
 ## Quick Start
 

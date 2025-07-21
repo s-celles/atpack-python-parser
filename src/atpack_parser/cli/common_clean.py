@@ -1,11 +1,11 @@
 """Common types and utilities for CLI commands."""
 
+import difflib
 from pathlib import Path
 from typing import Annotated, Optional, List
 
 import typer
 from rich.console import Console
-from rapidfuzz import fuzz
 
 from ..exceptions import AtPackError, DeviceNotFoundError
 
@@ -21,43 +21,32 @@ OutputFormat = Annotated[str, typer.Option("--format", "-f", help="Output format
 
 
 def _get_device_suggestions(target_device: str, parser, max_suggestions: int = 5) -> List[str]:
-    """Get the closest device name suggestions using fuzzy string matching."""
+    """Get the closest device name suggestions using Python's built-in difflib.
+    
+    This uses SequenceMatcher which provides good fuzzy matching without 
+    external dependencies or licensing concerns.
+    """
     try:
         all_devices = parser.get_devices()
         
+        # Use difflib.SequenceMatcher for similarity scoring
+        # This is built into Python and has no licensing concerns
         device_scores = []
         target_upper = target_device.upper()
         
         for device in all_devices:
             device_upper = device.upper()
             
-            # Calculate multiple scores for better ranking
+            # Calculate similarity ratio (0.0 to 1.0, higher is better)
+            # SequenceMatcher automatically handles length differences well
+            similarity = difflib.SequenceMatcher(None, target_upper, device_upper).ratio()
             
-            # 1. Exact case-insensitive match gets highest priority
-            if target_upper == device_upper:
-                final_score = 0  # Perfect match
-            else:
-                # 2. Use multiple fuzzy matching algorithms
-                ratio_score = fuzz.ratio(target_upper, device_upper)
-                partial_ratio_score = fuzz.partial_ratio(target_upper, device_upper)
-                token_sort_ratio_score = fuzz.token_sort_ratio(target_upper, device_upper)
-                token_set_ratio_score = fuzz.token_set_ratio(target_upper, device_upper)
-                
-                # 3. Weighted combination of scores (higher is better)
-                # Give more weight to ratio and partial_ratio for exact character matching
-                combined_score = (
-                    ratio_score * 0.4 +
-                    partial_ratio_score * 0.3 +
-                    token_sort_ratio_score * 0.2 +
-                    token_set_ratio_score * 0.1
-                )
-                
-                # Convert to distance-like score (lower is better) for consistency
-                final_score = 100 - combined_score
+            # Convert to distance-like score (lower is better) for consistency
+            distance_score = 1.0 - similarity
             
-            device_scores.append((device, final_score))
+            device_scores.append((device, distance_score))
         
-        # Sort by final score (lower is better)
+        # Sort by distance score (lower is better) and get top suggestions
         device_scores.sort(key=lambda x: x[1])
         suggestions = [device for device, _ in device_scores[:max_suggestions]]
         
@@ -85,7 +74,7 @@ def handle_device_not_found_error(
         # Extract device name from the exception message
         device_name = str(e).replace("Device not found: ", "").replace("Device ", "").replace(" not found", "")
         
-        suggestions = _get_device_suggestions(device_name, parser, max_suggestions=15)
+        suggestions = _get_device_suggestions(device_name, parser)
         if suggestions:
             suggestion_msg = (
                 f"[yellow]Did you mean one of these devices?[/yellow]"

@@ -2,6 +2,115 @@
 
 This page provides practical examples of using AtPack Parser for common tasks.
 
+## Enhanced Error Handling Examples
+
+AtPack Parser provides intelligent error handling with fuzzy device name suggestions when devices are not found.
+
+### Handling Typos and Case Sensitivity
+
+The CLI automatically suggests similar device names when you make typos or use incorrect casing:
+
+#### Example 1: Case Sensitivity
+```bash
+# Input (lowercase 'f')
+atpack devices info PIC16f877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+
+# Output with suggestions
+Device not found: Device 'PIC16f877' not found
+
+Did you mean one of these devices?
+  1. PIC16F877      ← Exact match (different case)
+  2. PIC16F877A     ← Similar device  
+  3. PIC16F876      ← Same family
+  4. PIC16F878      ← Same family
+  5. PIC16F876A     ← Same family
+```
+
+#### Example 2: Missing Characters
+```bash
+# Input (missing character)
+atpack memory show PIC16F87 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+
+# Output with suggestions
+Device not found: Device 'PIC16F87' not found
+
+Did you mean one of these devices?
+  1. PIC16F877      ← Most likely match
+  2. PIC16F876      ← Alternative 
+  3. PIC16F878      ← Alternative
+  4. PIC16F877A     ← Enhanced version
+  5. PIC16F84A      ← Different subfamily
+```
+
+#### Example 3: ATMEL Device Names
+```bash
+# Input (lowercase)
+atpack registers list atmega16 ./atpacks/Atmel.ATmega_DFP.2.2.509.atpack
+
+# Output with suggestions  
+Device not found: Device 'atmega16' not found
+
+Did you mean one of these devices?
+  1. ATmega16       ← Exact match (different case)
+  2. ATmega16A      ← Enhanced version
+  3. ATmega164A     ← Larger memory
+  4. ATmega164P     ← Alternative
+  5. ATmega164PA    ← Enhanced alternative
+```
+
+### Programming with Error Handling
+
+When using the Python API, you can catch and handle device not found errors:
+
+```python
+from atpack_parser import AtPackParser
+from atpack_parser.exceptions import DeviceNotFoundError
+
+parser = AtPackParser("./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack")
+
+try:
+    device = parser.get_device("PIC16f877")  # lowercase 'f'
+except DeviceNotFoundError as e:
+    print(f"Device not found: {e}")
+    
+    # Get suggestions programmatically
+    available_devices = parser.get_devices()
+    
+    # Simple suggestion logic (you can use rapidfuzz for better results)
+    suggestions = [d for d in available_devices if "PIC16F877" in d.upper()]
+    
+    if suggestions:
+        print("Did you mean:")
+        for i, suggestion in enumerate(suggestions[:5], 1):
+            print(f"  {i}. {suggestion}")
+    
+    # Try with the corrected name
+    try:
+        device = parser.get_device("PIC16F877")  # Corrected case
+        print(f"Success! Found device: {device.name}")
+    except DeviceNotFoundError:
+        print("Device still not found")
+```
+
+### No-Color Mode for Automation
+
+For scripts and automation, use `--no-color` to get clean text output:
+
+```bash
+# Automation-friendly output
+atpack devices info pic16f877 ./atpacks/file.atpack --no-color
+
+# Output (no ANSI color codes)
+Device not found: Device 'pic16f877' not found
+
+Did you mean one of these devices?
+1. PIC16F877
+2. PIC16F877A  
+3. PIC16F876
+4. PIC16F878
+5. PIC16F876A
+```
+
 ## Basic Examples
 
 ### Simple Device Information

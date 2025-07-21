@@ -133,6 +133,6 @@ def show_config(
                 console.print(table)
 
     except DeviceNotFoundError as e:
-        handle_device_not_found_error(e)
+        handle_device_not_found_error(e, parser)
     except AtPackError as e:
         handle_atpack_error(e)

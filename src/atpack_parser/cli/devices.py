@@ -223,7 +223,7 @@ def device_info(
                 console.print(module_table)
 
     except DeviceNotFoundError as e:
-        handle_device_not_found_error(e)
+        handle_device_not_found_error(e, parser)
     except AtPackError as e:
         handle_atpack_error(e)
 
@@ -613,7 +613,7 @@ def list_packages(
                     output_console.print(footnote2_msg)
 
     except DeviceNotFoundError as e:
-        handle_device_not_found_error(e, no_color)
+        handle_device_not_found_error(e, parser, no_color)
     except AtPackError as e:
         handle_atpack_error(e, no_color)
 
@@ -923,6 +923,6 @@ def show_pinout(
                 )
 
     except DeviceNotFoundError as e:
-        handle_device_not_found_error(e, no_color)
+        handle_device_not_found_error(e, parser, no_color)
     except AtPackError as e:
         handle_atpack_error(e, no_color)
