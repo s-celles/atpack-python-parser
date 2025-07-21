@@ -1,7 +1,7 @@
 """Main AtPack parser."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from .atdf_parser import AtdfParser
 from .exceptions import (
@@ -18,7 +18,7 @@ from .xml_utils import AtPackExtractor
 class AtPackParser:
     """Main parser for AtPack files."""
 
-    def __init__(self, atpack_path: str | Path):
+    def __init__(self, atpack_path: Union[str, Path]):
         """Initialize parser with AtPack file path."""
         self.atpack_path = Path(atpack_path)
         self.extractor = AtPackExtractor(self.atpack_path)
