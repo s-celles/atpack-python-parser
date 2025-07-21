@@ -112,8 +112,28 @@ Found 2 AtPack files
 
 Work with AtPack files and directories:
 
+#### Show information about a specific AtPack file
+
+```
+atpack files info /path/to/file.atpack
+```
+
+Example:
+```
+atpack files info ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+╭────────────────────────────────────────────────────── 📦 AtPack Information ──────────────────────────────────────────────────────╮
+│ Name: Unknown                                                                                                                     │
+│ Vendor: Unknown                                                                                                                   │
+│ Version: 0.0.0                                                                                                                    │
+│ Device Family: PIC                                                                                                                │
+│ Description: Microchip PIC16Fxxx Series Device Support                                                                            │
+│ URL: N/A                                                                                                                          │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+#### List all AtPack files in a directory
+
 ```bash
-# List all AtPack files in a directory
 atpack files list /path/to/atpack/directory
 ```
 Example:
@@ -131,12 +151,6 @@ atpack files list ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 │ xc8/pic/include/proc/pic16lf88.h       │ 142,857 bytes   │
 │ xc8/pic/include/proc/pic16lf88.inc     │ 80,519 bytes    │
 └────────────────────────────────────────┴─────────────────┘
-```
-
-
-```
-# Show information about a specific AtPack file
-atpack files info /path/to/file.atpack
 ```
 
 ### Device Commands
@@ -198,6 +212,7 @@ atpack devices search "*877*" ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 atpack devices info DEVICE_NAME /path/to/file.atpack
 ```
 Example:
+
 ```
 atpack devices info PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 ╭──────────────────────────────────────────────────────────────────────────────────────────── 🔌 Device: PIC16F877 ─────────────────────────────────────────────────────────────────────────────────────────────╮
@@ -232,6 +247,31 @@ atpack devices info PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 │ BANK3  │ 1               │ 2               │
 │ CORE   │ 1               │ 1               │
 └────────┴─────────────────┴─────────────────┘
+```
+
+#### Typo in device name? No problem!
+
+```
+atpack devices info PIC16f877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+Device not found: Device 'PIC16f877' not found or could not be parsed: Error parsing PIC file for 'PIC16f877': Device 'PIC16f877' not
+found in PIC file
+
+Did you mean one of these devices?
+  1. PIC16F877
+  2. PIC16F87
+  3. PIC16F877A
+  4. PIC16LF877
+  5. PIC16LF877A
+  6. PIC16F677
+  7. PIC16F687
+  8. PIC16F767
+  9. PIC16F777
+  10. PIC16F871
+  11. PIC16F876
+  12. PIC16F887
+  13. PIC16LF77
+  14. PIC16LF87
+  15. PIC16LF871
 ```
 
 ### Memory Commands
