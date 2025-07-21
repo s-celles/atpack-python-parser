@@ -88,13 +88,13 @@ def atmel_atmega_atpack_file() -> Path:
 
 
 @pytest.fixture
-def microchip_pic16fxxx_edc_pic16f876_pic_content(
+def microchip_pic16fxxx_edc_pic16f877_pic_content(
     microchip_pic16fxxx_atpack_file: Path,
 ) -> str:
-    """Fixture that provides PIC16F876A content from the AtPack file."""
+    """Fixture that provides PIC16F877 content from the AtPack file."""
     skip_if_atpack_missing(microchip_pic16fxxx_atpack_file, "PIC")
     return read_from_atpack(
-        microchip_pic16fxxx_atpack_file, "edc/PIC16F876A.PIC", "PIC"
+        microchip_pic16fxxx_atpack_file, "edc/PIC16F877.PIC", "PIC"
     )
 
 

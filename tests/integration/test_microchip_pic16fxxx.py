@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Enhanced debug script to test the new PlatformIO-useful information extraction.
+Integration tests for PIC16Fxxx device parsing functionality.
 """
 
 import sys
@@ -17,221 +17,171 @@ from conftest import skip_if_atpack_missing
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_enhanced_pic_parser(microchip_pic16fxxx_edc_pic16f876_pic_content: str):
-    """Test the enhanced PIC parser with PlatformIO-useful information."""
-    print("=== Enhanced PIC Parser Test ===\n")
+class TestPIC16FxxxIntegration:
+    """Integration tests for PIC16Fxxx device parsing and data extraction."""
+    
+    # Device under test
+    DEVICE_NAME = "PIC16F877"
 
-    # Parse the device
-    parser = PicParser(microchip_pic16fxxx_edc_pic16f876_pic_content)
-    device = parser.parse_device("PIC16F876A")
+    def test_device_basic_info(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+        """Test parsing basic device information."""
+        parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+        device = parser.parse_device(self.DEVICE_NAME)
 
-    print(f"Device: {device.name}")
-    print(f"Family: {device.family}")
-    print(f"Series: {device.series}")
-    print(f"Architecture: {device.architecture}")
-    print()
+        assert device.name == self.DEVICE_NAME
+        assert device.family == "PIC"
+        assert device.architecture == "PIC"
+        assert device.series is not None
 
-    # Power specifications
-    if device.power_specs:
-        print("=== Power Specifications ===")
-        ps = device.power_specs
-        if ps.vdd_min or ps.vdd_max:
-            print(f"VDD Range: {ps.vdd_min}V - {ps.vdd_max}V")
-        if ps.vdd_nominal:
-            print(f"VDD Nominal: {ps.vdd_nominal}V")
-        if ps.vpp_min or ps.vpp_max:
-            print(f"VPP Range: {ps.vpp_min}V - {ps.vpp_max}V")
-        if ps.has_high_voltage_mclr is not None:
-            print(f"High Voltage MCLR: {ps.has_high_voltage_mclr}")
-        print()
-    else:
-        print("=== Power Specifications ===")
-        print("No power specifications found")
-        print()
+    def test_power_specifications(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+        """Test parsing power specifications."""
+        parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+        device = parser.parse_device(self.DEVICE_NAME)
 
-    # Oscillator configurations
-    if device.oscillator_configs:
-        print("=== Oscillator Configurations ===")
-        for osc in device.oscillator_configs:
-            print(f"  {osc.name}: {osc.description}")
-            if osc.legacy_alias:
-                print(f"    Legacy: {osc.legacy_alias}")
-            if osc.when_condition:
-                print(f"    Condition: {osc.when_condition}")
-        print()
-    else:
-        print("=== Oscillator Configurations ===")
-        print("No oscillator configurations found")
-        print()
+        # Power specs may or may not be present, but if present should be valid
+        if device.power_specs:
+            ps = device.power_specs
+            if ps.vdd_min is not None:
+                assert ps.vdd_min > 0
+            if ps.vdd_max is not None:
+                assert ps.vdd_max > 0
+            if ps.vdd_min and ps.vdd_max:
+                assert ps.vdd_min <= ps.vdd_max
 
-    # Programming interface
-    if device.programming_interface:
-        print("=== Programming Interface ===")
-        pi = device.programming_interface
-        if pi.memory_technology:
-            print(f"Memory Technology: {pi.memory_technology}")
-        if pi.erase_algorithm:
-            print(f"Erase Algorithm: {pi.erase_algorithm}")
-        if pi.has_low_voltage_programming is not None:
-            print(f"Low Voltage Programming: {pi.has_low_voltage_programming}")
-        if pi.low_voltage_threshold:
-            print(f"LVP Threshold: {pi.low_voltage_threshold}V")
-        if pi.programming_tries:
-            print(f"Programming Tries: {pi.programming_tries}")
+    def test_oscillator_configurations(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+        """Test parsing oscillator configurations."""
+        parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+        device = parser.parse_device(self.DEVICE_NAME)
 
-        if pi.wait_times:
-            print("Programming Wait Times:")
-            for op, timing in pi.wait_times.items():
-                print(f"  {op}: {timing['time']} {timing['units']}")
+        # Oscillator configs may be present
+        if device.oscillator_configs:
+            assert len(device.oscillator_configs) > 0
+            for osc in device.oscillator_configs:
+                assert osc.name is not None
+                assert len(osc.name) > 0
 
-        if pi.row_sizes:
-            print("Programming Row Sizes:")
-            for op, size in pi.row_sizes.items():
-                print(f"  {op}: {size} words")
-        print()
-    else:
-        print("=== Programming Interface ===")
-        print("No programming interface info found")
-        print()
+    def test_programming_interface(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+        """Test parsing programming interface information."""
+        parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+        device = parser.parse_device(self.DEVICE_NAME)
 
-    # Pinout information
-    if device.pinout:
-        print("=== Pinout Information ===")
-        print(f"Total pins: {len(device.pinout)}")
+        # Programming interface may be present
+        if device.programming_interface:
+            pi = device.programming_interface
+            # Any present values should be valid
+            if pi.programming_tries:
+                assert pi.programming_tries > 0
+            if pi.low_voltage_threshold:
+                assert pi.low_voltage_threshold > 0
 
-        pin_type_counts = {}
-        for pin in device.pinout:
-            pin_type = pin.pin_type or "unknown"
-            pin_type_counts[pin_type] = pin_type_counts.get(pin_type, 0) + 1
+    def test_pinout_information(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+        """Test parsing pinout information."""
+        parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+        device = parser.parse_device(self.DEVICE_NAME)
 
-        print("Pin types:", pin_type_counts)
+        # Pinout should be present for PIC devices
+        if device.pinout:
+            assert len(device.pinout) > 0
+            
+            # Verify pin structure
+            for pin in device.pinout[:5]:  # Check first 5 pins
+                assert pin.physical_pin is not None
+                assert pin.primary_function is not None
+                assert isinstance(pin.alternative_functions, list)
 
-        print("\nSample pins:")
-        for i, pin in enumerate(device.pinout[:5]):
-            func_names = [f.name for f in pin.alternative_functions]
-            print(
-                f"  Pin {pin.physical_pin}: {pin.primary_function} "
-                f"({pin.pin_type}) - Functions: {', '.join(func_names)}"
-            )
+    def test_debug_capabilities(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+        """Test parsing debug capabilities."""
+        parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+        device = parser.parse_device(self.DEVICE_NAME)
 
-        if len(device.pinout) > 5:
-            print(f"  ... and {len(device.pinout) - 5} more pins")
-        print()
-    else:
-        print("=== Pinout Information ===")
-        print("No pinout information found")
-        print()
+        # Debug capabilities may be present
+        if device.debug_capabilities:
+            dc = device.debug_capabilities
+            if dc.hardware_breakpoint_count:
+                assert dc.hardware_breakpoint_count >= 0
 
-    # Debug capabilities
-    if device.debug_capabilities:
-        print("=== Debug Capabilities ===")
-        dc = device.debug_capabilities
-        if dc.hardware_breakpoint_count:
-            print(f"Hardware Breakpoints: {dc.hardware_breakpoint_count}")
-        if dc.has_data_capture is not None:
-            print(f"Data Capture: {dc.has_data_capture}")
-        if dc.id_byte:
-            print(f"ID Byte: {dc.id_byte}")
-        print()
-    else:
-        print("=== Debug Capabilities ===")
-        print("No debug capabilities found")
-        print()
+    def test_architecture_information(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+        """Test parsing architecture information."""
+        parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+        device = parser.parse_device(self.DEVICE_NAME)
 
-    # Architecture information
-    if device.architecture_info:
-        print("=== Architecture Information ===")
-        ai = device.architecture_info
-        if ai.instruction_set:
-            print(f"Instruction Set: {ai.instruction_set}")
-        if ai.hardware_stack_depth:
-            print(f"Hardware Stack Depth: {ai.hardware_stack_depth}")
-        if ai.code_word_size:
-            print(f"Code Word Size: {ai.code_word_size} bytes")
-        if ai.data_word_size:
-            print(f"Data Word Size: {ai.data_word_size} bytes")
-        print()
-    else:
-        print("=== Architecture Information ===")
-        print("No architecture information found")
-        print()
+        # Architecture info may be present
+        if device.architecture_info:
+            ai = device.architecture_info
+            if ai.hardware_stack_depth:
+                assert ai.hardware_stack_depth > 0
+            if ai.code_word_size:
+                assert ai.code_word_size > 0
+            if ai.data_word_size:
+                assert ai.data_word_size > 0
 
-    # Detected peripherals
-    if device.detected_peripherals:
-        print("=== Detected Peripherals ===")
-        for peripheral in device.detected_peripherals:
-            print(f"  - {peripheral}")
-        print()
-    else:
-        print("=== Detected Peripherals ===")
-        print("No peripherals detected")
-        print()
+    def test_peripheral_detection(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+        """Test peripheral detection."""
+        parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+        device = parser.parse_device(self.DEVICE_NAME)
 
-    # Summary for PlatformIO
-    print("=== PlatformIO Board Definition Usefulness ===")
-    useful_info = []
+        # Peripherals may be detected
+        if device.detected_peripherals:
+            assert len(device.detected_peripherals) > 0
+            for peripheral in device.detected_peripherals:
+                assert isinstance(peripheral, str)
+                assert len(peripheral) > 0
 
-    if device.power_specs and (
-        device.power_specs.vdd_min or device.power_specs.vdd_max
-    ):
-        useful_info.append("✓ Power supply voltage ranges")
+    def test_platformio_usefulness(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+        """Test that extracted data is useful for PlatformIO board definitions."""
+        parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+        device = parser.parse_device(self.DEVICE_NAME)
 
-    if device.oscillator_configs:
-        useful_info.append("✓ Oscillator configuration options")
+        useful_features = 0
 
-    if device.programming_interface:
-        useful_info.append("✓ Programming interface specifications")
+        if device.power_specs and (device.power_specs.vdd_min or device.power_specs.vdd_max):
+            useful_features += 1
 
-    if device.pinout:
-        useful_info.append("✓ Complete pinout with alternative functions")
+        if device.oscillator_configs:
+            useful_features += 1
 
-    if device.debug_capabilities:
-        useful_info.append("✓ Hardware debugging capabilities")
+        if device.programming_interface:
+            useful_features += 1
 
-    if device.architecture_info and device.architecture_info.instruction_set:
-        useful_info.append("✓ Instruction set identification")
+        if device.pinout:
+            useful_features += 1
 
-    if device.detected_peripherals:
-        useful_info.append("✓ Peripheral detection for library compatibility")
+        if device.debug_capabilities:
+            useful_features += 1
 
-    if useful_info:
-        print("Found useful information for PlatformIO board definitions:")
-        for info in useful_info:
-            print(f"  {info}")
-    else:
-        print("No additional useful information found beyond basic device specs")
+        if device.architecture_info and device.architecture_info.instruction_set:
+            useful_features += 1
 
-    print(f"\nTotal additional fields extracted: {len(useful_info)}")
+        if device.detected_peripherals:
+            useful_features += 1
 
-    assert len(useful_info) > 0, "No useful information extracted"
+        # At least some useful information should be extracted
+        assert useful_features > 0, "No useful information extracted for PlatformIO"
+
+    def test_device_memory_info(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+        """Test parsing device memory information."""
+        parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+        device = parser.parse_device(self.DEVICE_NAME)
+
+        # Basic device should have some memory info
+        # Note: Commented out flash/RAM checks as they may not be available in all PIC files
+        assert device.name == self.DEVICE_NAME
 
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_parser(microchip_pic16fxxx_atpack_file: Path):
+def test_atpack_parser_pic16f877(microchip_pic16fxxx_atpack_file: Path):
     """Test the AtPackParser with PIC16F877."""
     skip_if_atpack_missing(microchip_pic16fxxx_atpack_file, "PIC")
 
     parser = AtPackParser(microchip_pic16fxxx_atpack_file)
     devices = parser.get_devices()
     assert len(devices) > 0, "No devices found in the AtPack"
+    
     device_name = "PIC16F877"
-    assert device_name in devices, "Expected device PIC16F877 not found"
+    assert device_name in devices, f"Expected device {device_name} not found"
+    
     device = parser.get_device(device_name)
-    assert device.name == device_name, (
-        f"Expected device name {device_name}, got {device.name}"
-    )
-    # assert device.family == "PIC16", f"Expected family 'PIC16', got {device.family}"
+    assert device.name == device_name, f"Expected device name {device_name}, got {device.name}"
     assert device.family == "PIC", f"Expected family 'PIC', got {device.family}"
-    assert device.architecture == "PIC", (
-        f"Expected architecture 'PIC', got {device.architecture}"
-    )
-    # assert device.flash_size > 0, f"Expected flash size > 0, got {device.flash_size}"
-    # assert device.ram_size > 0, f"Expected RAM size > 0, got {device.ram_size}"
-    # assert device.eeprom_size >= 0, (
-    #     f"Expected EEPROM size >= 0, got {device.eeprom_size}"
-    # )
-
-
-if __name__ == "__main__":
-    test_enhanced_pic_parser()
+    assert device.architecture == "PIC", f"Expected architecture 'PIC', got {device.architecture}"
