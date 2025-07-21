@@ -16,20 +16,23 @@ from atpack_parser import AtPackParser
 from atpack_parser.cli import app
 from atpack_parser.exceptions import DeviceNotFoundError
 from atpack_parser.models import DeviceFamily
+from conftest import skip_if_atpack_missing
 
 
+@pytest.mark.integration
+@pytest.mark.atpack_required
 class TestPIC24FParsing:
     """Test PIC24F device parsing functionality."""
 
-    def test_pic24f_parser_initialization(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_parser_initialization(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test that PIC24F AtPack can be initialized correctly."""
-        parser = AtPackParser(microchip_pic24f_ka_kl_km_atpack_file)
+        parser = AtPackParser(microchip_pic24f_ka_kl_km_content_fixture)
         assert parser is not None
         assert parser.device_family == DeviceFamily.PIC
 
-    def test_pic24f_metadata(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_metadata(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test PIC24F AtPack metadata extraction."""
-        parser = AtPackParser(microchip_pic24f_ka_kl_km_atpack_file)
+        parser = AtPackParser(microchip_pic24f_ka_kl_km_content_fixture)
         metadata = parser.metadata
 
         # Note: The metadata parsing for PIC24F may return default values
@@ -37,9 +40,9 @@ class TestPIC24FParsing:
         assert metadata is not None
         assert metadata.description == "Microchip PIC24F-KA-KL-KM Series Device Support"
 
-    def test_pic24f_device_list(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_device_list(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test that PIC24F devices can be listed."""
-        parser = AtPackParser(microchip_pic24f_ka_kl_km_atpack_file)
+        parser = AtPackParser(microchip_pic24f_ka_kl_km_content_fixture)
         devices = parser.get_devices()
 
         assert len(devices) > 0
@@ -49,9 +52,9 @@ class TestPIC24FParsing:
         pic24f_devices = [d for d in devices if d.startswith("PIC24F")]
         assert len(pic24f_devices) > 10  # Should have many PIC24F devices
 
-    def test_pic24f16ka301_device_info(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f16ka301_device_info(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test detailed device information for PIC24F16KA301."""
-        parser = AtPackParser(microchip_pic24f_ka_kl_km_atpack_file)
+        parser = AtPackParser(microchip_pic24f_ka_kl_km_content_fixture)
         device = parser.get_device("PIC24F16KA301")
 
         assert device.name == "PIC24F16KA301"
@@ -60,9 +63,9 @@ class TestPIC24FParsing:
         assert len(device.memory_segments) > 0
         assert len(device.modules) > 0
 
-    def test_pic24f16ka301_memory_segments(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f16ka301_memory_segments(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test memory segment parsing for PIC24F16KA301."""
-        parser = AtPackParser(microchip_pic24f_ka_kl_km_atpack_file)
+        parser = AtPackParser(microchip_pic24f_ka_kl_km_content_fixture)
         memory_segments = parser.get_device_memory("PIC24F16KA301")
 
         assert len(memory_segments) > 0
@@ -76,9 +79,9 @@ class TestPIC24FParsing:
             "SFR" in name.upper() for name in segment_names
         )  # Special Function Registers
 
-    def test_pic24f16ka301_registers(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f16ka301_registers(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test register parsing for PIC24F16KA301."""
-        parser = AtPackParser(microchip_pic24f_ka_kl_km_atpack_file)
+        parser = AtPackParser(microchip_pic24f_ka_kl_km_content_fixture)
         device = parser.get_device("PIC24F16KA301")
 
         # Should have modules with registers
@@ -89,9 +92,9 @@ class TestPIC24FParsing:
 
         assert total_registers > 0
 
-    def test_pic24f16ka301_config(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f16ka301_config(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test configuration data parsing for PIC24F16KA301."""
-        parser = AtPackParser(microchip_pic24f_ka_kl_km_atpack_file)
+        parser = AtPackParser(microchip_pic24f_ka_kl_km_content_fixture)
         config = parser.get_device_config("PIC24F16KA301")
 
         assert isinstance(config, dict)
@@ -100,9 +103,9 @@ class TestPIC24FParsing:
         assert "interrupts" in config
         assert "signatures" in config
 
-    def test_pic24f_invalid_device(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_invalid_device(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test error handling for invalid PIC24F device names."""
-        parser = AtPackParser(microchip_pic24f_ka_kl_km_atpack_file)
+        parser = AtPackParser(microchip_pic24f_ka_kl_km_content_fixture)
 
         with pytest.raises(DeviceNotFoundError):
             parser.get_device("INVALID_PIC24F_DEVICE")
@@ -111,29 +114,29 @@ class TestPIC24FParsing:
 class TestPIC24FCLI:
     """Test CLI functionality specifically for PIC24F devices."""
 
-    def test_pic24f_files_info_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_files_info_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test files info command for PIC24F AtPack."""
         runner = CliRunner()
         result = runner.invoke(
-            app, ["files", "info", str(microchip_pic24f_ka_kl_km_atpack_file)]
+            app, ["files", "info", str(microchip_pic24f_ka_kl_km_content_fixture)]
         )
 
         assert result.exit_code == 0
         # The files info may show "Unknown" for some metadata fields, but description should be correct
         assert "Microchip PIC24F-KA-KL-KM Series Device Support" in result.stdout
 
-    def test_pic24f_devices_list_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_devices_list_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test devices list command for PIC24F AtPack."""
         runner = CliRunner()
         result = runner.invoke(
-            app, ["devices", "list", str(microchip_pic24f_ka_kl_km_atpack_file)]
+            app, ["devices", "list", str(microchip_pic24f_ka_kl_km_content_fixture)]
         )
 
         assert result.exit_code == 0
         assert "PIC24F16KA301" in result.stdout
         assert "🔴" in result.stdout or "[PIC]" in result.stdout
 
-    def test_pic24f_devices_list_json_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_devices_list_json_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test devices list command with JSON output for PIC24F AtPack."""
         runner = CliRunner()
         result = runner.invoke(
@@ -141,7 +144,7 @@ class TestPIC24FCLI:
             [
                 "devices",
                 "list",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
                 "--format",
                 "json",
             ],
@@ -153,7 +156,7 @@ class TestPIC24FCLI:
         assert "PIC24F16KA301" in data["devices"]
         assert data["device_count"] > 0
 
-    def test_pic24f_devices_search_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_devices_search_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test device search command for PIC24F devices."""
         runner = CliRunner()
         result = runner.invoke(
@@ -162,14 +165,14 @@ class TestPIC24FCLI:
                 "devices",
                 "search",
                 "PIC24F16KA*",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
             ],
         )
 
         assert result.exit_code == 0
         assert "PIC24F16KA301" in result.stdout
 
-    def test_pic24f_device_info_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_device_info_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test device info command for PIC24F16KA301."""
         runner = CliRunner()
         result = runner.invoke(
@@ -178,7 +181,7 @@ class TestPIC24FCLI:
                 "devices",
                 "info",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
             ],
         )
 
@@ -187,7 +190,7 @@ class TestPIC24FCLI:
         assert "🔴" in result.stdout or "[PIC]" in result.stdout
         assert "Memory Segments" in result.stdout
 
-    def test_pic24f_device_info_json_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_device_info_json_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test device info command with JSON output for PIC24F16KA301."""
         runner = CliRunner()
         result = runner.invoke(
@@ -196,7 +199,7 @@ class TestPIC24FCLI:
                 "devices",
                 "info",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
                 "--format",
                 "json",
             ],
@@ -207,7 +210,7 @@ class TestPIC24FCLI:
         assert data["name"] == "PIC24F16KA301"
         assert data["family"] == "PIC"
 
-    def test_pic24f_memory_show_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_memory_show_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test memory show command for PIC24F16KA301."""
         runner = CliRunner()
         result = runner.invoke(
@@ -216,7 +219,7 @@ class TestPIC24FCLI:
                 "memory",
                 "show",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
             ],
         )
 
@@ -224,7 +227,7 @@ class TestPIC24FCLI:
         assert "PIC24F16KA301" in result.stdout
         assert "Memory Layout" in result.stdout
 
-    def test_pic24f_memory_show_json_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_memory_show_json_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test memory show command with JSON output for PIC24F16KA301."""
         runner = CliRunner()
         result = runner.invoke(
@@ -233,7 +236,7 @@ class TestPIC24FCLI:
                 "memory",
                 "show",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
                 "--format",
                 "json",
             ],
@@ -244,7 +247,7 @@ class TestPIC24FCLI:
         assert isinstance(data, list)
         assert len(data) > 0
 
-    def test_pic24f_registers_list_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_registers_list_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test registers list command for PIC24F16KA301."""
         runner = CliRunner()
         result = runner.invoke(
@@ -253,7 +256,7 @@ class TestPIC24FCLI:
                 "registers",
                 "list",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
             ],
         )
 
@@ -262,7 +265,7 @@ class TestPIC24FCLI:
         assert "Registers" in result.stdout
 
     def test_pic24f_registers_list_json_cli(
-        self, microchip_pic24f_ka_kl_km_atpack_file
+        self, microchip_pic24f_ka_kl_km_content_fixture
     ):
         """Test registers list command with JSON output for PIC24F16KA301."""
         runner = CliRunner()
@@ -272,7 +275,7 @@ class TestPIC24FCLI:
                 "registers",
                 "list",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
                 "--format",
                 "json",
             ],
@@ -283,7 +286,7 @@ class TestPIC24FCLI:
         assert isinstance(data, list)
         assert len(data) > 0
 
-    def test_pic24f_config_show_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_config_show_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test config show command for PIC24F16KA301."""
         runner = CliRunner()
         result = runner.invoke(
@@ -292,7 +295,7 @@ class TestPIC24FCLI:
                 "config",
                 "show",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
             ],
         )
 
@@ -300,7 +303,7 @@ class TestPIC24FCLI:
         # Config show output may not include the device name in the output
         assert "Device Signatures" in result.stdout or "DEVID" in result.stdout
 
-    def test_pic24f_config_show_json_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_config_show_json_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test config show command with JSON output for PIC24F16KA301."""
         runner = CliRunner()
         result = runner.invoke(
@@ -309,7 +312,7 @@ class TestPIC24FCLI:
                 "config",
                 "show",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
                 "--format",
                 "json",
             ],
@@ -322,7 +325,7 @@ class TestPIC24FCLI:
         assert "signatures" in data
         assert "fuses" in data or "config_words" in data
 
-    def test_pic24f_cli_with_output_export(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_cli_with_output_export(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test CLI export functionality with PIC24F devices."""
         runner = CliRunner()
 
@@ -337,7 +340,7 @@ class TestPIC24FCLI:
                 [
                     "devices",
                     "list",
-                    str(microchip_pic24f_ka_kl_km_atpack_file),
+                    str(microchip_pic24f_ka_kl_km_content_fixture),
                     "--format",
                     "json",
                     "--output",
@@ -357,7 +360,7 @@ class TestPIC24FCLI:
             if tmp_path.exists():
                 tmp_path.unlink()
 
-    def test_pic24f_cli_no_color_option(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_cli_no_color_option(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test CLI --no-color option with PIC24F devices."""
         runner = CliRunner()
         result = runner.invoke(
@@ -365,7 +368,7 @@ class TestPIC24FCLI:
             [
                 "devices",
                 "list",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
                 "--no-color",
             ],
         )
@@ -378,7 +381,7 @@ class TestPIC24FCLI:
 class TestPIC24FEdgeCases:
     """Test edge cases and error conditions for PIC24F devices."""
 
-    def test_pic24f_invalid_device_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_invalid_device_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test CLI behavior with invalid PIC24F device name."""
         runner = CliRunner()
         result = runner.invoke(
@@ -387,14 +390,14 @@ class TestPIC24FEdgeCases:
                 "devices",
                 "info",
                 "INVALID_PIC24F",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
             ],
         )
 
         assert result.exit_code == 1
         assert "not found" in result.stdout.lower()
 
-    def test_pic24f_invalid_register_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_invalid_register_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test CLI behavior with invalid register name for PIC24F device."""
         runner = CliRunner()
         result = runner.invoke(
@@ -404,14 +407,14 @@ class TestPIC24FEdgeCases:
                 "show",
                 "PIC24F16KA301",
                 "INVALID_REG",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
             ],
         )
 
         assert result.exit_code == 1
         assert "not found" in result.stdout.lower()
 
-    def test_pic24f_memory_segment_filter(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_memory_segment_filter(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test memory segment filtering for PIC24F device."""
         runner = CliRunner()
 
@@ -422,7 +425,7 @@ class TestPIC24FEdgeCases:
                 "memory",
                 "show",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
                 "--flat",
                 "--format",
                 "json",
@@ -441,7 +444,7 @@ class TestPIC24FEdgeCases:
                     "memory",
                     "show",
                     "PIC24F16KA301",
-                    str(microchip_pic24f_ka_kl_km_atpack_file),
+                    str(microchip_pic24f_ka_kl_km_content_fixture),
                     "--segment",
                     segment_name,
                 ],
@@ -449,7 +452,7 @@ class TestPIC24FEdgeCases:
             assert result.exit_code == 0
             assert segment_name in result.stdout
 
-    def test_pic24f_register_module_filter(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_register_module_filter(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test register filtering by module for PIC24F device."""
         runner = CliRunner()
 
@@ -460,7 +463,7 @@ class TestPIC24FEdgeCases:
                 "registers",
                 "list",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
                 "--module",
                 "PORTB",
             ],
@@ -477,10 +480,10 @@ class TestPIC24FEdgeCases:
 class TestPIC24FComprehensive:
     """Comprehensive integration tests for PIC24F functionality."""
 
-    def test_pic24f_full_workflow(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_full_workflow(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test complete workflow from AtPack parsing to detailed device analysis."""
         # 1. Initialize parser
-        parser = AtPackParser(microchip_pic24f_ka_kl_km_atpack_file)
+        parser = AtPackParser(microchip_pic24f_ka_kl_km_content_fixture)
         assert parser.device_family == DeviceFamily.PIC
 
         # 2. Get device list
@@ -503,7 +506,7 @@ class TestPIC24FComprehensive:
         assert device.family == DeviceFamily.PIC
         assert len(device.memory_segments) == len(memory_segments)
 
-    def test_pic24f_cli_help_commands(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_cli_help_commands(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test that help commands work correctly."""
         runner = CliRunner()
 
@@ -516,44 +519,44 @@ class TestPIC24FComprehensive:
             result = runner.invoke(app, [cmd, "--help"])
             assert result.exit_code == 0
 
-    def test_pic24f_scan_functionality(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_scan_functionality(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test directory scanning with PIC24F AtPack."""
         runner = CliRunner()
-        atpack_dir = microchip_pic24f_ka_kl_km_atpack_file.parent
+        atpack_dir = microchip_pic24f_ka_kl_km_content_fixture.parent
 
         result = runner.invoke(app, ["scan", str(atpack_dir)])
         assert result.exit_code == 0
         assert "PIC24F-KA-KL-KM_DFP" in result.stdout or "AtPack Files" in result.stdout
 
-    def test_pic24f_all_cli_commands_basic(self, microchip_pic24f_ka_kl_km_atpack_file):
+    def test_pic24f_all_cli_commands_basic(self, microchip_pic24f_ka_kl_km_content_fixture):
         """Test that all major CLI commands work for PIC24F without crashing."""
         runner = CliRunner()
         commands_to_test = [
-            ["files", "info", str(microchip_pic24f_ka_kl_km_atpack_file)],
-            ["devices", "list", str(microchip_pic24f_ka_kl_km_atpack_file)],
+            ["files", "info", str(microchip_pic24f_ka_kl_km_content_fixture)],
+            ["devices", "list", str(microchip_pic24f_ka_kl_km_content_fixture)],
             [
                 "devices",
                 "info",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
             ],
             [
                 "memory",
                 "show",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
             ],
             [
                 "registers",
                 "list",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
             ],
             [
                 "config",
                 "show",
                 "PIC24F16KA301",
-                str(microchip_pic24f_ka_kl_km_atpack_file),
+                str(microchip_pic24f_ka_kl_km_content_fixture),
             ],
         ]
 

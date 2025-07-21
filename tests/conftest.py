@@ -96,11 +96,11 @@ def microchip_pic16fxxx_edc_pic16f877_pic_content(
     return read_from_atpack(microchip_pic16fxxx_atpack_file, "edc/PIC16F877.PIC", "PIC")
 
 
-# @pytest.fixture
-# def microchip_pic24f_ka_kl_km_edcpic24f_pic_content(pic24f_atpack_file: Path) -> str:
-#     """Fixture that provides PIC24F content from the AtPack file."""
-#     skip_if_atpack_missing(pic24f_atpack_file, "PIC24F")
-#     return read_from_atpack(pic24f_atpack_file, "edc/PIC24F.PIC", "PIC24F")
+@pytest.fixture
+def microchip_pic24f_ka_kl_km_content_fixture(microchip_pic24f_ka_kl_km_atpack_file: Path) -> Path:
+    """Fixture that checks for PIC24F AtPack availability and returns path if available."""
+    skip_if_atpack_missing(microchip_pic24f_ka_kl_km_atpack_file, "PIC24F")
+    return microchip_pic24f_ka_kl_km_atpack_file
 
 
 @pytest.fixture
