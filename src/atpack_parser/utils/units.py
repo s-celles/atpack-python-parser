@@ -192,13 +192,13 @@ def parse_temperature(temperature_str: str) -> Union[pint.Quantity, str]:
 
     try:
         import re
-        
+
         # Extract numeric value and unit
         match = re.search(r"([+-]?\d+(?:\.\d+)?)\s*([°]?[CcFf]?)", temperature_str)
         if match:
             value = float(match.group(1))
             unit_part = match.group(2).upper()
-            
+
             # Handle temperature units - always interpret C as celsius, not coulomb
             if unit_part in ["C", "°C"]:
                 return ureg.Quantity(value, "celsius")

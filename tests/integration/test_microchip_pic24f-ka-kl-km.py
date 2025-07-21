@@ -184,7 +184,7 @@ class TestPIC24FCLI:
 
         assert result.exit_code == 0
         assert "PIC24F16KA301" in result.stdout
-        assert " 🔴" in result.stdout or "[PIC]" in result.stdout
+        assert "🔴" in result.stdout or "[PIC]" in result.stdout
         assert "Memory Segments" in result.stdout
 
     def test_pic24f_device_info_json_cli(self, microchip_pic24f_ka_kl_km_atpack_file):
@@ -372,7 +372,7 @@ class TestPIC24FCLI:
 
         assert result.exit_code == 0
         assert "[PIC]" in result.stdout  # Should use text instead of emoji
-        assert "🟡" not in result.stdout  # Should not have emoji
+        assert "🔴" not in result.stdout  # Should not have emoji
 
 
 class TestPIC24FEdgeCases:
