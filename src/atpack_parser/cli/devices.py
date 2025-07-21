@@ -29,7 +29,13 @@ from ..utils.units import (
     format_temperature,
     parse_temperature_range,
 )
-from .common import AtPackPath, DeviceName, console, handle_device_not_found_error, handle_atpack_error
+from .common import (
+    AtPackPath,
+    DeviceName,
+    console,
+    handle_device_not_found_error,
+    handle_atpack_error,
+)
 
 # Create devices sub-command app
 devices_app = typer.Typer(name="devices", help="🔌 Device information")

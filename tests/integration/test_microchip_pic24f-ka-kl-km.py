@@ -24,7 +24,9 @@ from conftest import skip_if_atpack_missing
 class TestPIC24FParsing:
     """Test PIC24F device parsing functionality."""
 
-    def test_pic24f_parser_initialization(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f_parser_initialization(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test that PIC24F AtPack can be initialized correctly."""
         parser = AtPackParser(microchip_pic24f_ka_kl_km_content_fixture)
         assert parser is not None
@@ -63,7 +65,9 @@ class TestPIC24FParsing:
         assert len(device.memory_segments) > 0
         assert len(device.modules) > 0
 
-    def test_pic24f16ka301_memory_segments(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f16ka301_memory_segments(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test memory segment parsing for PIC24F16KA301."""
         parser = AtPackParser(microchip_pic24f_ka_kl_km_content_fixture)
         memory_segments = parser.get_device_memory("PIC24F16KA301")
@@ -136,7 +140,9 @@ class TestPIC24FCLI:
         assert "PIC24F16KA301" in result.stdout
         assert "🔴" in result.stdout or "[PIC]" in result.stdout
 
-    def test_pic24f_devices_list_json_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f_devices_list_json_cli(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test devices list command with JSON output for PIC24F AtPack."""
         runner = CliRunner()
         result = runner.invoke(
@@ -190,7 +196,9 @@ class TestPIC24FCLI:
         assert "🔴" in result.stdout or "[PIC]" in result.stdout
         assert "Memory Segments" in result.stdout
 
-    def test_pic24f_device_info_json_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f_device_info_json_cli(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test device info command with JSON output for PIC24F16KA301."""
         runner = CliRunner()
         result = runner.invoke(
@@ -227,7 +235,9 @@ class TestPIC24FCLI:
         assert "PIC24F16KA301" in result.stdout
         assert "Memory Layout" in result.stdout
 
-    def test_pic24f_memory_show_json_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f_memory_show_json_cli(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test memory show command with JSON output for PIC24F16KA301."""
         runner = CliRunner()
         result = runner.invoke(
@@ -303,7 +313,9 @@ class TestPIC24FCLI:
         # Config show output may not include the device name in the output
         assert "Device Signatures" in result.stdout or "DEVID" in result.stdout
 
-    def test_pic24f_config_show_json_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f_config_show_json_cli(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test config show command with JSON output for PIC24F16KA301."""
         runner = CliRunner()
         result = runner.invoke(
@@ -325,7 +337,9 @@ class TestPIC24FCLI:
         assert "signatures" in data
         assert "fuses" in data or "config_words" in data
 
-    def test_pic24f_cli_with_output_export(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f_cli_with_output_export(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test CLI export functionality with PIC24F devices."""
         runner = CliRunner()
 
@@ -360,7 +374,9 @@ class TestPIC24FCLI:
             if tmp_path.exists():
                 tmp_path.unlink()
 
-    def test_pic24f_cli_no_color_option(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f_cli_no_color_option(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test CLI --no-color option with PIC24F devices."""
         runner = CliRunner()
         result = runner.invoke(
@@ -397,7 +413,9 @@ class TestPIC24FEdgeCases:
         assert result.exit_code == 1
         assert "not found" in result.stdout.lower()
 
-    def test_pic24f_invalid_register_cli(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f_invalid_register_cli(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test CLI behavior with invalid register name for PIC24F device."""
         runner = CliRunner()
         result = runner.invoke(
@@ -414,7 +432,9 @@ class TestPIC24FEdgeCases:
         assert result.exit_code == 1
         assert "not found" in result.stdout.lower()
 
-    def test_pic24f_memory_segment_filter(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f_memory_segment_filter(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test memory segment filtering for PIC24F device."""
         runner = CliRunner()
 
@@ -452,7 +472,9 @@ class TestPIC24FEdgeCases:
             assert result.exit_code == 0
             assert segment_name in result.stdout
 
-    def test_pic24f_register_module_filter(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f_register_module_filter(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test register filtering by module for PIC24F device."""
         runner = CliRunner()
 
@@ -528,7 +550,9 @@ class TestPIC24FComprehensive:
         assert result.exit_code == 0
         assert "PIC24F-KA-KL-KM_DFP" in result.stdout or "AtPack Files" in result.stdout
 
-    def test_pic24f_all_cli_commands_basic(self, microchip_pic24f_ka_kl_km_content_fixture):
+    def test_pic24f_all_cli_commands_basic(
+        self, microchip_pic24f_ka_kl_km_content_fixture
+    ):
         """Test that all major CLI commands work for PIC24F without crashing."""
         runner = CliRunner()
         commands_to_test = [
@@ -562,6 +586,6 @@ class TestPIC24FComprehensive:
 
         for cmd in commands_to_test:
             result = runner.invoke(app, cmd)
-            assert (
-                result.exit_code == 0
-            ), f"Command {cmd} failed with exit code {result.exit_code}"
+            assert result.exit_code == 0, (
+                f"Command {cmd} failed with exit code {result.exit_code}"
+            )

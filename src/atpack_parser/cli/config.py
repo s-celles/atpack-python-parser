@@ -8,7 +8,13 @@ from rich.table import Table
 
 from .. import AtPackParser
 from ..exceptions import AtPackError, DeviceNotFoundError
-from .common import AtPackPath, DeviceName, console, handle_device_not_found_error, handle_atpack_error
+from .common import (
+    AtPackPath,
+    DeviceName,
+    console,
+    handle_device_not_found_error,
+    handle_atpack_error,
+)
 
 # Create config sub-command app
 config_app = typer.Typer(name="config", help="⚙️ Configuration information")

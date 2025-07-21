@@ -97,7 +97,9 @@ def microchip_pic16fxxx_edc_pic16f877_pic_content(
 
 
 @pytest.fixture
-def microchip_pic24f_ka_kl_km_content_fixture(microchip_pic24f_ka_kl_km_atpack_file: Path) -> Path:
+def microchip_pic24f_ka_kl_km_content_fixture(
+    microchip_pic24f_ka_kl_km_atpack_file: Path,
+) -> Path:
     """Fixture that checks for PIC24F AtPack availability and returns path if available."""
     skip_if_atpack_missing(microchip_pic24f_ka_kl_km_atpack_file, "PIC24F")
     return microchip_pic24f_ka_kl_km_atpack_file

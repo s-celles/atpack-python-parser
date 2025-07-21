@@ -89,7 +89,9 @@ def test_hierarchical_memory_atmel(microchip_pic16fxxx_edc_pic16f877_pic_content
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_flat_vs_hierarchical_consistency(microchip_pic16fxxx_edc_pic16f877_pic_content):
+def test_flat_vs_hierarchical_consistency(
+    microchip_pic16fxxx_edc_pic16f877_pic_content,
+):
     """Test that flat and hierarchical memory views are consistent."""
     parser = AtPackParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
 
@@ -127,7 +129,9 @@ def test_memory_hierarchy_levels(microchip_pic16fxxx_edc_pic16f877_pic_content):
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_memory_segments_ordered_ascending(microchip_pic16fxxx_edc_pic16f877_pic_content):
+def test_memory_segments_ordered_ascending(
+    microchip_pic16fxxx_edc_pic16f877_pic_content,
+):
     """Test that memory segments are ordered by ascending address."""
     parser = AtPackParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
 
@@ -138,9 +142,9 @@ def test_memory_segments_ordered_ascending(microchip_pic16fxxx_edc_pic16f877_pic
         if len(space.segments) > 1:
             prev_start = -1
             for segment in space.segments:
-                assert (
-                    segment.start >= prev_start
-                ), f"Segments not ordered in {space.name}: {segment.name} at {segment.start:x} comes after {prev_start:x}"
+                assert segment.start >= prev_start, (
+                    f"Segments not ordered in {space.name}: {segment.name} at {segment.start:x} comes after {prev_start:x}"
+                )
                 prev_start = segment.start
 
     # Test flat memory
@@ -148,7 +152,7 @@ def test_memory_segments_ordered_ascending(microchip_pic16fxxx_edc_pic16f877_pic
     if len(flat_memory) > 1:
         prev_start = -1
         for segment in flat_memory:
-            assert (
-                segment.start >= prev_start
-            ), f"Flat segments not ordered: {segment.name} at {segment.start:x} comes after {prev_start:x}"
+            assert segment.start >= prev_start, (
+                f"Flat segments not ordered: {segment.name} at {segment.start:x} comes after {prev_start:x}"
+            )
             prev_start = segment.start
