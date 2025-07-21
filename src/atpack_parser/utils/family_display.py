@@ -20,8 +20,8 @@ def get_family_emoji(family: DeviceFamily) -> str:
         str: Emoji representation of the family
     """
     emoji_map = {
-        DeviceFamily.ATMEL: "�",    # Blue circle for ATMEL (#3676c4)
-        DeviceFamily.PIC: "�",      # Red circle for Microchip/PIC (#ee2223)
+        DeviceFamily.ATMEL: "🔵",    # Blue circle for ATMEL (#3676c4)
+        DeviceFamily.PIC: "🔴",      # Red circle for Microchip/PIC (#ee2223)
     }
     return emoji_map.get(family, "❓")  # Question mark for unknown
 
