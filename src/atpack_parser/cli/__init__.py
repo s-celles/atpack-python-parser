@@ -11,6 +11,7 @@ from .memory import memory_app
 from .registers import registers_app
 from .config import config_app
 from .global_commands import scan, help_tree_command, interactive_help
+from .tui_command import launch_tui
 
 # Create console for rich output
 console = Console()
@@ -33,6 +34,7 @@ app.add_typer(config_app)
 app.command("scan")(scan)
 app.command("help-tree")(help_tree_command)
 app.command("help")(interactive_help)
+app.command("tui")(launch_tui)
 
 
 @app.callback(invoke_without_command=True)

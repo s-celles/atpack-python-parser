@@ -31,6 +31,7 @@ atpack --help
 │ scan        🔍 Scan directory for AtPack files.                                                                                                                                                               │
 │ help-tree   🌳 Show the complete command tree structure with examples.                                                                                                                                        │
 │ help        ❓ Get interactive help for commands.                                                                                                                                                             │
+│ tui         🖥️ Launch Terminal User Interface (TUI).                                                                                                                                                          │
 │ files       📁 AtPack file management                                                                                                                                                                         │
 │ devices     🔌 Device information                                                                                                                                                                             │
 │ memory      💾 Memory information                                                                                                                                                                             │
@@ -64,7 +65,8 @@ atpack help-tree
 │  ├── ⚙️ config - Configuration information                                                                                                                                                                     │
 │  │   └── show - Show configuration information                                                                                                                                                                │
 │  ├── 🔍 scan - Scan directory for AtPack files                                                                                                                                                                │
-│  └── 🌳 help-tree - Show command tree structure                                                                                                                                                               │
+│  ├── 🌳 help-tree - Show command tree structure                                                                                                                                                               │
+│  └── 🖥️ tui - Launch Terminal User Interface                                                                                                                                                                  │
 │                                                                                                                                                                                                               │
 │  📚 Usage Examples:                                                                                                                                                                                           │
 │    atpack files list mypack.atpack                                                                                                                                                                            │
@@ -89,6 +91,8 @@ atpack help-tree
 │                                                                                                                                                                                                               │
 │    atpack scan ./atpacks/ --format json                                                                                                                                                                       │
 │                                                                                                                                                                                                               │
+│    atpack tui                                                                                                                                                                                                 │
+│                                                                                                                                                                                                               │
 │                                                                                                                                                                                                               │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
@@ -111,6 +115,43 @@ atpack scan ./atpacks/
 Found 2 AtPack files
 ```
 
+### Terminal User Interface (TUI)
+
+Launch the interactive Terminal User Interface:
+
+```bash
+atpack tui
+```
+
+The TUI provides a visual interface with:
+- **File Browser**: Browse and select AtPack files
+- **Device Explorer**: View devices in a tabbed interface
+- **Memory Viewer**: Visualize memory layouts
+- **Register Inspector**: Explore registers and bitfields
+- **Configuration Panel**: View fuses, interrupts, and signatures
+
+**Key Features:**
+- Mouse and keyboard navigation
+- Real-time file browsing
+- Tabbed interface for different data views
+- Search and filter capabilities
+- Export functionality
+
+**Prerequisites:**
+```bash
+# Install with TUI support
+pip install atpack-parser[tui]
+
+# Or install textual separately
+pip install textual
+```
+
+**Key Bindings:**
+- `F1`: Help
+- `F5`: Refresh
+- `Q` or `Ctrl+C`: Quit
+- `Tab`: Navigate between panels
+- Arrow keys: Navigate within panels
 
 ### Files Commands
 

@@ -182,6 +182,7 @@ def generate_command_tree() -> str:
     global_commands = [
         ("scan", "🔍", "Scan directory for AtPack files"),
         ("help-tree", "🌳", "Show command tree structure"),
+        ("tui", "🖥️", "Launch Terminal User Interface"),
     ]
 
     # Build tree for sub-apps
@@ -237,7 +238,7 @@ def interactive_help(
             "📋 registers", "list, show", "Explore registers and bitfields"
         )
         help_table.add_row("⚙️ config", "show", "View fuses, config words, interrupts")
-        help_table.add_row("🔍 Global", "scan, help-tree", "Utility commands")
+        help_table.add_row("🔍 Global", "scan, help-tree, tui", "Utility commands")
 
         console.print(help_table)
 
@@ -261,6 +262,7 @@ def interactive_help(
             "config": "⚙️ Config: show - Configuration data\n  Example: atpack config show ATmega16 mypack.atpack",
             "scan": "🔍 Scan: Search for AtPack files\n  Example: atpack scan ./atpacks/",
             "help-tree": "🌳 Help Tree: Show command structure\n  Example: atpack help-tree",
+            "tui": "🖥️ TUI: Launch Terminal User Interface\n  Example: atpack tui",
         }
 
         if command in help_map:
