@@ -60,7 +60,10 @@ def main(
     if version:
         from .. import __version__
 
-        console.print(f"AtPack Parser v{__version__}")
+        atpack = typer.style("AtPack", bg=typer.colors.BLUE)
+        parser = typer.style("Parser", bg=typer.colors.WHITE, fg=typer.colors.BLACK)
+        version = typer.style("v" + __version__, bg=typer.colors.RED)
+        typer.echo(f"{atpack} {parser} {version}")
         raise typer.Exit()
     
     # If no command is provided, show help
