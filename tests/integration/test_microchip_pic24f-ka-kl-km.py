@@ -16,7 +16,6 @@ from atpack_parser import AtPackParser
 from atpack_parser.cli import app
 from atpack_parser.exceptions import DeviceNotFoundError
 from atpack_parser.models import DeviceFamily
-from conftest import skip_if_atpack_missing
 
 
 @pytest.mark.integration
