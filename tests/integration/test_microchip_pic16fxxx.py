@@ -12,17 +12,17 @@ from src.atpack_parser import AtPackParser
 # Import helper functions from parent conftest
 test_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(test_dir))
-from conftest import skip_if_atpack_missing, PIC_ATPACK_FILE
+from conftest import skip_if_atpack_missing
 
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_enhanced_pic_parser(pic_content: str):
+def test_enhanced_pic_parser(microchip_pic16fxxx_edc_pic16f876_pic_content: str):
     """Test the enhanced PIC parser with PlatformIO-useful information."""
     print("=== Enhanced PIC Parser Test ===\n")
 
     # Parse the device
-    parser = PicParser(pic_content)
+    parser = PicParser(microchip_pic16fxxx_edc_pic16f876_pic_content)
     device = parser.parse_device("PIC16F876A")
 
     print(f"Device: {device.name}")
@@ -208,11 +208,11 @@ def test_enhanced_pic_parser(pic_content: str):
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_parser(pic_atpack_file: Path):
+def test_parser(microchip_pic16fxxx_atpack_file: Path):
     """Test the AtPackParser with PIC16F877."""
-    skip_if_atpack_missing(pic_atpack_file, "PIC")
-    
-    parser = AtPackParser(pic_atpack_file)
+    skip_if_atpack_missing(microchip_pic16fxxx_atpack_file, "PIC")
+
+    parser = AtPackParser(microchip_pic16fxxx_atpack_file)
     devices = parser.get_devices()
     assert len(devices) > 0, "No devices found in the AtPack"
     device_name = "PIC16F877"

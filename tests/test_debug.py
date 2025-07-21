@@ -20,8 +20,12 @@ except ImportError:
             print(f"⚠️ {vendor} AtPack file not found: {atpack_file}")
             print("See atpacks/README.md for download instructions.")
             exit(1)
-    
-    PIC_ATPACK_FILE = Path(__file__).parent.parent / "atpacks" / "Microchip.PIC16Fxxx_DFP.1.7.162.atpack"
+
+    PIC_ATPACK_FILE = (
+        Path(__file__).parent.parent
+        / "atpacks"
+        / "Microchip.PIC16Fxxx_DFP.1.7.162.atpack"
+    )
 
 
 @pytest.mark.integration
@@ -31,7 +35,7 @@ def test_pic_parsing(pic_atpack_file: Path = None):
     # Use provided fixture or fallback to direct path for standalone execution
     atpack_file = pic_atpack_file if pic_atpack_file is not None else PIC_ATPACK_FILE
     skip_if_atpack_missing(atpack_file, "PIC")
-    
+
     print(f"Testing AtPack: {atpack_file}")
 
     try:

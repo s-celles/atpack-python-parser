@@ -9,12 +9,12 @@ from src.atpack_parser.atdf_parser import AtdfParser
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_enhanced_atmel_parser(atmel_content: str):
+def test_enhanced_atmel_parser(atmel_atmega_atmega16_atdf_content: str):
     """Test the enhanced ATMEL parser."""
     print("=== Enhanced ATMEL Parser Test ===\n")
 
     # Parse the device
-    parser = AtdfParser(atmel_content)
+    parser = AtdfParser(atmel_atmega_atmega16_atdf_content)
     device = parser.parse_device("ATmega16")
 
     print(f"Device: {device.name}")
