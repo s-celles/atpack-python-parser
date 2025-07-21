@@ -65,7 +65,7 @@ def main(
         version = typer.style("v" + __version__, bg=typer.colors.RED)
         typer.echo(f"{atpack} {parser} {version}")
         raise typer.Exit()
-    
+
     # If no command is provided, show help
     if ctx.invoked_subcommand is None:
         console.print(ctx.get_help())

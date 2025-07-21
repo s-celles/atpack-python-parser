@@ -140,9 +140,7 @@ class AtdfParser:
 
         return segments
 
-    def _parse_memory_spaces(
-        self, device_element: etree._Element
-    ) -> List[MemorySpace]:
+    def _parse_memory_spaces(self, device_element: etree._Element) -> List[MemorySpace]:
         """Parse hierarchical memory spaces from ATMEL device."""
         memory_spaces = []
 

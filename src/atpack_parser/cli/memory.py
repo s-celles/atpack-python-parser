@@ -25,7 +25,10 @@ def show_memory(
         str, typer.Option("--format", "-f", help="Output format")
     ] = "table",
     flat: Annotated[
-        bool, typer.Option("--flat", help="Show flat memory layout (default is hierarchical)")
+        bool,
+        typer.Option(
+            "--flat", help="Show flat memory layout (default is hierarchical)"
+        ),
     ] = False,
     segment: Annotated[
         Optional[str],
@@ -41,13 +44,13 @@ def show_memory(
     """💾 Show memory layout for a device."""
     try:
         parser = AtPackParser(atpack_path)
-        
+
         # Default is hierarchical, flat is the option
         hierarchical = not flat
-        
+
         if hierarchical:
             memory_spaces = parser.get_device_memory_hierarchical(device_name)
-            
+
             # Flatten for filtering if segment is specified
             if segment:
                 all_segments = []
@@ -71,7 +74,9 @@ def show_memory(
             # Filter by segment if specified
             if segment:
                 memory_segments = [
-                    seg for seg in memory_segments if seg.name.upper() == segment.upper()
+                    seg
+                    for seg in memory_segments
+                    if seg.name.upper() == segment.upper()
                 ]
                 if not memory_segments:
                     console.print(
@@ -88,12 +93,20 @@ def show_memory(
             else:
                 # Export flat segments
                 data = [seg.model_dump() for seg in memory_segments]
-                
+
             json_output = json.dumps(data, indent=2)
             if output:
                 output.write_text(json_output, encoding="utf-8")
-                count_items = len(memory_spaces if hierarchical and memory_segments is None else memory_segments)
-                item_type = "memory spaces" if hierarchical and memory_segments is None else "memory segments"
+                count_items = len(
+                    memory_spaces
+                    if hierarchical and memory_segments is None
+                    else memory_segments
+                )
+                item_type = (
+                    "memory spaces"
+                    if hierarchical and memory_segments is None
+                    else "memory segments"
+                )
                 console.print(
                     f"[green]Exported {count_items} {item_type} to {output}[/green]"
                 )
@@ -117,10 +130,14 @@ def show_memory(
 
             if hierarchical and memory_segments is None:
                 # Display hierarchical table
-                _display_hierarchical_memory(memory_spaces, title, output_console, no_color, output)
+                _display_hierarchical_memory(
+                    memory_spaces, title, output_console, no_color, output
+                )
             else:
                 # Display flat table
-                _display_flat_memory(memory_segments, title, output_console, no_color, output)
+                _display_flat_memory(
+                    memory_segments, title, output_console, no_color, output
+                )
 
     except DeviceNotFoundError as e:
         console.print(
@@ -172,7 +189,9 @@ def _display_flat_memory(memory_segments, title, output_console, no_color, outpu
         output_console.print(table)
 
 
-def _display_hierarchical_memory(memory_spaces, title, output_console, no_color, output):
+def _display_hierarchical_memory(
+    memory_spaces, title, output_console, no_color, output
+):
     """Display memory spaces in a hierarchical table format."""
     table = Table(title=title)
     table.add_column("Memory Space/Segment", style="cyan" if not no_color else None)
@@ -187,9 +206,13 @@ def _display_hierarchical_memory(memory_spaces, title, output_console, no_color,
         # Add memory space header
         space_name = f"📁 {space.name}"
         space_start = f"0x{space.start:04X}" if space.start is not None else "N/A"
-        space_end = f"0x{space.start + space.size - 1:04X}" if (space.start is not None and space.size is not None) else "N/A"
+        space_end = (
+            f"0x{space.start + space.size - 1:04X}"
+            if (space.start is not None and space.size is not None)
+            else "N/A"
+        )
         space_size = f"{space.size:,}" if space.size is not None else "N/A"
-        
+
         table.add_row(
             space_name,
             space_start,
@@ -197,7 +220,7 @@ def _display_hierarchical_memory(memory_spaces, title, output_console, no_color,
             space_size,
             space.space_type,
             "N/A",
-            f"Container with {len(space.segments)} segment(s)"
+            f"Container with {len(space.segments)} segment(s)",
         )
 
         # Add child segments with indentation
@@ -205,7 +228,7 @@ def _display_hierarchical_memory(memory_spaces, title, output_console, no_color,
             end_addr = seg.start + seg.size - 1
             page_size_str = f"{seg.page_size}" if seg.page_size else "N/A"
             segment_name = f"  └── {seg.name}"  # Indented with tree characters
-            
+
             table.add_row(
                 segment_name,
                 f"0x{seg.start:04X}",

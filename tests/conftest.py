@@ -93,9 +93,7 @@ def microchip_pic16fxxx_edc_pic16f877_pic_content(
 ) -> str:
     """Fixture that provides PIC16F877 content from the AtPack file."""
     skip_if_atpack_missing(microchip_pic16fxxx_atpack_file, "PIC")
-    return read_from_atpack(
-        microchip_pic16fxxx_atpack_file, "edc/PIC16F877.PIC", "PIC"
-    )
+    return read_from_atpack(microchip_pic16fxxx_atpack_file, "edc/PIC16F877.PIC", "PIC")
 
 
 # @pytest.fixture

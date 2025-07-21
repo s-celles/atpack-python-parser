@@ -1166,9 +1166,7 @@ class PicParser:
         except (ValueError, TypeError):
             return None
 
-    def _parse_memory_spaces(
-        self, device_element: etree._Element
-    ) -> List[MemorySpace]:
+    def _parse_memory_spaces(self, device_element: etree._Element) -> List[MemorySpace]:
         """Parse hierarchical memory spaces from PIC device."""
         memory_spaces = []
 
@@ -1178,7 +1176,7 @@ class PicParser:
         )
         for ps in program_spaces:
             segments = []
-            
+
             # Parse all types of sectors within ProgramSpace
             code_sectors = self.parser.xpath(
                 './/edc:CodeSector | .//*[local-name()="CodeSector"]', ps
@@ -1201,18 +1199,27 @@ class PicParser:
                             section=section_desc,
                             address_space="program",
                             parent_name="ProgramSpace",
-                            level=1
+                            level=1,
                         )
                     )
 
             # Parse other sectors in ProgramSpace (UserIDSector, DeviceIDSector, ConfigFuseSector, etc.)
             other_sectors = [
                 ('.//edc:UserIDSector | .//*[local-name()="UserIDSector"]', "userid"),
-                ('.//edc:DeviceIDSector | .//*[local-name()="DeviceIDSector"]', "deviceid"),
-                ('.//edc:ConfigFuseSector | .//*[local-name()="ConfigFuseSector"]', "config"),
+                (
+                    './/edc:DeviceIDSector | .//*[local-name()="DeviceIDSector"]',
+                    "deviceid",
+                ),
+                (
+                    './/edc:ConfigFuseSector | .//*[local-name()="ConfigFuseSector"]',
+                    "config",
+                ),
                 ('.//edc:EEDataSector | .//*[local-name()="EEDataSector"]', "eeprom"),
                 ('.//edc:TestZone | .//*[local-name()="TestZone"]', "test"),
-                ('.//edc:BACKBUGVectorSector | .//*[local-name()="BACKBUGVectorSector"]', "debug")
+                (
+                    './/edc:BACKBUGVectorSector | .//*[local-name()="BACKBUGVectorSector"]',
+                    "debug",
+                ),
             ]
 
             for xpath_expr, sector_type in other_sectors:
@@ -1220,7 +1227,9 @@ class PicParser:
                 for elem in sector_elements:
                     start = self.parser.get_attr_hex(elem, "beginaddr", 0)
                     end = self.parser.get_attr_hex(elem, "endaddr", 0)
-                    name = self.parser.get_attr(elem, "sectionname", sector_type.upper())
+                    name = self.parser.get_attr(
+                        elem, "sectionname", sector_type.upper()
+                    )
                     region_id = self.parser.get_attr(elem, "regionid", "")
                     section_desc = self.parser.get_attr(elem, "sectiondesc", "")
 
@@ -1235,7 +1244,7 @@ class PicParser:
                                 section=section_desc,
                                 address_space="program",
                                 parent_name="ProgramSpace",
-                                level=1
+                                level=1,
                             )
                         )
 
@@ -1244,7 +1253,7 @@ class PicParser:
                     MemorySpace(
                         name="ProgramSpace",
                         space_type="ProgramSpace",
-                        segments=sorted(segments, key=lambda x: x.start)
+                        segments=sorted(segments, key=lambda x: x.start),
                     )
                 )
 
@@ -1275,7 +1284,7 @@ class PicParser:
                             type="sfr",
                             address_space="data",
                             parent_name="DataSpace",
-                            level=1
+                            level=1,
                         )
                     )
 
@@ -1301,7 +1310,7 @@ class PicParser:
                             section=section_desc,
                             address_space="data",
                             parent_name="DataSpace",
-                            level=1
+                            level=1,
                         )
                     )
 
@@ -1319,7 +1328,7 @@ class PicParser:
                         space_type="DataSpace",
                         start=0,  # DataSpace typically starts at 0
                         size=ds_size,
-                        segments=sorted(segments, key=lambda x: x.start)
+                        segments=sorted(segments, key=lambda x: x.start),
                     )
                 )
 
@@ -1351,7 +1360,7 @@ class PicParser:
                             section=section_desc,
                             address_space="eeprom",
                             parent_name="EEDataSpace",
-                            level=1
+                            level=1,
                         )
                     )
 
@@ -1360,7 +1369,7 @@ class PicParser:
                     MemorySpace(
                         name="EEDataSpace",
                         space_type="EEDataSpace",
-                        segments=sorted(segments, key=lambda x: x.start)
+                        segments=sorted(segments, key=lambda x: x.start),
                     )
                 )
 

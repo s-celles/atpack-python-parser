@@ -12,6 +12,7 @@ from .. import AtPackParser
 from .common import console
 from ..utils import get_family_emoji
 
+
 def scan(
     directory: Annotated[
         Path, typer.Argument(help="Directory to scan for AtPack files")

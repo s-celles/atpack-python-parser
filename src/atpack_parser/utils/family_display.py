@@ -12,16 +12,16 @@ def get_family_emoji(family: DeviceFamily) -> str:
     Uses brand colors from encycolorpedia:
     - ATMEL: #3676c4 (blue) -> 🔵
     - Microchip/PIC: #ee2223 (red) -> 🔴
-    
+
     Args:
         family: The device family
-        
+
     Returns:
         str: Emoji representation of the family
     """
     emoji_map = {
-        DeviceFamily.ATMEL: "🔵",    # Blue circle for ATMEL (#3676c4)
-        DeviceFamily.PIC: "🔴",      # Red circle for Microchip/PIC (#ee2223)
+        DeviceFamily.ATMEL: "🔵",  # Blue circle for ATMEL (#3676c4)
+        DeviceFamily.PIC: "🔴",  # Red circle for Microchip/PIC (#ee2223)
     }
     return emoji_map.get(family, "❓")  # Question mark for unknown
 
@@ -29,10 +29,10 @@ def get_family_emoji(family: DeviceFamily) -> str:
 def get_family_title(family: DeviceFamily) -> str:
     """
     Get the full title for a device family.
-    
+
     Args:
         family: The device family
-        
+
     Returns:
         str: Full title of the family
     """
@@ -46,11 +46,11 @@ def get_family_title(family: DeviceFamily) -> str:
 def format_family_display(family: DeviceFamily, include_name: bool = True) -> str:
     """
     Format a device family for display with emoji and optional name.
-    
+
     Args:
         family: The device family
         include_name: Whether to include the family name
-        
+
     Returns:
         str: Formatted family display string
     """

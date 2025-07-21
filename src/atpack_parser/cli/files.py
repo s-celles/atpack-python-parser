@@ -91,12 +91,11 @@ def file_info(atpack_path: AtPackPath):
 def extract_atpack(
     atpack_path: AtPackPath,
     outdir: Annotated[
-        Optional[Path], 
-        typer.Option("--outdir", "-o", help="Output directory for extracted files")
+        Optional[Path],
+        typer.Option("--outdir", "-o", help="Output directory for extracted files"),
     ] = None,
     overwrite: Annotated[
-        bool, 
-        typer.Option("--overwrite", help="Overwrite existing directory")
+        bool, typer.Option("--overwrite", help="Overwrite existing directory")
     ] = False,
 ):
     """📦 Extract an AtPack file to a directory."""
@@ -105,7 +104,7 @@ def extract_atpack(
         if not atpack_path.is_file():
             console.print(f"[red]Error: {atpack_path} is not a file[/red]")
             raise typer.Exit(1)
-            
+
         if not zipfile.is_zipfile(atpack_path):
             console.print(f"[red]Error: {atpack_path} is not a valid zip file[/red]")
             raise typer.Exit(1)
@@ -114,35 +113,43 @@ def extract_atpack(
         if outdir is None:
             # Infer from filename: remove .atpack extension and add _dir_atpack
             stem = atpack_path.stem
-            if stem.endswith('.atpack'):
+            if stem.endswith(".atpack"):
                 stem = stem[:-7]  # Remove .atpack
             outdir = atpack_path.parent / f"{stem}_dir_atpack"
-        
+
         # Check if output directory already exists
         if outdir.exists():
             if not overwrite:
-                console.print(f"[red]Error: Output directory {outdir} already exists. Use --overwrite to replace it.[/red]")
+                console.print(
+                    f"[red]Error: Output directory {outdir} already exists. Use --overwrite to replace it.[/red]"
+                )
                 raise typer.Exit(1)
             else:
-                console.print(f"[yellow]Warning: Overwriting existing directory {outdir}[/yellow]")
-        
+                console.print(
+                    f"[yellow]Warning: Overwriting existing directory {outdir}[/yellow]"
+                )
+
         # Create output directory
         outdir.mkdir(parents=True, exist_ok=True)
-        
+
         # Extract the zip file
-        with zipfile.ZipFile(atpack_path, 'r') as zf:
+        with zipfile.ZipFile(atpack_path, "r") as zf:
             console.print(f"[blue]Extracting {atpack_path} to {outdir}[/blue]")
-            
+
             # Get list of files to extract
             file_list = zf.namelist()
-            
+
             with console.status(f"Extracting {len(file_list)} files..."):
                 zf.extractall(outdir)
-            
-            console.print(f"[green]✓ Successfully extracted {len(file_list)} files to {outdir}[/green]")
-            
+
+            console.print(
+                f"[green]✓ Successfully extracted {len(file_list)} files to {outdir}[/green]"
+            )
+
             # Show summary
-            total_size = sum(info.file_size for info in zf.infolist() if not info.is_dir())
+            total_size = sum(
+                info.file_size for info in zf.infolist() if not info.is_dir()
+            )
             console.print(f"[dim]Total size: {total_size:,} bytes[/dim]")
 
     except (OSError, zipfile.BadZipFile) as e:

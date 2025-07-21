@@ -67,7 +67,7 @@ def list_registers(
                 print(json_output)
         else:
             from rich.console import Console
-            
+
             # Create console with color control
             output_console = (
                 Console(force_terminal=not no_color)

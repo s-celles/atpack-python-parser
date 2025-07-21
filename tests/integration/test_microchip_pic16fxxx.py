@@ -19,11 +19,13 @@ from conftest import skip_if_atpack_missing
 @pytest.mark.atpack_required
 class TestPIC16FxxxIntegration:
     """Integration tests for PIC16Fxxx device parsing and data extraction."""
-    
+
     # Device under test
     DEVICE_NAME = "PIC16F877"
 
-    def test_device_basic_info(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+    def test_device_basic_info(
+        self, microchip_pic16fxxx_edc_pic16f877_pic_content: str
+    ):
         """Test parsing basic device information."""
         parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
         device = parser.parse_device(self.DEVICE_NAME)
@@ -33,7 +35,9 @@ class TestPIC16FxxxIntegration:
         assert device.architecture == "PIC"
         assert device.series is not None
 
-    def test_power_specifications(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+    def test_power_specifications(
+        self, microchip_pic16fxxx_edc_pic16f877_pic_content: str
+    ):
         """Test parsing power specifications."""
         parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
         device = parser.parse_device(self.DEVICE_NAME)
@@ -48,7 +52,9 @@ class TestPIC16FxxxIntegration:
             if ps.vdd_min and ps.vdd_max:
                 assert ps.vdd_min <= ps.vdd_max
 
-    def test_oscillator_configurations(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+    def test_oscillator_configurations(
+        self, microchip_pic16fxxx_edc_pic16f877_pic_content: str
+    ):
         """Test parsing oscillator configurations."""
         parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
         device = parser.parse_device(self.DEVICE_NAME)
@@ -60,7 +66,9 @@ class TestPIC16FxxxIntegration:
                 assert osc.name is not None
                 assert len(osc.name) > 0
 
-    def test_programming_interface(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+    def test_programming_interface(
+        self, microchip_pic16fxxx_edc_pic16f877_pic_content: str
+    ):
         """Test parsing programming interface information."""
         parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
         device = parser.parse_device(self.DEVICE_NAME)
@@ -74,7 +82,9 @@ class TestPIC16FxxxIntegration:
             if pi.low_voltage_threshold:
                 assert pi.low_voltage_threshold > 0
 
-    def test_pinout_information(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+    def test_pinout_information(
+        self, microchip_pic16fxxx_edc_pic16f877_pic_content: str
+    ):
         """Test parsing pinout information."""
         parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
         device = parser.parse_device(self.DEVICE_NAME)
@@ -82,14 +92,16 @@ class TestPIC16FxxxIntegration:
         # Pinout should be present for PIC devices
         if device.pinout:
             assert len(device.pinout) > 0
-            
+
             # Verify pin structure
             for pin in device.pinout[:5]:  # Check first 5 pins
                 assert pin.physical_pin is not None
                 assert pin.primary_function is not None
                 assert isinstance(pin.alternative_functions, list)
 
-    def test_debug_capabilities(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+    def test_debug_capabilities(
+        self, microchip_pic16fxxx_edc_pic16f877_pic_content: str
+    ):
         """Test parsing debug capabilities."""
         parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
         device = parser.parse_device(self.DEVICE_NAME)
@@ -100,7 +112,9 @@ class TestPIC16FxxxIntegration:
             if dc.hardware_breakpoint_count:
                 assert dc.hardware_breakpoint_count >= 0
 
-    def test_architecture_information(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+    def test_architecture_information(
+        self, microchip_pic16fxxx_edc_pic16f877_pic_content: str
+    ):
         """Test parsing architecture information."""
         parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
         device = parser.parse_device(self.DEVICE_NAME)
@@ -115,7 +129,9 @@ class TestPIC16FxxxIntegration:
             if ai.data_word_size:
                 assert ai.data_word_size > 0
 
-    def test_peripheral_detection(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+    def test_peripheral_detection(
+        self, microchip_pic16fxxx_edc_pic16f877_pic_content: str
+    ):
         """Test peripheral detection."""
         parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
         device = parser.parse_device(self.DEVICE_NAME)
@@ -127,14 +143,18 @@ class TestPIC16FxxxIntegration:
                 assert isinstance(peripheral, str)
                 assert len(peripheral) > 0
 
-    def test_platformio_usefulness(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+    def test_platformio_usefulness(
+        self, microchip_pic16fxxx_edc_pic16f877_pic_content: str
+    ):
         """Test that extracted data is useful for PlatformIO board definitions."""
         parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
         device = parser.parse_device(self.DEVICE_NAME)
 
         useful_features = 0
 
-        if device.power_specs and (device.power_specs.vdd_min or device.power_specs.vdd_max):
+        if device.power_specs and (
+            device.power_specs.vdd_min or device.power_specs.vdd_max
+        ):
             useful_features += 1
 
         if device.oscillator_configs:
@@ -158,7 +178,9 @@ class TestPIC16FxxxIntegration:
         # At least some useful information should be extracted
         assert useful_features > 0, "No useful information extracted for PlatformIO"
 
-    def test_device_memory_info(self, microchip_pic16fxxx_edc_pic16f877_pic_content: str):
+    def test_device_memory_info(
+        self, microchip_pic16fxxx_edc_pic16f877_pic_content: str
+    ):
         """Test parsing device memory information."""
         parser = PicParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
         device = parser.parse_device(self.DEVICE_NAME)
@@ -177,11 +199,15 @@ def test_atpack_parser_pic16f877(microchip_pic16fxxx_atpack_file: Path):
     parser = AtPackParser(microchip_pic16fxxx_atpack_file)
     devices = parser.get_devices()
     assert len(devices) > 0, "No devices found in the AtPack"
-    
+
     device_name = "PIC16F877"
     assert device_name in devices, f"Expected device {device_name} not found"
-    
+
     device = parser.get_device(device_name)
-    assert device.name == device_name, f"Expected device name {device_name}, got {device.name}"
+    assert device.name == device_name, (
+        f"Expected device name {device_name}, got {device.name}"
+    )
     assert device.family == "PIC", f"Expected family 'PIC', got {device.family}"
-    assert device.architecture == "PIC", f"Expected architecture 'PIC', got {device.architecture}"
+    assert device.architecture == "PIC", (
+        f"Expected architecture 'PIC', got {device.architecture}"
+    )

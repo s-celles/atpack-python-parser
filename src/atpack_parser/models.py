@@ -156,14 +156,16 @@ class MemorySegment(BaseModel):
     page_size: Optional[int] = None
     section: Optional[str] = None
     address_space: Optional[str] = None
-    parent_name: Optional[str] = None  # Name of parent container (e.g., "ProgramSpace", "DataSpace")
+    parent_name: Optional[str] = (
+        None  # Name of parent container (e.g., "ProgramSpace", "DataSpace")
+    )
     children: List["MemorySegment"] = Field(default_factory=list)  # Child segments
     level: int = 0  # Hierarchy level (0=top level, 1=child, etc.)
 
 
 class MemorySpace(BaseModel):
     """Memory space/container information for hierarchical memory layout."""
-    
+
     name: str
     space_type: str  # "ProgramSpace", "DataSpace", "EEDataSpace", "address-space", etc.
     start: Optional[int] = None
@@ -282,7 +284,9 @@ class Device(BaseModel):
 
     # Memory information
     memory_segments: List[MemorySegment] = Field(default_factory=list)
-    memory_spaces: List[MemorySpace] = Field(default_factory=list)  # Hierarchical memory layout
+    memory_spaces: List[MemorySpace] = Field(
+        default_factory=list
+    )  # Hierarchical memory layout
 
     # Modules and peripherals
     modules: List[Module] = Field(default_factory=list)
