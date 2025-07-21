@@ -11,7 +11,7 @@ from rich.table import Table
 
 from .. import AtPackParser
 from ..exceptions import AtPackError
-from .common import AtPackPath, console
+from .common import AtPackPath, console, handle_atpack_error
 
 # Create files sub-command app
 files_app = typer.Typer(name="files", help="📁 AtPack file management")
@@ -50,8 +50,7 @@ def list_files(
             console.print(table)
 
     except AtPackError as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1)
+        handle_atpack_error(e)
 
 
 @files_app.command("info")
@@ -83,8 +82,7 @@ def file_info(atpack_path: AtPackPath):
             console.print(f"\n[yellow]Warning: Could not count devices: {e}[/yellow]")
 
     except AtPackError as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1)
+        handle_atpack_error(e)
 
 
 @files_app.command("extract")

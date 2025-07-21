@@ -2,6 +2,8 @@
 
 import fnmatch
 import json
+import io
+import csv
 from pathlib import Path
 from typing import Annotated, Optional
 
@@ -27,7 +29,7 @@ from ..utils.units import (
     format_temperature,
     parse_temperature_range,
 )
-from .common import AtPackPath, DeviceName, console
+from .common import AtPackPath, DeviceName, console, handle_device_not_found_error, handle_atpack_error
 
 # Create devices sub-command app
 devices_app = typer.Typer(name="devices", help="🔌 Device information")
@@ -146,8 +148,7 @@ def list_devices(
                 )
 
     except AtPackError as e:
-        console.print(f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}")
-        raise typer.Exit(1)
+        handle_atpack_error(e, no_color)
 
 
 @devices_app.command("info")
@@ -222,11 +223,9 @@ def device_info(
                 console.print(module_table)
 
     except DeviceNotFoundError as e:
-        console.print(f"[red]Device not found: {e}[/red]")
-        raise typer.Exit(1)
+        handle_device_not_found_error(e)
     except AtPackError as e:
-        console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(1)
+        handle_atpack_error(e)
 
 
 @devices_app.command("search")
@@ -326,9 +325,7 @@ def search_devices(
                 output_console.print(f"\n{success_msg}")
 
     except AtPackError as e:
-        error_msg = f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}"
-        console.print(error_msg)
-        raise typer.Exit(1)
+        handle_atpack_error(e, no_color)
 
 
 @devices_app.command("packages")
@@ -616,15 +613,9 @@ def list_packages(
                     output_console.print(footnote2_msg)
 
     except DeviceNotFoundError as e:
-        console.print(
-            f"[red]Device not found: {e}[/red]"
-            if not no_color
-            else f"Device not found: {e}"
-        )
-        raise typer.Exit(1)
+        handle_device_not_found_error(e, no_color)
     except AtPackError as e:
-        console.print(f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}")
-        raise typer.Exit(1)
+        handle_atpack_error(e, no_color)
 
 
 @devices_app.command("pinout")
@@ -932,12 +923,6 @@ def show_pinout(
                 )
 
     except DeviceNotFoundError as e:
-        console.print(
-            f"[red]Device not found: {e}[/red]"
-            if not no_color
-            else f"Device not found: {e}"
-        )
-        raise typer.Exit(1)
+        handle_device_not_found_error(e, no_color)
     except AtPackError as e:
-        console.print(f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}")
-        raise typer.Exit(1)
+        handle_atpack_error(e, no_color)

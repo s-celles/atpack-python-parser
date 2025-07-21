@@ -10,7 +10,7 @@ from rich.table import Table
 
 from .. import AtPackParser
 from ..exceptions import AtPackError, DeviceNotFoundError
-from .common import AtPackPath, DeviceName, console
+from .common import AtPackPath, DeviceName, console, handle_device_not_found_error, handle_atpack_error
 
 
 # Create memory sub-command app
@@ -140,15 +140,9 @@ def show_memory(
                 )
 
     except DeviceNotFoundError as e:
-        console.print(
-            f"[red]Device not found: {e}[/red]"
-            if not no_color
-            else f"Device not found: {e}"
-        )
-        raise typer.Exit(1)
+        handle_device_not_found_error(e, no_color)
     except AtPackError as e:
-        console.print(f"[red]Error: {e}[/red]" if not no_color else f"Error: {e}")
-        raise typer.Exit(1)
+        handle_atpack_error(e, no_color)
 
 
 def _display_flat_memory(memory_segments, title, output_console, no_color, output):
