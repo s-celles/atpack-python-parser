@@ -415,7 +415,7 @@ class TestPIC24FEdgeCases:
         """Test memory segment filtering for PIC24F device."""
         runner = CliRunner()
 
-        # First, get all segments to find a valid one
+        # First, get all segments using flat mode to find a valid segment name
         result = runner.invoke(
             app,
             [
@@ -423,6 +423,7 @@ class TestPIC24FEdgeCases:
                 "show",
                 "PIC24F16KA301",
                 str(microchip_pic24f_ka_kl_km_atpack_file),
+                "--flat",
                 "--format",
                 "json",
             ],
@@ -433,7 +434,7 @@ class TestPIC24FEdgeCases:
         if segments:
             segment_name = segments[0]["name"]
 
-            # Test filtering by specific segment
+            # Test filtering by specific segment (using hierarchical mode by default)
             result = runner.invoke(
                 app,
                 [

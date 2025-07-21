@@ -47,7 +47,7 @@ def main(
 
     Available command groups:
     • files    - Manage AtPack files (list, info, extract)
-    • devices  - Device information (list, info, search)
+    • devices  - Device information (list, info, search, packages, pinout)
     • memory   - Memory layouts (show)
     • registers - Register details (list, show)
     • config   - Configuration data (show)
