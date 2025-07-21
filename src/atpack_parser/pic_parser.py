@@ -804,7 +804,10 @@ class PicParser:
                                             # Use safer XPath without predicates
                                             aliases = []
                                             for elem in semantic.iter():
-                                                if elem.tag.endswith("LegacyAlias") or "LegacyAlias" in elem.tag:
+                                                if (
+                                                    elem.tag.endswith("LegacyAlias")
+                                                    or "LegacyAlias" in elem.tag
+                                                ):
                                                     aliases.append(elem)
 
                                         if aliases:

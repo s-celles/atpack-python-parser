@@ -745,7 +745,11 @@ def show_config(
             if config_type == "all":
                 data = {}
                 for key, value in config.items():
-                    if isinstance(value, list) and value and hasattr(value[0], "model_dump"):
+                    if (
+                        isinstance(value, list)
+                        and value
+                        and hasattr(value[0], "model_dump")
+                    ):
                         data[key] = [item.model_dump() for item in value]
                     elif hasattr(value, "model_dump"):
                         data[key] = value.model_dump()
@@ -754,7 +758,11 @@ def show_config(
                 print(json.dumps(data, indent=2))
             else:
                 items = config.get(config_type, [])
-                if isinstance(items, list) and items and hasattr(items[0], "model_dump"):
+                if (
+                    isinstance(items, list)
+                    and items
+                    and hasattr(items[0], "model_dump")
+                ):
                     data = [item.model_dump() for item in items]
                 elif hasattr(items, "model_dump"):
                     data = items.model_dump()
