@@ -286,6 +286,49 @@ atpack devices info PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 └────────┴─────────────────┴─────────────────┘
 ```
 
+#### List all packages/variants for a device
+
+```bash
+atpack devices packages DEVICE_NAME /path/to/file.atpack
+```
+
+This command lists all available packages/variants for a specific device, including package types, pin counts, temperature ranges, voltage ranges, and maximum operating frequencies.
+
+Example:
+```bash
+atpack devices packages ATmega16 ./atpacks/Atmel.ATmega_DFP.2.2.509.atpack
+```
+
+Optional parameters:
+- `--format` or `-f`: Output format (table, json, csv)
+- `--output` or `-o`: Export results to file
+- `--no-color`: Disable colored output
+
+#### Show device pinout information
+
+```bash
+atpack devices pinout DEVICE_NAME /path/to/file.atpack
+```
+
+This command displays pinout information for a device, showing pin positions, pad names, pin types, and optional alternative functions.
+
+Example:
+```bash
+atpack devices pinout PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+```
+
+Optional parameters:
+- `--package` or `-p`: Show specific package/pinout only
+- `--functions`: Include pin alternative functions in the output
+- `--format` or `-f`: Output format (table, json, csv)
+- `--output` or `-o`: Export results to file
+- `--no-color`: Disable colored output
+
+Example with package filter:
+```bash
+atpack devices pinout ATmega16 ./atpacks/Atmel.ATmega_DFP.2.2.509.atpack --package TQFP44 --functions
+```
+
 #### Typo in device name? No problem!
 
 ```

@@ -168,6 +168,8 @@ def generate_command_tree() -> str:
             ("list", "List all devices"),
             ("info", "Show device details"),
             ("search", "Search devices by pattern"),
+            ("packages", "List device packages/variants"),
+            ("pinout", "Show device pinout information"),
         ],
         "memory": [("show", "Show memory layout")],
         "registers": [("list", "List registers"), ("show", "Show register details")],
@@ -226,7 +228,7 @@ def interactive_help(
             "📁 files", "list, info, extract", "Manage AtPack files and show metadata"
         )
         help_table.add_row(
-            "🔌 devices", "list, info, search", "Browse devices and get detailed specs"
+            "🔌 devices", "list, info, search, packages, pinout", "Browse devices and get detailed specs"
         )
         help_table.add_row("💾 memory", "show", "Analyze memory layouts and segments")
         help_table.add_row(
@@ -251,7 +253,7 @@ def interactive_help(
         # Show specific command help
         help_map = {
             "files": "📁 Files: list, info, extract - Manage AtPack files\n  Example: atpack files list mypack.atpack",
-            "devices": "🔌 Devices: list, info, search - Device information\n  Example: atpack devices search '*877*' mypack.atpack",
+            "devices": "🔌 Devices: list, info, search, packages, pinout - Device information\n  Example: atpack devices search '*877*' mypack.atpack",
             "memory": "💾 Memory: show - Memory layouts\n  Example: atpack memory show ATmega16 mypack.atpack",
             "registers": "📋 Registers: list, show - Register details\n  Example: atpack registers list ATmega16 mypack.atpack",
             "config": "⚙️ Config: show - Configuration data\n  Example: atpack config show ATmega16 mypack.atpack",
