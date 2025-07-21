@@ -13,7 +13,6 @@ from textual.widgets import (
     Header,
     Input,
     Label,
-    Markdown,
     Static,
     TabbedContent,
     TabPane,
@@ -69,10 +68,11 @@ class AtPackTUI(App):
         Binding("f5", "refresh", "Refresh"),
     ]
 
-    def __init__(self):
+    def __init__(self, start_directory: Optional[str] = None):
         super().__init__()
         self.parser: Optional[AtPackParser] = None
         self.current_atpack_path: Optional[Path] = None
+        self.start_directory = start_directory or "./atpacks/"
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
@@ -82,7 +82,7 @@ class AtPackTUI(App):
             # File browser panel
             with Vertical(classes="file-browser"):
                 yield Label("📁 AtPack Files", classes="panel-title")
-                yield DirectoryTree("./atpacks/", id="atpack-tree")
+                yield DirectoryTree(self.start_directory, id="atpack-tree")
             
             # AtPack info panel
             with Vertical(classes="atpack-info"):
@@ -169,14 +169,12 @@ class AtPackTUI(App):
             
         info_widget = self.query_one("#atpack-info", Static)
         
-        info_text = f"""
-**File**: {self.current_atpack_path.name}
-**Family**: {self.parser.device_family.value}
-**Devices**: {len(self.parser.get_all_devices())}
-**Description**: AtPack file information
-        """
+        info_text = f"""File: {self.current_atpack_path.name}
+Family: {self.parser.device_family.value}
+Devices: {len(self.parser.get_devices())}
+Description: AtPack file information"""
         
-        info_widget.update(Markdown(info_text))
+        info_widget.update(info_text)
     
     def _update_devices_tab(self) -> None:
         """Update the devices table."""
@@ -187,7 +185,7 @@ class AtPackTUI(App):
         devices_table.clear()
         
         try:
-            devices = self.parser.get_all_devices()
+            devices = self.parser.get_devices()
             for i, device_name in enumerate(devices, 1):
                 devices_table.add_row(
                     device_name,
@@ -276,9 +274,9 @@ class AtPackTUI(App):
         self.exit()
 
 
-def run_tui() -> None:
+def run_tui(start_directory: Optional[str] = None) -> None:
     """Run the TUI application."""
-    app = AtPackTUI()
+    app = AtPackTUI(start_directory)
     app.run()
 
 

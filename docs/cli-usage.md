@@ -92,6 +92,7 @@ atpack help-tree
 │    atpack scan ./atpacks/ --format json                                                                                                                                                                       │
 │                                                                                                                                                                                                               │
 │    atpack tui                                                                                                                                                                                                 │
+│    atpack tui ./my_atpacks/                                                                                                                                                                                   │
 │                                                                                                                                                                                                               │
 │                                                                                                                                                                                                               │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
@@ -120,7 +121,22 @@ Found 2 AtPack files
 Launch the interactive Terminal User Interface:
 
 ```bash
+atpack tui [DIRECTORY]
+```
+
+**Examples:**
+```bash
+# Launch TUI with default directory (./atpacks/)
 atpack tui
+
+# Launch TUI with custom directory
+atpack tui ./my_atpacks/
+
+# Launch TUI with absolute path
+atpack tui C:\path\to\atpack\files\
+
+# Launch TUI from current directory
+atpack tui .
 ```
 
 The TUI provides a visual interface with:
