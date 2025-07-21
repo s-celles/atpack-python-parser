@@ -191,7 +191,9 @@ def show_register(
                 )
 
                 # Group bitfields by bit position to identify primary fields and aliases
-                bit_groups = {}  # Maps bit_position -> [list of bitfields at that position]
+                bit_groups = (
+                    {}
+                )  # Maps bit_position -> [list of bitfields at that position]
 
                 for bf in sorted_bitfields:
                     if bf.bit_width > 1:

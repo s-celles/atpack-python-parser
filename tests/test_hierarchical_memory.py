@@ -128,9 +128,9 @@ def test_memory_segments_ordered_ascending():
         if len(space.segments) > 1:
             prev_start = -1
             for segment in space.segments:
-                assert segment.start >= prev_start, (
-                    f"Segments not ordered in {space.name}: {segment.name} at {segment.start:x} comes after {prev_start:x}"
-                )
+                assert (
+                    segment.start >= prev_start
+                ), f"Segments not ordered in {space.name}: {segment.name} at {segment.start:x} comes after {prev_start:x}"
                 prev_start = segment.start
 
     # Test flat memory
@@ -138,7 +138,7 @@ def test_memory_segments_ordered_ascending():
     if len(flat_memory) > 1:
         prev_start = -1
         for segment in flat_memory:
-            assert segment.start >= prev_start, (
-                f"Flat segments not ordered: {segment.name} at {segment.start:x} comes after {prev_start:x}"
-            )
+            assert (
+                segment.start >= prev_start
+            ), f"Flat segments not ordered: {segment.name} at {segment.start:x} comes after {prev_start:x}"
             prev_start = segment.start

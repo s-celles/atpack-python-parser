@@ -58,20 +58,3 @@ def format_family_display(family: DeviceFamily, include_name: bool = True) -> st
     if include_name:
         return f"{emoji} {family.value}"
     return emoji
-
-
-def get_family_emoji_by_string(family_str: str) -> str:
-    """
-    Get family emoji by string representation.
-
-    Args:
-        family_str: Family string ("ATMEL", "PIC", etc.)
-
-    Returns:
-        str: Emoji representation
-    """
-    family_map = {
-        "ATMEL": "🔵",
-        "PIC": "🟡",
-    }
-    return family_map.get(family_str.upper(), "❓")

@@ -559,6 +559,6 @@ class TestPIC24FComprehensive:
 
         for cmd in commands_to_test:
             result = runner.invoke(app, cmd)
-            assert result.exit_code == 0, (
-                f"Command {cmd} failed with exit code {result.exit_code}"
-            )
+            assert (
+                result.exit_code == 0
+            ), f"Command {cmd} failed with exit code {result.exit_code}"

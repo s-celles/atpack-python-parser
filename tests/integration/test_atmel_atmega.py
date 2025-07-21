@@ -42,9 +42,9 @@ class TestAtmelATmega16Integration:
         segment_names = [seg.name.upper() for seg in device.memory_segments]
 
         # ATmega16 should have these memory types
-        assert any("FLASH" in name or "PROG" in name for name in segment_names), (
-            "Should have program memory"
-        )
+        assert any(
+            "FLASH" in name or "PROG" in name for name in segment_names
+        ), "Should have program memory"
         assert any(
             "SRAM" in name or "RAM" in name or "DATA" in name for name in segment_names
         ), "Should have SRAM"
@@ -78,9 +78,9 @@ class TestAtmelATmega16Integration:
 
         # Check for some common ATmega16 interrupts
         interrupt_names = [irq.name.upper() for irq in device.interrupts]
-        assert any("RESET" in name for name in interrupt_names), (
-            "Should have RESET vector"
-        )
+        assert any(
+            "RESET" in name for name in interrupt_names
+        ), "Should have RESET vector"
 
     @pytest.mark.integration
     @pytest.mark.atpack_required
@@ -96,15 +96,15 @@ class TestAtmelATmega16Integration:
 
                 # Temperature ranges should be valid if present
                 if variant.temp_min is not None and variant.temp_max is not None:
-                    assert variant.temp_min < variant.temp_max, (
-                        "Temperature range should be valid"
-                    )
+                    assert (
+                        variant.temp_min < variant.temp_max
+                    ), "Temperature range should be valid"
 
                 # Voltage ranges should be valid if present
                 if variant.vcc_min is not None and variant.vcc_max is not None:
-                    assert variant.vcc_min < variant.vcc_max, (
-                        "Voltage range should be valid"
-                    )
+                    assert (
+                        variant.vcc_min < variant.vcc_max
+                    ), "Voltage range should be valid"
                     assert variant.vcc_min > 0, "Minimum voltage should be positive"
 
     @pytest.mark.integration
@@ -124,9 +124,9 @@ class TestAtmelATmega16Integration:
                 for pin in pinout.pins[:5]:  # Check first 5 pins
                     assert "position" in pin, "Pin should have position"
                     assert "pad" in pin, "Pin should have pad name"
-                    assert isinstance(pin["position"], (int, str)), (
-                        "Position should be int or str"
-                    )
+                    assert isinstance(
+                        pin["position"], (int, str)
+                    ), "Position should be int or str"
 
     @pytest.mark.integration
     @pytest.mark.atpack_required
@@ -138,9 +138,9 @@ class TestAtmelATmega16Integration:
             # Validate programming interface structure
             for interface in device.atmel_programming_interfaces:
                 assert interface.name is not None, "Interface should have a name"
-                assert interface.interface_type is not None, (
-                    "Interface should have a type"
-                )
+                assert (
+                    interface.interface_type is not None
+                ), "Interface should have a type"
 
                 # Common interface types for ATmega16
                 valid_types = ["isp", "jtag", "spi", "parallel", "hvpp", "megajtag"]
@@ -160,9 +160,9 @@ class TestAtmelATmega16Integration:
             # Maximum frequency should be reasonable for ATmega16
             if clock_info.max_frequency:
                 assert clock_info.max_frequency > 0, "Max frequency should be positive"
-                assert clock_info.max_frequency <= 20_000_000, (
-                    "Max frequency should be realistic for ATmega16"
-                )
+                assert (
+                    clock_info.max_frequency <= 20_000_000
+                ), "Max frequency should be realistic for ATmega16"
 
             # Clock modules should have valid structure
             if clock_info.clock_modules:
@@ -173,9 +173,9 @@ class TestAtmelATmega16Integration:
             if clock_info.clock_properties:
                 for prop_group in clock_info.clock_properties:
                     assert "name" in prop_group, "Property group should have a name"
-                    assert "properties" in prop_group, (
-                        "Property group should have properties"
-                    )
+                    assert (
+                        "properties" in prop_group
+                    ), "Property group should have properties"
 
     @pytest.mark.integration
     @pytest.mark.atpack_required
@@ -198,15 +198,15 @@ class TestAtmelATmega16Integration:
                 # Validate instances structure
                 if gpio_port.instances:
                     for instance in gpio_port.instances:
-                        assert isinstance(instance, dict), (
-                            "Instance should be a dictionary"
-                        )
+                        assert isinstance(
+                            instance, dict
+                        ), "Instance should be a dictionary"
 
             # ATmega16 typically has ports A, B, C, D, but may be named differently in ATDF
             # Just check that we found some GPIO ports
-            assert len(port_names) > 0, (
-                f"Should find some GPIO ports, found: {port_names}"
-            )
+            assert (
+                len(port_names) > 0
+            ), f"Should find some GPIO ports, found: {port_names}"
 
     @pytest.mark.integration
     @pytest.mark.atpack_required
@@ -244,15 +244,15 @@ class TestAtmelATmega16Integration:
         )
 
         # Should have at least some ATMEL-specific data
-        assert atmel_specific_count > 0, (
-            "Should have ATMEL-specific enhancements beyond basic parsing"
-        )
+        assert (
+            atmel_specific_count > 0
+        ), "Should have ATMEL-specific enhancements beyond basic parsing"
 
         # Calculate coverage percentage
         total_coverage = sum(data_coverage.values())
         coverage_percentage = (total_coverage / len(data_coverage)) * 100
 
         # Should have good coverage for a comprehensive device definition
-        assert coverage_percentage >= 60, (
-            f"Should have at least 60% data coverage, got {coverage_percentage:.1f}%"
-        )
+        assert (
+            coverage_percentage >= 60
+        ), f"Should have at least 60% data coverage, got {coverage_percentage:.1f}%"

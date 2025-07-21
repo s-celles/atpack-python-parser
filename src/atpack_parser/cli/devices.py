@@ -460,31 +460,33 @@ def list_packages(
                             "package": f"{pkg}(1)",
                             "pinout": f"{pin_count}-pin",
                             "order_code": f"{device_name}-{pkg.replace('-', '')}(1)",
-                            "temp_range": f"{temp_range}(2)"
-                            if temp_range != "N/A"
-                            else temp_range,
+                            "temp_range": (
+                                f"{temp_range}(2)"
+                                if temp_range != "N/A"
+                                else temp_range
+                            ),
                             "vcc_range": vdd_range,
-                            "max_speed": f"{max_freq}(2)"
-                            if max_freq != "N/A"
-                            else max_freq,
+                            "max_speed": (
+                                f"{max_freq}(2)" if max_freq != "N/A" else max_freq
+                            ),
                         }
                     )
             else:
                 # Fallback to single default entry
                 package_data.append(
                     {
-                        "package": f"{pin_count}-pin(1)"
-                        if pin_count > 0
-                        else "Unknown(1)",
+                        "package": (
+                            f"{pin_count}-pin(1)" if pin_count > 0 else "Unknown(1)"
+                        ),
                         "pinout": f"{pin_count}-pin",
                         "order_code": f"{device_name}-(1)",
-                        "temp_range": f"{temp_range}(2)"
-                        if temp_range != "N/A"
-                        else temp_range,
+                        "temp_range": (
+                            f"{temp_range}(2)" if temp_range != "N/A" else temp_range
+                        ),
                         "vcc_range": vdd_range,
-                        "max_speed": f"{max_freq}(2)"
-                        if max_freq != "N/A"
-                        else max_freq,
+                        "max_speed": (
+                            f"{max_freq}(2)" if max_freq != "N/A" else max_freq
+                        ),
                     }
                 )
         else:
@@ -699,9 +701,11 @@ def show_pinout(
                     packages_pinout_data[package_name].append(
                         {
                             "package": package_name,
-                            "position": str(pin_info.physical_pin)
-                            if pin_info.physical_pin
-                            else "",
+                            "position": (
+                                str(pin_info.physical_pin)
+                                if pin_info.physical_pin
+                                else ""
+                            ),
                             "pad": pin_info.primary_function or "",
                             "pin_type": pin_info.pin_type or "Unknown",
                             "functions": functions,
@@ -816,9 +820,9 @@ def show_pinout(
                 try:
                     pinout_data_sorted = sorted(
                         pinout_data,
-                        key=lambda x: int(x["position"])
-                        if x["position"].isdigit()
-                        else 999,
+                        key=lambda x: (
+                            int(x["position"]) if x["position"].isdigit() else 999
+                        ),
                     )
                 except (ValueError, TypeError):
                     pinout_data_sorted = sorted(
@@ -883,9 +887,11 @@ def show_pinout(
                         try:
                             pinout_data_sorted = sorted(
                                 pinout_data,
-                                key=lambda x: int(x["position"])
-                                if x["position"].isdigit()
-                                else 999,
+                                key=lambda x: (
+                                    int(x["position"])
+                                    if x["position"].isdigit()
+                                    else 999
+                                ),
                             )
                         except (ValueError, TypeError):
                             pinout_data_sorted = sorted(

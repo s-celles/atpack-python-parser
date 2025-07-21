@@ -204,10 +204,10 @@ def test_atpack_parser_pic16f877(microchip_pic16fxxx_atpack_file: Path):
     assert device_name in devices, f"Expected device {device_name} not found"
 
     device = parser.get_device(device_name)
-    assert device.name == device_name, (
-        f"Expected device name {device_name}, got {device.name}"
-    )
+    assert (
+        device.name == device_name
+    ), f"Expected device name {device_name}, got {device.name}"
     assert device.family == "PIC", f"Expected family 'PIC', got {device.family}"
-    assert device.architecture == "PIC", (
-        f"Expected architecture 'PIC', got {device.architecture}"
-    )
+    assert (
+        device.architecture == "PIC"
+    ), f"Expected architecture 'PIC', got {device.architecture}"
