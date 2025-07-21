@@ -53,7 +53,9 @@ atpack help-tree
 │  ├── 🔌 devices - Device information                                                                                                                                                                          │
 │  │   ├── list - List all devices                                                                                                                                                                              │
 │  │   ├── info - Show device details                                                                                                                                                                           │
-│  │   └── search - Search devices by pattern                                                                                                                                                                   │
+│  │   ├── search - Search devices by pattern                                                                                                                                                                   │
+│  │   ├── packages - List device packages/variants                                                                                                                                                             │
+│  │   └── pinout - Show device pinout information                                                                                                                                                              │
 │  ├── 💾 memory - Memory information                                                                                                                                                                           │
 │  │   └── show - Show memory layout                                                                                                                                                                            │
 │  ├── 📋 registers - Register information                                                                                                                                                                      │
@@ -72,6 +74,8 @@ atpack help-tree
 │    atpack devices list mypack.atpack                                                                                                                                                                          │
 │    atpack devices info PIC16F877 mypack.atpack                                                                                                                                                                │
 │    atpack devices search '*877*' mypack.atpack                                                                                                                                                                │
+│    atpack devices packages ATmega16 mypack.atpack                                                                                                                                                             │
+│    atpack devices pinout PIC16F877 mypack.atpack                                                                                                                                                              │
 │                                                                                                                                                                                                               │
 │    atpack memory show PIC16F877 mypack.atpack                                                                                                                                                                 │
 │    atpack memory show PIC16F877 mypack.atpack --flat                                                                                                                                                          │
@@ -543,6 +547,8 @@ Most commands support JSON output format:
 # JSON output
 atpack devices info PIC16F877 file.atpack --format json
 atpack devices list file.atpack --format json
+atpack devices packages ATmega16 file.atpack --format json
+atpack devices pinout PIC16F877 file.atpack --format json
 atpack memory show PIC16F877 file.atpack --format json
 atpack registers list PIC16F877 file.atpack --format json
 atpack config show PIC16F877 file.atpack --format json
@@ -555,6 +561,9 @@ Some commands provide filtering options:
 ```bash
 # Filter registers by module
 atpack registers list PIC16F877 file.atpack --module GPIO
+
+# Show specific package pinout with functions
+atpack devices pinout ATmega16 file.atpack --package TQFP44 --functions
 
 # Show specific configuration types
 atpack config show PIC16F877A file.atpack --type fuses

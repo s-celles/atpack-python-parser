@@ -121,6 +121,8 @@ def show_command_tree_content():
   atpack devices list mypack.atpack
   atpack devices info PIC16F877 mypack.atpack
   atpack devices search '*877*' mypack.atpack
+  atpack devices packages ATmega16 mypack.atpack
+  atpack devices pinout PIC16F877 mypack.atpack
   
   atpack memory show PIC16F877 mypack.atpack
   
