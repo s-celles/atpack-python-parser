@@ -106,6 +106,20 @@ def microchip_pic24f_ka_kl_km_content_fixture(
 
 
 @pytest.fixture
+def microchip_pic16fxxx_content_fixture(microchip_pic16fxxx_atpack_file: Path) -> Path:
+    """Fixture that checks for PIC16Fxxx AtPack availability and returns path if available."""
+    skip_if_atpack_missing(microchip_pic16fxxx_atpack_file, "PIC")
+    return microchip_pic16fxxx_atpack_file
+
+
+@pytest.fixture
+def atmel_atmega_content_fixture(atmel_atmega_atpack_file: Path) -> Path:
+    """Fixture that checks for ATMEL AtPack availability and returns path if available."""
+    skip_if_atpack_missing(atmel_atmega_atpack_file, "ATMEL")
+    return atmel_atmega_atpack_file
+
+
+@pytest.fixture
 def atmel_atmega_atmega16_atdf_content(atmel_atmega_atpack_file: Path) -> str:
     """Fixture that provides ATmega16 content from the AtPack file."""
     skip_if_atpack_missing(atmel_atmega_atpack_file, "ATMEL")

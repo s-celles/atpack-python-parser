@@ -6,9 +6,9 @@ from src.atpack_parser import AtPackParser
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_hierarchical_memory_pic(microchip_pic16fxxx_edc_pic16f877_pic_content):
+def test_hierarchical_memory_pic(microchip_pic16fxxx_content_fixture):
     """Test hierarchical memory layout for PIC device."""
-    parser = AtPackParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+    parser = AtPackParser(microchip_pic16fxxx_content_fixture)
 
     # Test hierarchical memory spaces
     memory_spaces = parser.get_device_memory_hierarchical("PIC16F877")
@@ -48,9 +48,9 @@ def test_hierarchical_memory_pic(microchip_pic16fxxx_edc_pic16f877_pic_content):
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_hierarchical_memory_atmel(microchip_pic16fxxx_edc_pic16f877_pic_content):
+def test_hierarchical_memory_atmel(atmel_atmega_content_fixture):
     """Test hierarchical memory layout for ATMEL device."""
-    parser = AtPackParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+    parser = AtPackParser(atmel_atmega_content_fixture)
 
     # Test hierarchical memory spaces
     memory_spaces = parser.get_device_memory_hierarchical("ATmega16")
@@ -90,10 +90,10 @@ def test_hierarchical_memory_atmel(microchip_pic16fxxx_edc_pic16f877_pic_content
 @pytest.mark.integration
 @pytest.mark.atpack_required
 def test_flat_vs_hierarchical_consistency(
-    microchip_pic16fxxx_edc_pic16f877_pic_content,
+    microchip_pic16fxxx_content_fixture,
 ):
     """Test that flat and hierarchical memory views are consistent."""
-    parser = AtPackParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+    parser = AtPackParser(microchip_pic16fxxx_content_fixture)
 
     # Get flat memory layout
     flat_memory = parser.get_device_memory("PIC16F877")
@@ -113,9 +113,9 @@ def test_flat_vs_hierarchical_consistency(
 
 @pytest.mark.integration
 @pytest.mark.atpack_required
-def test_memory_hierarchy_levels(microchip_pic16fxxx_edc_pic16f877_pic_content):
+def test_memory_hierarchy_levels(microchip_pic16fxxx_content_fixture):
     """Test that memory hierarchy levels are correctly assigned."""
-    parser = AtPackParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+    parser = AtPackParser(microchip_pic16fxxx_content_fixture)
 
     memory_spaces = parser.get_device_memory_hierarchical("PIC16F877")
 
@@ -130,10 +130,10 @@ def test_memory_hierarchy_levels(microchip_pic16fxxx_edc_pic16f877_pic_content):
 @pytest.mark.integration
 @pytest.mark.atpack_required
 def test_memory_segments_ordered_ascending(
-    microchip_pic16fxxx_edc_pic16f877_pic_content,
+    microchip_pic16fxxx_content_fixture,
 ):
     """Test that memory segments are ordered by ascending address."""
-    parser = AtPackParser(microchip_pic16fxxx_edc_pic16f877_pic_content)
+    parser = AtPackParser(microchip_pic16fxxx_content_fixture)
 
     # Test hierarchical memory
     memory_spaces = parser.get_device_memory_hierarchical("PIC16F877")
