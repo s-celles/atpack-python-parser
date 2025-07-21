@@ -153,6 +153,43 @@ atpack files list ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 └────────────────────────────────────────┴─────────────────┘
 ```
 
+#### Extract files from an AtPack
+
+```bash
+atpack files extract /path/to/file.atpack
+```
+
+This command extracts all files from an AtPack archive to a directory. By default, it extracts to a directory named `{filename}_dir_atpack` where `{filename}` is the AtPack filename without the `.atpack` extension.
+
+Example:
+```bash
+atpack files extract ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+```
+
+This would extract all files to `./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162_dir_atpack/` directory.
+
+You can specify a custom output directory:
+```bash
+atpack files extract ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack --outdir ./extracted_files/
+```
+
+Optional parameters:
+- `--outdir` or `-o`: Specify output directory
+- `--overwrite`: Overwrite existing directory if it exists
+
+Example with options:
+```bash
+atpack files extract ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack --outdir ./my_extraction/ --overwrite
+```
+
+Example output:
+```
+atpack files extract ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+Extracting Microchip.PIC16Fxxx_DFP.1.7.162.atpack to Microchip.PIC16Fxxx_DFP.1.7.162_dir_atpack
+✓ Successfully extracted 3,847 files to Microchip.PIC16Fxxx_DFP.1.7.162_dir_atpack
+Total size: 45,892,437 bytes
+```
+
 ### Device Commands
 
 Extract and display device information:
