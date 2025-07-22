@@ -9,8 +9,8 @@ from rich.panel import Panel
 from rich.table import Table
 
 from .. import AtPackParser
-from .common import console
 from ..utils import get_family_emoji
+from .common import console
 
 
 def scan(
@@ -231,7 +231,9 @@ def interactive_help(
             "📁 files", "list, info, extract", "Manage AtPack files and show metadata"
         )
         help_table.add_row(
-            "🔌 devices", "list, info, search, packages, pinout", "Browse devices and get detailed specs"
+            "🔌 devices",
+            "list, info, search, packages, pinout",
+            "Browse devices and get detailed specs",
         )
         help_table.add_row("💾 memory", "show", "Analyze memory layouts and segments")
         help_table.add_row(
@@ -243,13 +245,13 @@ def interactive_help(
         console.print(help_table)
 
         console.print(
-            f"\n[dim]💡 Use [/dim][bold]atpack help COMMAND[/bold][dim] for specific help[/dim]"
+            "\n[dim]💡 Use [/dim][bold]atpack help COMMAND[/bold][dim] for specific help[/dim]"
         )
         console.print(
-            f"[dim]💡 Use [/dim][bold]atpack help-tree[/bold][dim] to see the complete structure[/dim]"
+            "[dim]💡 Use [/dim][bold]atpack help-tree[/bold][dim] to see the complete structure[/dim]"
         )
         console.print(
-            f"[dim]💡 Use [/dim][bold]atpack COMMAND --help[/bold][dim] for detailed options[/dim]\n"
+            "[dim]💡 Use [/dim][bold]atpack COMMAND --help[/bold][dim] for detailed options[/dim]\n"
         )
 
     else:

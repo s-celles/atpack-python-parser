@@ -2,8 +2,6 @@
 
 import fnmatch
 import json
-import io
-import csv
 from pathlib import Path
 from typing import Annotated, Optional
 
@@ -15,26 +13,24 @@ from rich.table import Table
 from .. import AtPackParser
 from ..exceptions import AtPackError, DeviceNotFoundError
 from ..models import DeviceFamily
-from ..utils.family_display import get_family_emoji, format_family_display
 from ..utils.device_specs import (
-    get_max_frequency_from_oscillators,
     get_device_default_frequency,
-    get_temperature_range_from_device_name,
     get_device_default_vdd_range,
+    get_max_frequency_from_oscillators,
+    get_temperature_range_from_device_name,
 )
+from ..utils.family_display import format_family_display, get_family_emoji
 from ..utils.units import (
     format_frequency,
-    format_voltage,
     format_voltage_range,
-    format_temperature,
     parse_temperature_range,
 )
 from .common import (
     AtPackPath,
     DeviceName,
     console,
-    handle_device_not_found_error,
     handle_atpack_error,
+    handle_device_not_found_error,
 )
 
 # Create devices sub-command app

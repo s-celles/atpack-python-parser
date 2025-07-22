@@ -1,15 +1,14 @@
 """Utilities for extracting device specifications from configuration data."""
 
 import json
-import re
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from .units import (
     format_frequency,
     parse_frequency,
-    parse_voltage_range,
     parse_temperature_range,
+    parse_voltage_range,
 )
 
 # Cache for loaded configuration data

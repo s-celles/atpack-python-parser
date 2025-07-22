@@ -5,12 +5,12 @@ from typing import Annotated
 import typer
 from rich.console import Console
 
-from .files import files_app
+from .config import config_app
 from .devices import devices_app
+from .files import files_app
+from .global_commands import help_tree_command, interactive_help, scan
 from .memory import memory_app
 from .registers import registers_app
-from .config import config_app
-from .global_commands import scan, help_tree_command, interactive_help
 from .tui_command import launch_tui
 
 # Create console for rich output

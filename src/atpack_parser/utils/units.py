@@ -1,8 +1,8 @@
 """Unit handling utilities using pint for consistent unit management and display."""
 
-import pint
-from typing import Union, Optional
+from typing import Union
 
+import pint
 
 # Create a unit registry instance
 ureg = pint.UnitRegistry()

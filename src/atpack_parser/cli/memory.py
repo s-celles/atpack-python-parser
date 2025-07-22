@@ -14,10 +14,9 @@ from .common import (
     AtPackPath,
     DeviceName,
     console,
-    handle_device_not_found_error,
     handle_atpack_error,
+    handle_device_not_found_error,
 )
-
 
 # Create memory sub-command app
 memory_app = typer.Typer(name="memory", help="💾 Memory information")

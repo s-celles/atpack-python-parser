@@ -1,11 +1,11 @@
 """Common types and utilities for CLI commands."""
 
 from pathlib import Path
-from typing import Annotated, Optional, List
+from typing import Annotated, List
 
 import typer
-from rich.console import Console
 from rapidfuzz import fuzz
+from rich.console import Console
 
 from ..exceptions import AtPackError, DeviceNotFoundError
 
@@ -95,7 +95,7 @@ def handle_device_not_found_error(
         suggestions = _get_device_suggestions(device_name, parser, max_suggestions=15)
         if suggestions:
             suggestion_msg = (
-                f"[yellow]Did you mean one of these devices?[/yellow]"
+                "[yellow]Did you mean one of these devices?[/yellow]"
                 if not no_color
                 else "Did you mean one of these devices?"
             )
