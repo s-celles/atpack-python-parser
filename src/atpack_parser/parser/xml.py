@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 
 from lxml import etree
 
-from .exceptions import ParseError
+from ..exceptions import ParseError
 
 
 class XmlParser:

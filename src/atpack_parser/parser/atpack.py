@@ -3,16 +3,16 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from .atdf_parser import AtdfParser
-from .exceptions import (
+from .atdf import AtdfParser
+from ..exceptions import (
     DeviceNotFoundError,
     ParseError,
     UnsupportedFormatError,
 )
-from .models import AtPackMetadata, Device, DeviceFamily
-from .pdsc_parser import PdscParser
-from .pic_parser import PicParser
-from .xml_utils import AtPackExtractor
+from ..models import AtPackMetadata, Device, DeviceFamily
+from .pdsc import PdscParser
+from .pic import PicParser
+from .xml import AtPackExtractor
 
 
 class AtPackParser:

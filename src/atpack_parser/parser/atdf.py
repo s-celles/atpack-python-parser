@@ -4,8 +4,8 @@ from typing import Dict, List, Optional
 
 from lxml import etree
 
-from .exceptions import ParseError
-from .models import (
+from ..exceptions import ParseError
+from ..models import (
     AtmelClockInfo,
     AtmelGpioInfo,
     AtmelPackageVariant,
@@ -25,7 +25,7 @@ from .models import (
     RegisterBitfield,
     RegisterGroup,
 )
-from .xml_utils import XmlParser
+from .xml import XmlParser
 
 
 class AtdfParser:

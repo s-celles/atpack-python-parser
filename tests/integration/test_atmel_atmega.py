@@ -4,7 +4,7 @@ Integration tests for ATMEL parser functionality.
 """
 
 import pytest
-from src.atpack_parser.atdf_parser import AtdfParser
+from src.atpack_parser.parser.atdf import AtdfParser
 from src.atpack_parser.models import DeviceFamily
 
 

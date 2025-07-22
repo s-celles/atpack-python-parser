@@ -2,8 +2,8 @@
 
 from typing import List, Optional
 
-from .models import AtPackMetadata, DeviceFamily
-from .xml_utils import XmlParser
+from ..models import AtPackMetadata, DeviceFamily
+from .xml import XmlParser
 
 
 class PdscParser:
