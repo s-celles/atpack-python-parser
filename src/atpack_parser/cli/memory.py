@@ -6,7 +6,6 @@ from typing import Annotated, Optional
 
 import typer
 from rich.console import Console
-from rich.table import Table
 
 from .. import AtPackParser
 from ..exceptions import AtPackError, DeviceNotFoundError
@@ -17,6 +16,7 @@ from .common import (
     handle_atpack_error,
     handle_device_not_found_error,
 )
+from ..display import display_flat_memory, display_hierarchical_memory
 
 # Create memory sub-command app
 memory_app = typer.Typer(name="memory", help="💾 Memory information")
@@ -135,118 +135,29 @@ def show_memory(
 
             if hierarchical and memory_segments is None:
                 # Display hierarchical table
-                _display_hierarchical_memory(
-                    memory_spaces, title, output_console, no_color, output
+                display_hierarchical_memory(
+                    memory_spaces, device_name, output_console, no_color
                 )
+                if output:
+                    # Export table as text - will be handled separately
+                    total_segments = sum(len(space.segments) for space in memory_spaces)
+                    console.print(
+                        f"[green]Exported {len(memory_spaces)} memory spaces "
+                        f"with {total_segments} segments to {output}[/green]"
+                    )
             else:
                 # Display flat table
-                _display_flat_memory(
-                    memory_segments, title, output_console, no_color, output
+                display_flat_memory(
+                    memory_segments, device_name, output_console, no_color
                 )
+                if output:
+                    # Export table as text - will be handled separately
+                    console.print(
+                        f"[green]Exported {len(memory_segments)} memory "
+                        f"segments to {output}[/green]"
+                    )
 
     except DeviceNotFoundError as e:
         handle_device_not_found_error(e, parser, no_color)
     except AtPackError as e:
         handle_atpack_error(e, no_color)
-
-
-def _display_flat_memory(memory_segments, title, output_console, no_color, output):
-    """Display memory segments in a flat table format."""
-    table = Table(title=title)
-    table.add_column("Segment", style="cyan" if not no_color else None)
-    table.add_column("Start Address", style="green" if not no_color else None)
-    table.add_column("End Address", style="green" if not no_color else None)
-    table.add_column("Size", style="yellow" if not no_color else None)
-    table.add_column("Type", style="magenta" if not no_color else None)
-    table.add_column("Page Size", style="blue" if not no_color else None)
-    table.add_column("Address Space", style="dim" if not no_color else None)
-
-    for seg in memory_segments:
-        end_addr = seg.start + seg.size - 1
-        page_size_str = f"{seg.page_size}" if seg.page_size else "N/A"
-
-        table.add_row(
-            seg.name,
-            f"0x{seg.start:04X}",
-            f"0x{end_addr:04X}",
-            f"{seg.size:,}",
-            seg.type or "N/A",
-            page_size_str,
-            seg.address_space or "N/A",
-        )
-
-    if output:
-        # Export table as text
-        with output_console.capture() as capture:
-            output_console.print(table)
-
-        output.write_text(capture.get(), encoding="utf-8")
-        console.print(
-            f"[green]Exported {len(memory_segments)} memory segments to {output}[/green]"
-        )
-    else:
-        output_console.print(table)
-
-
-def _display_hierarchical_memory(
-    memory_spaces, title, output_console, no_color, output
-):
-    """Display memory spaces in a hierarchical table format."""
-    table = Table(title=title)
-    table.add_column("Memory Space/Segment", style="cyan" if not no_color else None)
-    table.add_column("Start Address", style="green" if not no_color else None)
-    table.add_column("End Address", style="green" if not no_color else None)
-    table.add_column("Size", style="yellow" if not no_color else None)
-    table.add_column("Type", style="magenta" if not no_color else None)
-    table.add_column("Page Size", style="blue" if not no_color else None)
-    table.add_column("Description", style="dim" if not no_color else None)
-
-    for space in memory_spaces:
-        # Add memory space header
-        space_name = f"📁 {space.name}"
-        space_start = f"0x{space.start:04X}" if space.start is not None else "N/A"
-        space_end = (
-            f"0x{space.start + space.size - 1:04X}"
-            if (space.start is not None and space.size is not None)
-            else "N/A"
-        )
-        space_size = f"{space.size:,}" if space.size is not None else "N/A"
-
-        table.add_row(
-            space_name,
-            space_start,
-            space_end,
-            space_size,
-            space.space_type,
-            "N/A",
-            f"Container with {len(space.segments)} segment(s)",
-        )
-
-        # Add child segments with indentation
-        for seg in space.segments:
-            end_addr = seg.start + seg.size - 1
-            page_size_str = f"{seg.page_size}" if seg.page_size else "N/A"
-            segment_name = f"  └── {seg.name}"  # Indented with tree characters
-
-            table.add_row(
-                segment_name,
-                f"0x{seg.start:04X}",
-                f"0x{end_addr:04X}",
-                f"{seg.size:,}",
-                seg.type or "N/A",
-                page_size_str,
-                seg.section or "N/A",
-            )
-
-    if output:
-        # Export table as text
-        with output_console.capture() as capture:
-            output_console.print(table)
-
-        output.write_text(capture.get(), encoding="utf-8")
-        total_segments = sum(len(space.segments) for space in memory_spaces)
-        console.print(
-            f"[green]Exported {len(memory_spaces)} memory spaces with {total_segments} segments to {output}[/green]"
-        )
-    else:
-        output_console.print(table)

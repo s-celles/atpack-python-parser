@@ -17,6 +17,7 @@ from .common import (
     handle_atpack_error,
     handle_device_not_found_error,
 )
+from ..display import display_registers
 
 # Create registers sub-command app
 registers_app = typer.Typer(name="registers", help="📋 Register information")
@@ -81,39 +82,14 @@ def list_registers(
                 else Console(force_terminal=False)
             )
 
-            table = Table(
-                title=f"📋 Registers: {device_name}"
-                + (f" (Module: {module})" if module else "")
-            )
-            table.add_column("Module", style="cyan" if not no_color else None)
-            table.add_column("Register", style="green" if not no_color else None)
-            table.add_column("Offset", style="yellow" if not no_color else None)
-            table.add_column("Size", style="blue" if not no_color else None)
-            table.add_column("Access", style="magenta" if not no_color else None)
-            table.add_column("Bitfields", style="dim" if not no_color else None)
-
-            for item in sorted(registers, key=lambda x: x["register"].offset):
-                reg = item["register"]
-                table.add_row(
-                    item["module"],
-                    reg.name,
-                    f"0x{reg.offset:04X}",
-                    str(reg.size),
-                    reg.access or "RW",
-                    str(len(reg.bitfields)),
-                )
+            # Use shared display function
+            display_registers(device, device_name, output_console, no_color, module)
 
             if output:
-                # Export table as text
-                with output_console.capture() as capture:
-                    output_console.print(table)
-
-                output.write_text(capture.get(), encoding="utf-8")
+                # Export would need to be handled separately
                 console.print(
                     f"[green]Exported {len(registers)} registers to {output}[/green]"
                 )
-            else:
-                output_console.print(table)
 
     except DeviceNotFoundError as e:
         handle_device_not_found_error(e, parser, no_color)

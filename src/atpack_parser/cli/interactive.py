@@ -15,6 +15,7 @@ from rich.table import Table
 
 from .. import AtPackParser
 from ..exceptions import AtPackError
+from ..display import display_hierarchical_memory, display_registers
 
 console = Console()
 
@@ -247,7 +248,7 @@ class InteractiveSession:
             console.print("[green]✅ AtPack loaded successfully![/green]")
             console.print(f"Family: {self.parser.device_family.value}")
             console.print(f"Devices: {len(devices)}")
-            console.print("\nUse 'devices' to see list of devices in this AtPack file.")
+            console.print("\nUse 'devices' to see list of devices in this AtPack file and/or 'select' a given device.")
 
         except AtPackError as e:
             console.print(f"[red]AtPack error: {e}[/red]")
@@ -464,29 +465,20 @@ class InteractiveSession:
             return
 
         try:
-            memory_segments = self.parser.get_device_memory(self.current_device)
+            # Use hierarchical view like CLI does by default
+            memory_spaces = self.parser.get_device_memory_hierarchical(
+                self.current_device
+            )
 
-            table = Table(title=f"Memory Layout - {self.current_device}")
-            table.add_column("Segment", style="cyan")
-            table.add_column("Start Address", style="white")
-            table.add_column("Size", style="green")
-            table.add_column("Description", style="dim")
-
-            if memory_segments:
-                for segment in memory_segments[:20]:  # Limit display
-                    table.add_row(
-                        getattr(segment, "name", "Unknown"),
-                        f"0x{getattr(segment, 'start', 0):04X}",
-                        f"{getattr(segment, 'size', 0)} bytes",
-                        getattr(segment, "description", "")[:50],
-                    )
+            if memory_spaces:
+                display_hierarchical_memory(
+                    memory_spaces, self.current_device, console
+                )
             else:
-                # Default memory layout
-                table.add_row("Flash", "0x0000", "32KB", "Program memory")
-                table.add_row("RAM", "0x2000", "2KB", "Data memory")
-                table.add_row("EEPROM", "0x4000", "1KB", "Non-volatile memory")
-
-            console.print(table)
+                console.print(
+                    f"[yellow]No memory spaces found for device "
+                    f"{self.current_device}[/yellow]"
+                )
 
         except Exception as e:
             console.print(f"[red]Error displaying memory: {e}[/red]")
@@ -497,31 +489,8 @@ class InteractiveSession:
             return
 
         try:
-            registers = self.parser.get_device_registers(self.current_device)
-
-            table = Table(title=f"Registers - {self.current_device}")
-            table.add_column("Module", style="cyan")
-            table.add_column("Register", style="white")
-            table.add_column("Address", style="green")
-            table.add_column("Size", style="yellow")
-            table.add_column("Description", style="dim")
-
-            if registers:
-                for register in registers[:20]:  # Limit display
-                    table.add_row(
-                        getattr(register, "module_name", "Unknown"),
-                        getattr(register, "name", "N/A"),
-                        f"0x{getattr(register, 'offset', 0):04X}",
-                        f"{getattr(register, 'size', 0)} bits",
-                        getattr(register, "description", "")[:40],
-                    )
-            else:
-                # Default registers
-                table.add_row("CORE", "STATUS", "0x03", "8bit", "Status register")
-                table.add_row("CORE", "WREG", "0x00", "8bit", "Working register")
-                table.add_row("PORTA", "TRISA", "0x85", "8bit", "Port A direction")
-
-            console.print(table)
+            device = self.parser.get_device(self.current_device)
+            display_registers(device, self.current_device, console)
 
         except Exception as e:
             console.print(f"[red]Error displaying registers: {e}[/red]")
