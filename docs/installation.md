@@ -153,3 +153,21 @@ pip install lxml
     - Obtain AtPack files only from **official sources**
     
     By using this software, you acknowledge that you have read and understood these legal notices.
+
+## Getting AtPack Files
+
+AtPack files contain device-specific information for microcontrollers and must be downloaded separately from official sources.
+
+### Download Sources
+
+**For PIC Microcontrollers:**
+
+- Visit: [Microchip Packs Repository](https://packs.download.microchip.com/)
+- Browse by device family (PIC16, PIC18, PIC24, dsPIC, PIC32, etc.)
+- Download the `.atpack` files for your target devices
+
+**For Legacy ATMEL Devices:**
+
+- Visit: [ATMEL Packs Repository](http://packs.download.atmel.com/)
+- Browse by device family (AVR, ARM, etc.)
+- Download the `.atpack` files for your target devices

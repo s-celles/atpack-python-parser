@@ -61,6 +61,7 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - CLI Usage: cli-usage.md
+  - TUI Usage: tui-usage.md
   - Python API: api-usage.md
   - Examples: examples.md
   - API Reference: api-reference.md

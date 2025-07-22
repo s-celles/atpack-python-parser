@@ -29,6 +29,7 @@ The documentation will be available at http://127.0.0.1:8000/
 - `index.md` - Home page with overview
 - `installation.md` - Installation instructions  
 - `cli-usage.md` - Command-line interface documentation
+- `tui-usage.md` - Terminal user interface documentation
 - `api-usage.md` - Python API usage examples
 - `examples.md` - Practical examples and code snippets
 - `api-reference.md` - Complete API reference

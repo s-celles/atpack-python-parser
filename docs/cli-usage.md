@@ -116,59 +116,6 @@ atpack scan ./atpacks/
 Found 2 AtPack files
 ```
 
-### Terminal User Interface (TUI)
-
-Launch the interactive Terminal User Interface:
-
-```bash
-atpack tui [DIRECTORY]
-```
-
-**Examples:**
-```bash
-# Launch TUI with default directory (./atpacks/)
-atpack tui
-
-# Launch TUI with custom directory
-atpack tui ./my_atpacks/
-
-# Launch TUI with absolute path
-atpack tui C:\path\to\atpack\files\
-
-# Launch TUI from current directory
-atpack tui .
-```
-
-The TUI provides a visual interface with:
-- **File Browser**: Browse and select AtPack files
-- **Device Explorer**: View devices in a tabbed interface
-- **Memory Viewer**: Visualize memory layouts
-- **Register Inspector**: Explore registers and bitfields
-- **Configuration Panel**: View fuses, interrupts, and signatures
-
-**Key Features:**
-- Mouse and keyboard navigation
-- Real-time file browsing
-- Tabbed interface for different data views
-- Search and filter capabilities
-- Export functionality
-
-**Prerequisites:**
-```bash
-# Install with TUI support
-pip install atpack-parser[tui]
-
-# Or install textual separately
-pip install textual
-```
-
-**Key Bindings:**
-- `F1`: Help
-- `F5`: Refresh
-- `Q` or `Ctrl+C`: Quit
-- `Tab`: Navigate between panels
-- Arrow keys: Navigate within panels
-
 ### Files Commands
 
 Work with AtPack files and directories:
@@ -347,6 +294,33 @@ atpack devices info PIC16F877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
 └────────┴─────────────────┴─────────────────┘
 ```
 
+#### Typo in device name? No problem!
+
+When typing the command, you can use the device name with a typo, it's not a problem. The command will help you to find the correct device name in the list of devices with nearest match.
+
+```
+atpack devices info PIC16f877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
+Device not found: Device 'PIC16f877' not found or could not be parsed: Error parsing PIC file for 'PIC16f877': Device 'PIC16f877' not
+found in PIC file
+
+Did you mean one of these devices?
+  1. PIC16F877
+  2. PIC16F87
+  3. PIC16F877A
+  4. PIC16LF877
+  5. PIC16LF877A
+  6. PIC16F677
+  7. PIC16F687
+  8. PIC16F767
+  9. PIC16F777
+  10. PIC16F871
+  11. PIC16F876
+  12. PIC16F887
+  13. PIC16LF77
+  14. PIC16LF87
+  15. PIC16LF871
+```
+
 #### List all packages/variants for a device
 
 ```bash
@@ -388,31 +362,6 @@ Optional parameters:
 Example with package filter:
 ```bash
 atpack devices pinout ATmega16 ./atpacks/Atmel.ATmega_DFP.2.2.509.atpack --package TQFP44 --functions
-```
-
-#### Typo in device name? No problem!
-
-```
-atpack devices info PIC16f877 ./atpacks/Microchip.PIC16Fxxx_DFP.1.7.162.atpack
-Device not found: Device 'PIC16f877' not found or could not be parsed: Error parsing PIC file for 'PIC16f877': Device 'PIC16f877' not
-found in PIC file
-
-Did you mean one of these devices?
-  1. PIC16F877
-  2. PIC16F87
-  3. PIC16F877A
-  4. PIC16LF877
-  5. PIC16LF877A
-  6. PIC16F677
-  7. PIC16F687
-  8. PIC16F767
-  9. PIC16F777
-  10. PIC16F871
-  11. PIC16F876
-  12. PIC16F887
-  13. PIC16LF77
-  14. PIC16LF87
-  15. PIC16LF871
 ```
 
 ### Memory Commands
