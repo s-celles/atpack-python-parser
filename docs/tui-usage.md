@@ -1,5 +1,8 @@
 # Terminal User Interface (TUI)
 
+!!! warning
+    This feature is still in development. It is not yet ready for production.
+
 ## Launching the TUI
 Launch the interactive Terminal User Interface:
 
