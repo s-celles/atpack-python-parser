@@ -248,7 +248,9 @@ class InteractiveSession:
             console.print("[green]✅ AtPack loaded successfully![/green]")
             console.print(f"Family: {self.parser.device_family.value}")
             console.print(f"Devices: {len(devices)}")
-            console.print("\nUse 'devices' to see list of devices in this AtPack file and/or 'select' a given device.")
+            console.print(
+                "\nUse 'devices' to see list of devices in this AtPack file and/or 'select' a given device."
+            )
 
         except AtPackError as e:
             console.print(f"[red]AtPack error: {e}[/red]")
@@ -379,7 +381,9 @@ class InteractiveSession:
 
         def print_device_selected(device_name: str) -> None:
             console.print(f"[green]✅ Device selected: {device_name}[/green]")
-            console.print("Use 'device-info', 'memory', 'registers', ... or any command from 'help'")
+            console.print(
+                "Use 'device-info', 'memory', 'registers', ... or any command from 'help'"
+            )
 
         if not self.parser:
             console.print("[red]No AtPack loaded. Use 'load <file>'[/red]")
@@ -471,9 +475,7 @@ class InteractiveSession:
             )
 
             if memory_spaces:
-                display_hierarchical_memory(
-                    memory_spaces, self.current_device, console
-                )
+                display_hierarchical_memory(memory_spaces, self.current_device, console)
             else:
                 console.print(
                     f"[yellow]No memory spaces found for device "

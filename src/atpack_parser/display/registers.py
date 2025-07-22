@@ -33,11 +33,9 @@ def display_registers(
             continue
         for rg in mod.register_groups:
             for reg in rg.registers:
-                registers.append({
-                    "module": mod.name,
-                    "group": rg.name,
-                    "register": reg
-                })
+                registers.append(
+                    {"module": mod.name, "group": rg.name, "register": reg}
+                )
 
     if registers:
         # Sort by offset like CLI does
