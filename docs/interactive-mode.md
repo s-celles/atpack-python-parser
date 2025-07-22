@@ -267,3 +267,23 @@ Interactive mode intelligently handles errors:
 | Interface | Plain text | Rich/colored |
 | Selection | Repetitive arguments | Persistent context |
 | Navigation | Long commands | Fast navigation |
+
+## State diagram
+```mermaid
+stateDiagram-v2
+    [*] --> INITIAL
+    
+    INITIAL --> INITIAL : scan, help, clear, status
+    INITIAL --> ATPACK_LOADED : load
+    INITIAL --> [*] : exit, quit
+    
+    ATPACK_LOADED --> ATPACK_LOADED : scan, help, clear, status, info, devices, files, config
+    ATPACK_LOADED --> DEVICE_SELECTED : select
+    ATPACK_LOADED --> ATPACK_LOADED : load
+    ATPACK_LOADED --> [*] : exit, quit
+    
+    DEVICE_SELECTED --> DEVICE_SELECTED : scan, help, clear, status, info, devices, files, config
+    DEVICE_SELECTED --> DEVICE_SELECTED : device-info, memory, registers, select
+    DEVICE_SELECTED --> ATPACK_LOADED : load
+    DEVICE_SELECTED --> [*] : exit, quit
+```
