@@ -1,5 +1,6 @@
 """Main TUI application using Textual."""
 
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -12,74 +13,20 @@ from textual.widgets import (
     DirectoryTree,
     Footer,
     Header,
+    Input,
     Label,
     Static,
 )
 
 from .. import AtPackParser
 from ..exceptions import AtPackError
+from ..utils.family_display import format_family_display
 
 
 class AtPackTUI(App):
     """AtPack Parser Terminal User Interface."""
 
-    CSS = """
-    .main-container {
-        layout: grid;
-        grid-size: 3 3;
-        grid-gutter: 1;
-        height: 100%;
-    }
-    
-    .file-browser {
-        column-span: 1;
-        row-span: 3;
-        border: solid $primary;
-    }
-    
-    .atpack-info {
-        column-span: 2;
-        row-span: 1;
-        border: solid $secondary;
-    }
-    
-    .main-content {
-        column-span: 2;
-        row-span: 2;
-        border: solid $success;
-    }
-    
-    DirectoryTree {
-        max-height: 100%;
-    }
-    
-    DataTable {
-        height: 100%;
-        min-height: 10;
-        width: 100%;
-    }
-    
-    #tab-buttons {
-        height: 3;
-        dock: top;
-    }
-    
-    #content-area {
-        height: 100%;
-    }
-    
-    .tab-view {
-        height: 100%;
-    }
-    
-    .hidden {
-        display: none;
-    }
-    
-    Button {
-        margin: 0 1;
-    }
-    """
+    CSS_PATH = Path(__file__).parent / "styles.tcss"
 
     BINDINGS = [
         Binding("q", "quit", "Quit"),
@@ -88,6 +35,9 @@ class AtPackTUI(App):
         Binding("f5", "refresh", "Refresh"),
         Binding("d", "debug_devices", "Debug Devices"),
         Binding("s", "scan_atpacks", "Scan AtPacks"),
+        Binding("ctrl+f", "search_devices", "Search Devices"),
+        Binding("escape", "clear_search", "Clear Search"),
+        Binding("f12", "toggle_debug", "Toggle Debug"),
     ]
 
     def __init__(self, start_directory: Optional[str] = None):
@@ -97,6 +47,10 @@ class AtPackTUI(App):
         self.start_directory = start_directory or "./atpacks/"
         self.current_view = "devices"  # Track current view
         self.selected_device = None  # Track selected device
+        self.device_search_filter = ""  # Track device search filter
+        self.debug_messages = []  # Store debug messages
+        self.debug_visible = True  # Track debug panel visibility
+        self.max_debug_messages = 100  # Limit number of stored debug messages
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
@@ -128,6 +82,11 @@ class AtPackTUI(App):
                 # Content area (only one visible at a time)
                 with Container(id="content-area"):
                     with Vertical(id="devices-view", classes="tab-view"):
+                        yield Input(
+                            placeholder="🔍 Search devices...",
+                            id="device-search",
+                            classes="search-input"
+                        )
                         yield DataTable(id="devices-table")
                     with Vertical(id="memory-view", classes="tab-view hidden"):
                         yield DataTable(id="memory-table")
@@ -138,15 +97,21 @@ class AtPackTUI(App):
                     with Vertical(id="files-view", classes="tab-view hidden"):
                         yield DataTable(id="files-table")
 
+            # Debug panel (collapsible)
+            with Vertical(classes="debug-panel", id="debug-panel"):
+                with Horizontal(classes="debug-header"):
+                    yield Label("🐛 Debug Console", classes="debug-title")
+                    yield Button(
+                        "🔼 Hide", id="btn-toggle-debug", classes="debug-toggle"
+                    )
+                with Vertical(classes="debug-container", id="debug-container"):
+                    yield Static(
+                        "Debug messages will appear here...",
+                        id="debug-content",
+                        classes="debug-content"
+                    )
+
         yield Footer()
-
-    def on_mount(self) -> None:
-        """Called when app starts."""
-        self.title = "🔧 AtPack Parser TUI"
-        self.sub_title = "Terminal User Interface for AtPack files"
-
-        # Set up initial state
-        self._setup_tables()
 
     def _setup_tables(self) -> None:
         """Set up data tables with columns."""
@@ -192,56 +157,62 @@ class AtPackTUI(App):
             self.current_view = "memory"
             event.button.variant = "primary"
             if self.parser:
-                self.call_later(self._update_memory_tab)
+                # Force immediate update to ensure device selection is considered
+                self._update_memory_tab()
         elif button_id == "btn-registers":
             self.query_one("#registers-view").remove_class("hidden")
             self.current_view = "registers"
             event.button.variant = "primary"
             if self.parser:
-                self.call_later(self._update_registers_tab)
+                # Force immediate update to ensure device selection is considered
+                self._update_registers_tab()
         elif button_id == "btn-config":
             self.query_one("#config-view").remove_class("hidden")
             self.current_view = "config"
             event.button.variant = "primary"
             if self.parser:
-                self.call_later(self._update_config_tab)
+                # Force immediate update to ensure device selection is considered
+                self._update_config_tab()
         elif button_id == "btn-files":
             self.query_one("#files-view").remove_class("hidden")
             self.current_view = "files"
             event.button.variant = "primary"
             if self.parser:
                 self.call_later(self._update_files_tab)
+        elif button_id == "btn-toggle-debug":
+            self._toggle_debug_panel()
 
-    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        """Called when a row is selected in any DataTable."""
-        if event.data_table.id == "devices-table" and self.parser:
-            # Get the selected device name from the first column
-            row_key = event.row_key
-            try:
-                cell_value = event.data_table.get_cell_at(row_key, 0)  # First column
-                if (
-                    cell_value
-                    and cell_value != "No devices found"
-                    and not cell_value.startswith("...")
-                ):
-                    self.selected_device = str(cell_value)
-                    # Update info panel to show selected device
-                    self._update_device_selection_info()
-            except:
-                pass  # Ignore selection errors
+
+
+    def _update_all_other_tabs(self) -> None:
+        """Update all tabs except devices when a device is selected."""
+        try:
+            if self.selected_device and self.parser:
+                self._update_memory_tab()
+                self._update_registers_tab()
+                self._update_config_tab()
+                self._update_files_tab()
+        except Exception as e:
+            self.log(f"Error updating other tabs: {e}")
 
     def _update_device_selection_info(self) -> None:
         """Update info panel with selected device information."""
         if not self.selected_device:
             return
 
+        family_name = self.parser.device_family
+        family_display = format_family_display(family_name)
         info_widget = self.query_one("#atpack-info", Static)
-        info_text = f"""File: {self.current_atpack_path.name}
-Family: {self.parser.device_family.value}
-Devices: {len(self.parser.get_devices())}
-Selected: {self.selected_device}
+        info_text = f"""📦 {self.current_atpack_path.name}
+Family: {family_display}
+Total Devices: {len(self.parser.get_devices())}
 
-💡 Navigate to Memory/Registers tabs for device details"""
+🎯 Selected Device: {self.selected_device}
+
+💡 Switch tabs to view device details:
+   • Memory: View memory layout
+   • Registers: Browse register info
+   • Config: Device configuration"""
 
         info_widget.update(info_text)
 
@@ -261,12 +232,20 @@ Selected: {self.selected_device}
             # Show loading message
             info_widget = self.query_one("#atpack-info", Static)
             info_widget.update(f"Loading {atpack_path.name}...")
+            
+            self.debug_log(f"📂 Loading AtPack: {atpack_path.name}")
 
             self.parser = AtPackParser(atpack_path)
             self.current_atpack_path = atpack_path
+            
+            device_count = len(self.parser.get_devices())
+            self.debug_log(
+                f"✅ AtPack loaded successfully: {device_count} devices found"
+            )
 
             # Update AtPack info first
             self._update_atpack_info()
+            #self._update_device_selection_info()
 
             # Try immediate update first
             self._update_all_tabs()
@@ -275,8 +254,10 @@ Selected: {self.selected_device}
             self.call_later(self._force_refresh_all_tabs)
 
         except AtPackError as e:
+            self.debug_log(f"❌ AtPack Error: {e}")
             self._show_error(f"AtPack Error: {e}")
         except Exception as e:
+            self.debug_log(f"💥 Unexpected error: {e}")
             self._show_error(f"Unexpected error: {e}")
 
     def _force_refresh_all_tabs(self) -> None:
@@ -312,13 +293,18 @@ Selected: {self.selected_device}
         """Update the AtPack information panel."""
         if not self.parser:
             return
-
         info_widget = self.query_one("#atpack-info", Static)
+        # Show general AtPack info with selected device if any
+        selected_info = ""
+        if self.selected_device:
+            selected_info = f"\n🎯 Selected: {self.selected_device}"
+        family_display = format_family_display(self.parser.device_family)
+        info_text = f"""📦 {self.current_atpack_path.name}
+Family: {family_display}
+Total Devices: {len(self.parser.get_devices())}{selected_info}
 
-        info_text = f"""File: {self.current_atpack_path.name}
-Family: {self.parser.device_family.value}
-Devices: {len(self.parser.get_devices())}
-Description: AtPack file information"""
+📱 Click on a device in the Devices tab to select it
+💡 Selected device will be used across all tabs"""
 
         info_widget.update(info_text)
 
@@ -343,31 +329,52 @@ Description: AtPack file information"""
 
             # Check if table has columns, if not add them
             if not hasattr(devices_table, "columns") or len(devices_table.columns) == 0:
-                devices_table.add_columns("Device Name", "Index", "Family")
+                devices_table.add_columns("Device Name", "Status", "Family", "Index")
 
             if not devices:
-                devices_table.add_row("No devices found", "", "")
+                devices_table.add_row("No devices found", "", "", "")
                 return
 
-            # Add first 20 devices for testing
-            count = min(20, len(devices))
-            for i, device_name in enumerate(devices[:count], 1):
+            # Apply search filter
+            filtered_devices = self._filter_devices(devices)
+            
+            if not filtered_devices and self.device_search_filter:
                 devices_table.add_row(
-                    str(device_name), str(i), str(self.parser.device_family.value)
+                    f"🔍 No devices match '{self.device_search_filter}'", "", "", ""
+                )
+                devices_table.add_row(
+                    f"📊 Total devices available: {len(devices)}", "", "", ""
+                )
+                return
+
+            # Add filtered devices
+            for i, device_name in enumerate(filtered_devices, 1):
+                # Status indicator for selected device
+                is_selected = (self.selected_device and
+                              str(device_name) == self.selected_device)
+                status = "🎯 SELECTED" if is_selected else ""
+
+                family_display = format_family_display(self.parser.device_family)
+                devices_table.add_row(
+                    str(device_name),
+                    status,
+                    family_display,
+                    str(i)
                 )
 
-            if len(devices) > 20:
+            # Add summary row at the end
+            if self.device_search_filter:
                 devices_table.add_row(
-                    f"... and {len(devices) - 20} more devices", "", ""
+                    f"📊 Showing: {len(filtered_devices)} of {len(devices)} devices",
+                    "", "", ""
+                )
+            else:
+                devices_table.add_row(
+                    f"📊 Total: {len(devices)} devices", "", "", ""
                 )
 
         except Exception as e:
             self._show_error(f"Error updating devices: {e}")
-
-    def _do_update_devices_tab(self) -> None:
-        """Actually update the devices table after ensuring everything is mounted."""
-        # This method is no longer needed, but keeping it to avoid errors
-        self._update_devices_tab()
 
     def _update_memory_tab(self) -> None:
         """Update the memory table."""
@@ -376,8 +383,15 @@ Description: AtPack file information"""
             memory_table.clear()
             memory_table.add_columns("Segment", "Start", "Size", "Description")
 
-            if not self.selected_device or not self.parser:
-                memory_table.add_row("Select a device first", "", "", "")
+            if not self.parser:
+                memory_table.add_row("No AtPack loaded", "", "", "")
+                return
+                
+            if not self.selected_device:
+                memory_table.add_row("📱 Select a device first", "", "", "")
+                memory_table.add_row(
+                    "Go to Devices tab and click on a device", "", "", ""
+                )
                 return
 
             try:
@@ -394,8 +408,9 @@ Description: AtPack file information"""
                             segment.get("description", ""),
                         )
                 else:
+                    # Show default memory layout for the selected device
                     memory_table.add_row(
-                        f"Memory info for {self.selected_device}", "Loading...", "", ""
+                        f"🎯 Device: {self.selected_device}", "Ready", "", ""
                     )
                     memory_table.add_row(
                         "Flash Memory", "0x0000", "32KB", "Program memory"
@@ -421,8 +436,15 @@ Description: AtPack file information"""
                 "Module", "Register", "Address", "Size", "Description"
             )
 
-            if not self.selected_device or not self.parser:
-                registers_table.add_row("Select a device first", "", "", "", "")
+            if not self.parser:
+                registers_table.add_row("No AtPack loaded", "", "", "", "")
+                return
+                
+            if not self.selected_device:
+                registers_table.add_row("📱 Select a device first", "", "", "", "")
+                registers_table.add_row(
+                    "Go to Devices tab and click on a device", "", "", "", ""
+                )
                 return
 
             try:
@@ -447,7 +469,10 @@ Description: AtPack file information"""
                             )
                             count += 1
                 else:
-                    # Show sample register data
+                    # Show default register data for the selected device
+                    registers_table.add_row(
+                        f"🎯 Device: {self.selected_device}", "Ready", "", "", ""
+                    )
                     registers_table.add_row(
                         "CORE", "STATUS", "0x03", "8bit", "Status register"
                     )
@@ -464,11 +489,7 @@ Description: AtPack file information"""
                         "TIMER", "TMR0", "0x01", "8bit", "Timer 0 register"
                     )
                     registers_table.add_row(
-                        f"Device: {self.selected_device}",
-                        "Ready",
-                        "",
-                        "",
-                        "Use CLI for full details",
+                        "Info", "CLI Available", "", "", "Use CLI for full details"
                     )
 
             except Exception as e:
@@ -490,11 +511,15 @@ Description: AtPack file information"""
             config_table.clear()
             config_table.add_columns("Property", "Value", "Description")
 
-            if not self.selected_device or not self.parser:
+            if not self.parser:
+                config_table.add_row("No AtPack loaded", "", "")
+                return
+
+            if not self.selected_device:
                 config_table.add_row(
-                    "AtPack Info",
-                    "No device selected",
-                    "Select a device to view configuration",
+                    "📱 Select a device first",
+                    "",
+                    "Go to Devices tab and click on a device",
                 )
                 if self.parser:
                     config_table.add_row(
@@ -516,7 +541,7 @@ Description: AtPack file information"""
 
             # Show device-specific configuration
             config_table.add_row(
-                "Device Name", self.selected_device, "Selected microcontroller"
+                "🎯 Selected Device", self.selected_device, "Active microcontroller"
             )
             config_table.add_row(
                 "Family", self.parser.device_family.value, "Device family"
@@ -540,7 +565,7 @@ Description: AtPack file information"""
                         "Physical package type",
                     )
 
-            except:
+            except Exception:
                 pass
 
             config_table.add_row("Status", "Loaded", "Device data available")
@@ -570,6 +595,7 @@ Description: AtPack file information"""
             if extracted_dir.exists():
                 # Count different file types
                 atdf_files = list(extracted_dir.glob("**/*.atdf"))
+                pic_files = list(extracted_dir.glob("**/*.pic"))
                 header_files = list(extracted_dir.glob("**/*.h"))
                 linker_files = list(extracted_dir.glob("**/*.ld"))
                 xml_files = list(extracted_dir.glob("**/*.xml"))
@@ -578,6 +604,11 @@ Description: AtPack file information"""
                     "ATDF Files",
                     str(len(atdf_files)),
                     atdf_files[0].name if atdf_files else "None",
+                )
+                files_table.add_row(
+                    "PIC Files",
+                    str(len(pic_files)),
+                    pic_files[0].name if pic_files else "None",
                 )
                 files_table.add_row(
                     "Header Files",
@@ -642,22 +673,39 @@ Description: AtPack file information"""
 ## Key Bindings
 - **F1**: Show this help
 - **F5**: Refresh current view
+- **F12**: Toggle debug panel
 - **S**: Scan AtPack directory
 - **D**: Debug device loading
+- **Ctrl+F**: Focus on device search (in Devices tab)
+- **Escape**: Clear device search
 - **Q** or **Ctrl+C**: Quit application
 
 ## Usage
 1. **Scan**: Press 'S' to scan for AtPack files
 2. **Browse**: Use left panel to select AtPack files
 3. **Load**: Click on an .atpack file to load it
-4. **Select**: Click on a device in the Devices tab
-5. **Explore**: Use buttons to view different information:
+4. **Search**: In Devices tab, use the search box or Ctrl+F
+5. **Select**: Click on a device in the Devices tab
+6. **Explore**: Use buttons to view different information:
 
-   - **📱 Devices**: List of all devices in the AtPack
+   - **📱 Devices**: List of all devices in the AtPack (with search)
    - **💾 Memory**: Memory layout for selected device
-   - **🔧 Registers**: Register information for selected device  
+   - **🔧 Registers**: Register information for selected device
    - **⚙️ Config**: Device and AtPack configuration
    - **📁 Files**: Files and structure in the AtPack
+
+## Device Search
+- **Search Box**: Type in the search field to filter devices
+- **Real-time**: Search updates as you type
+- **Case Insensitive**: Search works regardless of case
+- **Ctrl+F**: Quick focus on search field
+- **Escape**: Clear search and show all devices
+
+## Debug Panel
+- **F12**: Toggle debug panel visibility
+- **Real-time Logs**: See application events and errors
+- **Timestamps**: All messages include timestamps
+- **Auto-scroll**: Recent messages shown at bottom
 
 ## Navigation
 - Use mouse or keyboard to navigate
@@ -681,9 +729,12 @@ For advanced analysis, use CLI commands:
 
         if not self.parser:
             info_widget.update("🔍 DEBUG: No parser loaded")
+            self.debug_log("🔍 Debug devices: No parser loaded")
             return
 
         devices = self.parser.get_devices()
+        self.debug_log(f"🔍 Debug devices: {len(devices)} devices found")
+        
         debug_info = f"""🔍 DEBUG INFO:
 Parser loaded: ✓
 Device count: {len(devices)}
@@ -702,7 +753,7 @@ Trying simple approach..."""
             try:
                 # Try to add columns - if they exist, it will fail silently
                 devices_table.add_columns("Device Name", "Index", "Family")
-            except:
+            except Exception:
                 pass  # Columns probably already exist
 
             # Now add rows directly without clearing
@@ -712,7 +763,9 @@ Trying simple approach..."""
                     devices_table.add_row(
                         str(device_name), str(i), str(self.parser.device_family.value)
                     )
+                    self.debug_log(f"✅ Added device row: {device_name}")
                 except Exception as row_error:
+                    self.debug_log(f"❌ Row error: {row_error}")
                     info_widget.update(f"🔍 ROW ERROR: {row_error}")
                     break
 
@@ -725,6 +778,7 @@ Check Devices tab now!"""
             self.call_later(lambda: info_widget.update(final_debug))
 
         except Exception as e:
+            self.debug_log(f"💥 Simple approach error: {e}")
             info_widget.update(f"🔍 SIMPLE ERROR: {e}")
 
     def action_scan_atpacks(self) -> None:
@@ -734,6 +788,9 @@ Check Devices tab now!"""
         try:
             atpack_dir = Path(self.start_directory)
             atpack_files = list(atpack_dir.glob("*.atpack"))
+
+            self.debug_log(f"📡 Scanning directory: {atpack_dir}")
+            self.debug_log(f"📦 Found {len(atpack_files)} AtPack files")
 
             scan_info = f"""📡 ATPACK SCAN RESULTS:
 Directory: {atpack_dir}
@@ -756,16 +813,161 @@ Files:"""
             tree.reload()
 
         except Exception as e:
+            self.debug_log(f"❌ Scan error: {e}")
             info_widget.update(f"📡 SCAN ERROR: {e}")
 
     def action_refresh(self) -> None:
         """Refresh the current view."""
+        self.debug_log("🔄 Refreshing current view")
         if self.current_atpack_path:
             self._load_atpack(self.current_atpack_path)
 
     def action_quit(self) -> None:
         """Quit the application."""
+        self.debug_log("👋 Application shutting down")
         self.exit()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Called when the search input changes."""
+        if event.input.id == "device-search":
+            self.device_search_filter = event.value.lower()
+            self.debug_log(f"🔍 Device search filter: '{event.value}'")
+            # Update the devices table with the new filter
+            if self.parser:
+                self._update_devices_tab()
+
+    def action_search_devices(self) -> None:
+        """Focus on the device search input."""
+        if self.current_view == "devices":
+            try:
+                search_input = self.query_one("#device-search", Input)
+                search_input.focus()
+                self.debug_log("🔍 Focused on device search input")
+            except Exception:
+                pass
+
+    def action_clear_search(self) -> None:
+        """Clear the device search filter."""
+        try:
+            search_input = self.query_one("#device-search", Input)
+            search_input.value = ""
+            self.device_search_filter = ""
+            self.debug_log("🧹 Cleared device search filter")
+            if self.parser:
+                self._update_devices_tab()
+        except Exception:
+            pass
+
+    def _filter_devices(self, devices):
+        """Filter devices based on search criteria."""
+        if not self.device_search_filter:
+            return devices
+        
+        # Filter devices that contain the search term (case insensitive)
+        filtered = [
+            device for device in devices
+            if self.device_search_filter in device.lower()
+        ]
+        return filtered
+
+    def _toggle_debug_panel(self) -> None:
+        """Toggle the visibility of the debug panel."""
+        try:
+            debug_container = self.query_one("#debug-container")
+            toggle_btn = self.query_one("#btn-toggle-debug", Button)
+
+            if self.debug_visible:
+                # Hide the debug content but keep the header
+                debug_container.add_class("hidden")
+                toggle_btn.label = "🔽 Show"
+                self.debug_visible = False
+                self.debug_log("Debug panel hidden")
+            else:
+                # Show the debug content
+                debug_container.remove_class("hidden")
+                toggle_btn.label = "🔼 Hide"
+                self.debug_visible = True
+                self.debug_log("Debug panel shown")
+        except Exception as e:
+            self.log(f"Error toggling debug panel: {e}")
+
+    def debug_log(self, message: str) -> None:
+        """Add a debug message to the debug panel."""
+        try:
+            timestamp = datetime.now().strftime("%H:%M:%S")
+            formatted_message = f"[{timestamp}] {message}"
+            
+            # Add to messages list
+            self.debug_messages.append(formatted_message)
+            
+            # Limit number of stored messages
+            if len(self.debug_messages) > self.max_debug_messages:
+                self.debug_messages = self.debug_messages[-self.max_debug_messages:]
+            
+            # Update the debug content
+            self._update_debug_content()
+        except Exception as e:
+            self.log(f"Error logging debug message: {e}")
+
+    def _update_debug_content(self) -> None:
+        """Update the debug content widget with current messages."""
+        try:
+            debug_content = self.query_one("#debug-content", Static)
+            if self.debug_messages:
+                content = "\n".join(self.debug_messages[-20:])  # Show last 20 messages
+            else:
+                content = "Debug messages will appear here..."
+            debug_content.update(content)
+        except Exception as e:
+            self.log(f"Error updating debug content: {e}")
+
+    def action_toggle_debug(self) -> None:
+        """Action to toggle debug panel via keyboard shortcut."""
+        self._toggle_debug_panel()
+
+    def on_mount(self) -> None:
+        """Called when app starts."""
+        self.title = "🔧 AtPack Parser TUI"
+        self.sub_title = "Terminal User Interface for AtPack files"
+
+        # Set up initial state
+        self._setup_tables()
+        
+        # Add welcome debug message
+        self.debug_log("🚀 AtPack Parser TUI started")
+        self.debug_log("📋 Press F12 to toggle this debug panel")
+        self.debug_log("🔍 Press Ctrl+F to search devices")
+        self.debug_log("💡 Select an AtPack file to begin analysis")
+
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        """Called when a row is selected in any DataTable."""
+        if event.data_table.id == "devices-table" and self.parser:
+            # Get the selected device name from the first column
+            row_key = event.row_key
+            try:
+                cell_value = event.data_table.get_cell_at(row_key, 0)  # First column
+                if (
+                    cell_value
+                    and cell_value != "No devices found"
+                    and not cell_value.startswith("...")
+                    and not cell_value.startswith("📊 Total:")
+                ):
+                    # The device name is in the first column without any prefix now
+                    device_name = str(cell_value)
+
+                    # Update selected device
+                    self.selected_device = device_name
+                    
+                    self.debug_log(f"🎯 Device selected: {device_name}")
+
+                    # Update the devices table to show new selection
+                    self._update_devices_tab()
+                    # Also update other tabs so they show the new selection
+                    self.call_later(self._update_all_other_tabs)
+                    # Update info panel to show selected device
+                    self._update_device_selection_info()
+            except Exception as e:
+                self.log(f"Error on_data_table_row_selected: {e}")
 
 
 def run_tui(start_directory: Optional[str] = None) -> None:
