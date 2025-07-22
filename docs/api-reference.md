@@ -30,19 +30,19 @@ Data models representing device information.
 
 For parsing ATMEL Device Files (ATDF format).
 
-::: atpack_parser.atdf_parser.AtdfParser
+::: atpack_parser.parser.atdf.AtdfParser
 
 ### PIC Parser
 
 For parsing Microchip PIC device files.
 
-::: atpack_parser.pic_parser.PicParser
+::: atpack_parser.parser.pic.PicParser
 
 ### PDSC Parser
 
 For parsing Pack Description (PDSC) files.
 
-::: atpack_parser.pdsc_parser.PdscParser
+::: atpack_parser.parser.pdsc.PdscParser
 
 ## Exceptions
 
