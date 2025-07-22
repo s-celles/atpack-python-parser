@@ -34,6 +34,7 @@ class InteractiveSession:
             "clear": self.clear_screen,
             "load": self.load_atpack,
             "scan": self.scan_directory,
+            "info": self.show_info,
             "devices": self.list_devices,
             "select": self.select_device,
             "device-info": self.show_device_info,
@@ -55,6 +56,8 @@ class InteractiveSession:
                 border_style="blue",
             )
         )
+
+        console.print("\nUse 'scan' or 'scan YourDirectory' to scan for AtPack files.")
 
         # Auto-scan for AtPack files
         self.scan_directory(silent=True)
@@ -123,6 +126,7 @@ class InteractiveSession:
             ("help", "Show this help", "help"),
             ("scan [dir]", "Scan directory for AtPack files", "scan ./atpacks"),
             ("load <file>", "Load an AtPack file", "load mypack.atpack"),
+            ("info", "Show AtPack information", "info"),
             ("devices", "List all devices", "devices"),
             ("select <device>", "Select a device", "select ATmega328P"),
             ("device-info", "Show selected device information", "device-info"),
@@ -185,6 +189,7 @@ class InteractiveSession:
                         f"[yellow]Auto-load {atpack_files[0].name}?[/yellow]"
                     ):
                         self.load_atpack([str(atpack_files[0])])
+                console.print("\nUse 'load' to load an AtPack file.")
 
         except Exception as e:
             console.print(f"[red]Error during scan: {e}[/red]")
@@ -242,11 +247,57 @@ class InteractiveSession:
             console.print("[green]✅ AtPack loaded successfully![/green]")
             console.print(f"Family: {self.parser.device_family.value}")
             console.print(f"Devices: {len(devices)}")
+            console.print("\nUse 'devices' to see list of devices in this AtPack file.")
 
         except AtPackError as e:
             console.print(f"[red]AtPack error: {e}[/red]")
         except Exception as e:
             console.print(f"[red]Unexpected error: {e}[/red]")
+
+    def show_info(self, args: List[str]) -> None:
+        """Show information about the current AtPack."""
+        if not self.parser:
+            console.print("[red]No AtPack loaded. Use 'load <file>'[/red]")
+            return
+
+        try:
+            metadata = self.parser.metadata
+            devices = list(self.parser.get_devices())
+
+            # Calculate file size
+            file_size = self.current_atpack.stat().st_size / 1024 / 1024
+
+            panel_content = f"""[bold]AtPack File:[/bold] {self.current_atpack.name}
+[bold]File Size:[/bold] {file_size:.1f} MB
+[bold]Device Family:[/bold] {self.parser.device_family.value}
+[bold]Total Devices:[/bold] {len(devices)}
+[bold]Vendor:[/bold] {getattr(metadata, "vendor", "Unknown")}
+[bold]Pack Version:[/bold] {getattr(metadata, "version", "Unknown")}
+[bold]Description:[/bold] {getattr(metadata, "description", "No description available")[:60]}"""
+
+            console.print(
+                Panel(
+                    panel_content,
+                    title="AtPack Information",
+                    border_style="blue",
+                )
+            )
+
+            # Show some sample devices
+            if devices:
+                sample_count = min(5, len(devices))
+                console.print(
+                    f"\n[yellow]Sample devices ({sample_count} of "
+                    f"{len(devices)}):[/yellow]"
+                )
+                for device in devices[:5]:
+                    console.print(f"  • {device}")
+                if len(devices) > 5:
+                    console.print(f"  ... and {len(devices) - 5} more")
+                console.print("\nUse 'devices' to see all devices")
+
+        except Exception as e:
+            console.print(f"[red]Error retrieving AtPack information: {e}[/red]")
 
     def list_devices(self, args: List[str]) -> None:
         """List all devices in the current AtPack."""
@@ -267,6 +318,8 @@ class InteractiveSession:
             return
 
         self._display_devices_paginated(devices)
+
+        console.print("\nUse 'select YourDevice' to select a device.")
 
     def _display_devices_paginated(self, devices: List[str]) -> None:
         """Display devices with pagination."""
