@@ -375,6 +375,11 @@ class InteractiveSession:
 
     def select_device(self, args: List[str]) -> None:
         """Select a device."""
+
+        def print_device_selected(device_name: str) -> None:
+            console.print(f"[green]✅ Device selected: {device_name}[/green]")
+            console.print("Use 'device-info', 'memory', 'registers', ... or any command from 'help'")
+
         if not self.parser:
             console.print("[red]No AtPack loaded. Use 'load <file>'[/red]")
             return
@@ -403,7 +408,7 @@ class InteractiveSession:
         # Exact match first
         if device_name in devices:
             self.current_device = device_name
-            console.print(f"[green]✅ Device selected: {device_name}[/green]")
+            print_device_selected(device_name)
             return
 
         # Partial match
@@ -415,7 +420,8 @@ class InteractiveSession:
 
         if len(matches) == 1:
             self.current_device = matches[0]
-            console.print(f"[green]✅ Device selected: {matches[0]}[/green]")
+            device_name = matches[0]
+            print_device_selected(device_name)
         else:
             console.print(f"[yellow]Multiple matches found ({len(matches)}):[/yellow]")
             for i, match in enumerate(matches[:10], 1):
@@ -427,7 +433,8 @@ class InteractiveSession:
             )
 
             self.current_device = matches[int(choice) - 1]
-            console.print(f"[green]✅ Device selected: {self.current_device}[/green]")
+            device_name = self.current_device
+            print_device_selected(device_name)
 
     def show_device_info(self, args: List[str]) -> None:
         """Show device information."""
@@ -617,7 +624,7 @@ class InteractiveSession:
 
 
 def interactive_mode() -> None:
-    """Launch interactive mode."""
+    """🖥️ Launch interactive mode."""
     session = InteractiveSession()
     session.start()
 
