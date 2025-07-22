@@ -62,6 +62,7 @@ nav:
   - Installation: installation.md
   - CLI Usage: cli-usage.md
   - TUI Usage: tui-usage.md
+  - Interactive Mode: interactive-mode.md
   - Python API: api-usage.md
   - Examples: examples.md
   - API Reference: api-reference.md

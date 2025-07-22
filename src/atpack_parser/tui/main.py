@@ -222,9 +222,14 @@ Total Devices: {len(self.parser.get_devices())}
         """Called when a file is selected in the directory tree."""
         file_path = event.path
 
+        self.debug_log(f"📁 File clicked: {file_path.name}")
+
         # Check if it's an AtPack file
         if file_path.suffix.lower() == ".atpack":
+            self.debug_log(f"📦 AtPack file detected: {file_path.name}")
             self._load_atpack(file_path)
+        else:
+            self.debug_log(f"⚠️ Not an AtPack file: {file_path.suffix}")
 
     def _load_atpack(self, atpack_path: Path) -> None:
         """Load an AtPack file and update the interface."""
@@ -873,21 +878,28 @@ Files:"""
     def _toggle_debug_panel(self) -> None:
         """Toggle the visibility of the debug panel."""
         try:
-            debug_container = self.query_one("#debug-container")
+            debug_panel = self.query_one("#debug-panel")
             toggle_btn = self.query_one("#btn-toggle-debug", Button)
+            main_container = self.query_one(".main-container")
 
             if self.debug_visible:
-                # Hide the debug content but keep the header
-                debug_container.add_class("hidden")
-                toggle_btn.label = "🔽 Show"
+                # Hide the entire debug panel
+                debug_panel.add_class("hidden")
+                # Switch to no-debug layout
+                main_container.remove_class("main-container")
+                main_container.add_class("main-container-no-debug")
+                toggle_btn.label = "🔽 Show Debug"
                 self.debug_visible = False
-                self.debug_log("Debug panel hidden")
+                # Don't log this since panel will be hidden
             else:
-                # Show the debug content
-                debug_container.remove_class("hidden")
-                toggle_btn.label = "🔼 Hide"
+                # Show the entire debug panel
+                debug_panel.remove_class("hidden")
+                # Switch back to debug layout
+                main_container.remove_class("main-container-no-debug")
+                main_container.add_class("main-container")
+                toggle_btn.label = "🔼 Hide Debug"
                 self.debug_visible = True
-                self.debug_log("Debug panel shown")
+                self.debug_log("🐛 Debug panel shown")
         except Exception as e:
             self.log(f"Error toggling debug panel: {e}")
 
@@ -897,29 +909,46 @@ Files:"""
             timestamp = datetime.now().strftime("%H:%M:%S")
             formatted_message = f"[{timestamp}] {message}"
             
-            # Add to messages list
+            # Always add to messages list, even if UI isn't ready
             self.debug_messages.append(formatted_message)
             
             # Limit number of stored messages
             if len(self.debug_messages) > self.max_debug_messages:
                 self.debug_messages = self.debug_messages[-self.max_debug_messages:]
             
-            # Update the debug content
-            self._update_debug_content()
+            # Try to update the debug content if UI is ready
+            self.call_later(self._update_debug_content)
+            
         except Exception as e:
-            self.log(f"Error logging debug message: {e}")
+            # Fallback to textual's built-in logging
+            self.log(f"Debug: {message}")
+            self.log(f"Error in debug_log: {e}")
 
     def _update_debug_content(self) -> None:
         """Update the debug content widget with current messages."""
         try:
+            # Check if the app is mounted and the debug panel exists
+            if not self.is_mounted:
+                return
+                
             debug_content = self.query_one("#debug-content", Static)
             if self.debug_messages:
-                content = "\n".join(self.debug_messages[-20:])  # Show last 20 messages
+                # Show last 5 messages to fit exactly in the debug panel
+                content = "\n".join(self.debug_messages[-5:])
+                # If we have less than 5 messages, pad with empty lines
+                lines = content.split('\n')
+                while len(lines) < 5:
+                    lines.insert(0, "")
+                content = "\n".join(lines)
             else:
-                content = "Debug messages will appear here..."
+                # Show placeholder text centered in 5 lines
+                content = "\n\nDebug messages will appear here...\n\n"
             debug_content.update(content)
         except Exception as e:
+            # If we can't update the UI, just use textual's logging
             self.log(f"Error updating debug content: {e}")
+            if self.debug_messages:
+                self.log(f"Latest debug: {self.debug_messages[-1]}")
 
     def action_toggle_debug(self) -> None:
         """Action to toggle debug panel via keyboard shortcut."""
@@ -933,7 +962,11 @@ Files:"""
         # Set up initial state
         self._setup_tables()
         
-        # Add welcome debug message
+        # Add welcome debug messages with a slight delay to ensure UI is ready
+        self.call_later(self._add_welcome_messages)
+
+    def _add_welcome_messages(self) -> None:
+        """Add welcome debug messages after UI is fully mounted."""
         self.debug_log("🚀 AtPack Parser TUI started")
         self.debug_log("📋 Press F12 to toggle this debug panel")
         self.debug_log("🔍 Press Ctrl+F to search devices")
@@ -946,6 +979,9 @@ Files:"""
             row_key = event.row_key
             try:
                 cell_value = event.data_table.get_cell_at(row_key, 0)  # First column
+                
+                self.debug_log(f"🖱️ Device table row clicked: '{cell_value}'")
+                
                 if (
                     cell_value
                     and cell_value != "No devices found"
@@ -956,9 +992,15 @@ Files:"""
                     device_name = str(cell_value)
 
                     # Update selected device
+                    old_device = self.selected_device
                     self.selected_device = device_name
                     
-                    self.debug_log(f"🎯 Device selected: {device_name}")
+                    if old_device != self.selected_device:
+                        self.debug_log(f"🎯 Device selected: {device_name}")
+                        if old_device:
+                            self.debug_log(f"📝 Previous device: {old_device}")
+                    else:
+                        self.debug_log(f"🔄 Same device reselected: {device_name}")
 
                     # Update the devices table to show new selection
                     self._update_devices_tab()
@@ -966,7 +1008,10 @@ Files:"""
                     self.call_later(self._update_all_other_tabs)
                     # Update info panel to show selected device
                     self._update_device_selection_info()
+                else:
+                    self.debug_log(f"⚠️ Invalid device selection: '{cell_value}'")
             except Exception as e:
+                self.debug_log(f"❌ Error in device selection: {e}")
                 self.log(f"Error on_data_table_row_selected: {e}")
 
 

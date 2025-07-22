@@ -9,6 +9,7 @@ from .config import config_app
 from .devices import devices_app
 from .files import files_app
 from .global_commands import help_tree_command, interactive_help, scan
+from .interactive import interactive_mode
 from .memory import memory_app
 from .registers import registers_app
 from .tui_command import launch_tui
@@ -35,6 +36,7 @@ app.command("scan")(scan)
 app.command("help-tree")(help_tree_command)
 app.command("help")(interactive_help)
 app.command("tui")(launch_tui)
+app.command("interactive")(interactive_mode)
 
 
 @app.callback(invoke_without_command=True)
@@ -55,9 +57,12 @@ def main(
     • config   - Configuration data (show)
     • scan     - Directory scanning
     • help-tree - Show command structure
+    • interactive - Start interactive mode with Rich UI
+    • tui      - Launch Terminal User Interface
 
     Use 'atpack COMMAND --help' for detailed help on each command.
     Use 'atpack help-tree' to see the complete command structure.
+    Use 'atpack interactive' for an interactive experience with auto-completion.
     """
     if version:
         from .. import __version__
