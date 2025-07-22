@@ -99,8 +99,8 @@ def list_registers(
 
 @registers_app.command("show")
 def show_register(
-    device_name: DeviceName,
     register_name: Annotated[str, typer.Argument(help="Register name")],
+    device_name: DeviceName,
     atpack_path: AtPackPath,
     format: Annotated[
         str, typer.Option("--format", "-f", help="Output format")

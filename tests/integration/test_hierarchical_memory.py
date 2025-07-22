@@ -1,7 +1,7 @@
 """Tests for hierarchical memory layout functionality."""
 
 import pytest
-from src.atpack_parser import AtPackParser
+from atpack_parser import AtPackParser
 
 
 @pytest.mark.integration

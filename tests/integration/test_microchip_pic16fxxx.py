@@ -6,8 +6,8 @@ Integration tests for PIC16Fxxx device parsing functionality.
 import sys
 from pathlib import Path
 import pytest
-from src.atpack_parser.parser.pic import PicParser
-from src.atpack_parser import AtPackParser
+from atpack_parser.parser.pic import PicParser
+from atpack_parser import AtPackParser
 
 # Import helper functions from parent conftest
 test_dir = Path(__file__).parent.parent
