@@ -12,7 +12,7 @@ from ..exceptions import (
 from ..models import AtPackMetadata, Device, DeviceFamily
 from .pdsc import PdscParser
 from .pic import PicParser
-from .xml import AtPackExtractor
+from ..atpack_extractor import AtPackExtractor
 
 
 class AtPackParser:
