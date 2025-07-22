@@ -85,7 +85,7 @@ class AtPackTUI(App):
                         yield Input(
                             placeholder="🔍 Search devices...",
                             id="device-search",
-                            classes="search-input"
+                            classes="search-input",
                         )
                         yield DataTable(id="devices-table")
                     with Vertical(id="memory-view", classes="tab-view hidden"):
@@ -108,7 +108,7 @@ class AtPackTUI(App):
                     yield Static(
                         "Debug messages will appear here...",
                         id="debug-content",
-                        classes="debug-content"
+                        classes="debug-content",
                     )
 
         yield Footer()
@@ -182,8 +182,6 @@ class AtPackTUI(App):
         elif button_id == "btn-toggle-debug":
             self._toggle_debug_panel()
 
-
-
     def _update_all_other_tabs(self) -> None:
         """Update all tabs except devices when a device is selected."""
         try:
@@ -237,12 +235,12 @@ Total Devices: {len(self.parser.get_devices())}
             # Show loading message
             info_widget = self.query_one("#atpack-info", Static)
             info_widget.update(f"Loading {atpack_path.name}...")
-            
+
             self.debug_log(f"📂 Loading AtPack: {atpack_path.name}")
 
             self.parser = AtPackParser(atpack_path)
             self.current_atpack_path = atpack_path
-            
+
             device_count = len(self.parser.get_devices())
             self.debug_log(
                 f"✅ AtPack loaded successfully: {device_count} devices found"
@@ -250,7 +248,7 @@ Total Devices: {len(self.parser.get_devices())}
 
             # Update AtPack info first
             self._update_atpack_info()
-            #self._update_device_selection_info()
+            # self._update_device_selection_info()
 
             # Try immediate update first
             self._update_all_tabs()
@@ -342,7 +340,7 @@ Total Devices: {len(self.parser.get_devices())}{selected_info}
 
             # Apply search filter
             filtered_devices = self._filter_devices(devices)
-            
+
             if not filtered_devices and self.device_search_filter:
                 devices_table.add_row(
                     f"🔍 No devices match '{self.device_search_filter}'", "", "", ""
@@ -355,28 +353,24 @@ Total Devices: {len(self.parser.get_devices())}{selected_info}
             # Add filtered devices
             for i, device_name in enumerate(filtered_devices, 1):
                 # Status indicator for selected device
-                is_selected = (self.selected_device and
-                              str(device_name) == self.selected_device)
+                is_selected = (
+                    self.selected_device and str(device_name) == self.selected_device
+                )
                 status = "🎯 SELECTED" if is_selected else ""
 
                 family_display = format_family_display(self.parser.device_family)
-                devices_table.add_row(
-                    str(device_name),
-                    status,
-                    family_display,
-                    str(i)
-                )
+                devices_table.add_row(str(device_name), status, family_display, str(i))
 
             # Add summary row at the end
             if self.device_search_filter:
                 devices_table.add_row(
                     f"📊 Showing: {len(filtered_devices)} of {len(devices)} devices",
-                    "", "", ""
+                    "",
+                    "",
+                    "",
                 )
             else:
-                devices_table.add_row(
-                    f"📊 Total: {len(devices)} devices", "", "", ""
-                )
+                devices_table.add_row(f"📊 Total: {len(devices)} devices", "", "", "")
 
         except Exception as e:
             self._show_error(f"Error updating devices: {e}")
@@ -391,7 +385,7 @@ Total Devices: {len(self.parser.get_devices())}{selected_info}
             if not self.parser:
                 memory_table.add_row("No AtPack loaded", "", "", "")
                 return
-                
+
             if not self.selected_device:
                 memory_table.add_row("📱 Select a device first", "", "", "")
                 memory_table.add_row(
@@ -444,7 +438,7 @@ Total Devices: {len(self.parser.get_devices())}{selected_info}
             if not self.parser:
                 registers_table.add_row("No AtPack loaded", "", "", "", "")
                 return
-                
+
             if not self.selected_device:
                 registers_table.add_row("📱 Select a device first", "", "", "", "")
                 registers_table.add_row(
@@ -739,7 +733,7 @@ For advanced analysis, use CLI commands:
 
         devices = self.parser.get_devices()
         self.debug_log(f"🔍 Debug devices: {len(devices)} devices found")
-        
+
         debug_info = f"""🔍 DEBUG INFO:
 Parser loaded: ✓
 Device count: {len(devices)}
@@ -867,11 +861,10 @@ Files:"""
         """Filter devices based on search criteria."""
         if not self.device_search_filter:
             return devices
-        
+
         # Filter devices that contain the search term (case insensitive)
         filtered = [
-            device for device in devices
-            if self.device_search_filter in device.lower()
+            device for device in devices if self.device_search_filter in device.lower()
         ]
         return filtered
 
@@ -908,17 +901,17 @@ Files:"""
         try:
             timestamp = datetime.now().strftime("%H:%M:%S")
             formatted_message = f"[{timestamp}] {message}"
-            
+
             # Always add to messages list, even if UI isn't ready
             self.debug_messages.append(formatted_message)
-            
+
             # Limit number of stored messages
             if len(self.debug_messages) > self.max_debug_messages:
-                self.debug_messages = self.debug_messages[-self.max_debug_messages:]
-            
+                self.debug_messages = self.debug_messages[-self.max_debug_messages :]
+
             # Try to update the debug content if UI is ready
             self.call_later(self._update_debug_content)
-            
+
         except Exception as e:
             # Fallback to textual's built-in logging
             self.log(f"Debug: {message}")
@@ -930,13 +923,13 @@ Files:"""
             # Check if the app is mounted and the debug panel exists
             if not self.is_mounted:
                 return
-                
+
             debug_content = self.query_one("#debug-content", Static)
             if self.debug_messages:
                 # Show last 5 messages to fit exactly in the debug panel
                 content = "\n".join(self.debug_messages[-5:])
                 # If we have less than 5 messages, pad with empty lines
-                lines = content.split('\n')
+                lines = content.split("\n")
                 while len(lines) < 5:
                     lines.insert(0, "")
                 content = "\n".join(lines)
@@ -961,7 +954,7 @@ Files:"""
 
         # Set up initial state
         self._setup_tables()
-        
+
         # Add welcome debug messages with a slight delay to ensure UI is ready
         self.call_later(self._add_welcome_messages)
 
@@ -979,9 +972,9 @@ Files:"""
             row_key = event.row_key
             try:
                 cell_value = event.data_table.get_cell_at(row_key, 0)  # First column
-                
+
                 self.debug_log(f"🖱️ Device table row clicked: '{cell_value}'")
-                
+
                 if (
                     cell_value
                     and cell_value != "No devices found"
@@ -994,7 +987,7 @@ Files:"""
                     # Update selected device
                     old_device = self.selected_device
                     self.selected_device = device_name
-                    
+
                     if old_device != self.selected_device:
                         self.debug_log(f"🎯 Device selected: {device_name}")
                         if old_device:

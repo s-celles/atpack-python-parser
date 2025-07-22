@@ -46,13 +46,15 @@ class InteractiveSession:
 
     def start(self) -> None:
         """Start the interactive session."""
-        console.print(Panel.fit(
-            "[bold blue]🔧 AtPack Parser - Interactive Mode[/bold blue]\n"
-            "Type 'help' to see available commands\n"
-            "Type 'exit' to quit",
-            title="Interactive Session",
-            border_style="blue"
-        ))
+        console.print(
+            Panel.fit(
+                "[bold blue]🔧 AtPack Parser - Interactive Mode[/bold blue]\n"
+                "Type 'help' to see available commands\n"
+                "Type 'exit' to quit",
+                title="Interactive Session",
+                border_style="blue",
+            )
+        )
 
         # Auto-scan for AtPack files
         self.scan_directory(silent=True)
@@ -64,7 +66,7 @@ class InteractiveSession:
 
                 # Show current context in prompt
                 context = self._get_context_prompt()
-                
+
                 # Get user input with completion
                 user_input = prompt(
                     HTML(f"<ansiblue>{context}</ansiblue> ❯ "),
@@ -99,21 +101,19 @@ class InteractiveSession:
     def _get_context_prompt(self) -> str:
         """Get context information for the prompt."""
         parts = ["atpack"]
-        
+
         if self.current_atpack:
             parts.append(f"[{self.current_atpack.stem}]")
-        
+
         if self.current_device:
             parts.append(f"({self.current_device})")
-            
+
         return "".join(parts)
 
     def show_help(self, args: List[str]) -> None:
         """Show help information."""
         table = Table(
-            title="Available Commands",
-            show_header=True,
-            header_style="bold magenta"
+            title="Available Commands", show_header=True, header_style="bold magenta"
         )
         table.add_column("Command", style="cyan", no_wrap=True)
         table.add_column("Description", style="white")
@@ -146,12 +146,12 @@ class InteractiveSession:
 
     def clear_screen(self, args: List[str]) -> None:
         """Clear the screen."""
-        os.system('cls' if os.name == 'nt' else 'clear')
+        os.system("cls" if os.name == "nt" else "clear")
 
     def scan_directory(self, args: List[str] = None, silent: bool = False) -> None:
         """Scan directory for AtPack files."""
         directory = args[0] if args else "./atpacks"
-        
+
         if not silent:
             console.print(f"[yellow]Scanning directory: {directory}[/yellow]")
 
@@ -162,11 +162,9 @@ class InteractiveSession:
                 return
 
             atpack_files = list(scan_path.glob("*.atpack"))
-            
+
             if not atpack_files:
-                console.print(
-                    f"[red]No AtPack files found in {directory}[/red]"
-                )
+                console.print(f"[red]No AtPack files found in {directory}[/red]")
                 return
 
             if not silent:
@@ -180,7 +178,7 @@ class InteractiveSession:
                     table.add_row(str(i), file.name, size)
 
                 console.print(table)
-                
+
                 # Auto-load if only one file
                 if len(atpack_files) == 1:
                     if Confirm.ask(
@@ -202,14 +200,14 @@ class InteractiveSession:
                     console.print("[yellow]Available AtPack files:[/yellow]")
                     for i, file in enumerate(atpack_files, 1):
                         console.print(f"  {i}. {file.name}")
-                    
+
                     file_choices = [str(i) for i in range(1, len(atpack_files) + 1)]
                     name_choices = [f.name for f in atpack_files]
                     choice = Prompt.ask(
                         "Select a file (number or name)",
-                        choices=file_choices + name_choices
+                        choices=file_choices + name_choices,
                     )
-                    
+
                     if choice.isdigit():
                         selected_file = atpack_files[int(choice) - 1]
                     else:
@@ -219,7 +217,7 @@ class InteractiveSession:
                         if not selected_file:
                             console.print("[red]File not found[/red]")
                             return
-                    
+
                     args = [str(selected_file)]
                 else:
                     console.print("[red]No AtPack files found[/red]")
@@ -229,7 +227,7 @@ class InteractiveSession:
                 return
 
         file_path = Path(args[0])
-        
+
         if not file_path.exists():
             console.print(f"[red]File not found: {file_path}[/red]")
             return
@@ -257,7 +255,7 @@ class InteractiveSession:
             return
 
         devices = list(self.parser.get_devices())
-        
+
         # Filter devices if search term provided
         if args:
             search_term = args[0].lower()
@@ -310,12 +308,9 @@ class InteractiveSession:
                 if current_page < total_pages - 1:
                     choices.append("n")
                 choices.append("q")
-                
-                action = Prompt.ask(
-                    f"Actions: {', '.join(actions)}",
-                    choices=choices
-                )
-                
+
+                action = Prompt.ask(f"Actions: {', '.join(actions)}", choices=choices)
+
                 if action == "p" and current_page > 0:
                     current_page -= 1
                 elif action == "n" and current_page < total_pages - 1:
@@ -337,11 +332,11 @@ class InteractiveSession:
             console.print(
                 f"[yellow]Select a device from {len(devices)} available:[/yellow]"
             )
-            
+
             # Show first 10 devices for quick selection
             for i, device in enumerate(devices[:10], 1):
                 console.print(f"  {i}. {device}")
-            
+
             if len(devices) > 10:
                 console.print(f"  ... and {len(devices) - 10} more")
                 console.print("Use 'devices' to see the complete list")
@@ -351,7 +346,7 @@ class InteractiveSession:
             device_name = args[0]
 
         devices = list(self.parser.get_devices())
-        
+
         # Exact match first
         if device_name in devices:
             self.current_device = device_name
@@ -360,7 +355,7 @@ class InteractiveSession:
 
         # Partial match
         matches = [d for d in devices if device_name.lower() in d.lower()]
-        
+
         if not matches:
             console.print(f"[red]No device found for: {device_name}[/red]")
             return
@@ -369,21 +364,17 @@ class InteractiveSession:
             self.current_device = matches[0]
             console.print(f"[green]✅ Device selected: {matches[0]}[/green]")
         else:
-            console.print(
-                f"[yellow]Multiple matches found ({len(matches)}):[/yellow]"
-            )
+            console.print(f"[yellow]Multiple matches found ({len(matches)}):[/yellow]")
             for i, match in enumerate(matches[:10], 1):
                 console.print(f"  {i}. {match}")
-            
+
             choice = Prompt.ask(
                 "Select by number",
-                choices=[str(i) for i in range(1, min(len(matches), 10) + 1)]
+                choices=[str(i) for i in range(1, min(len(matches), 10) + 1)],
             )
-            
+
             self.current_device = matches[int(choice) - 1]
-            console.print(
-                f"[green]✅ Device selected: {self.current_device}[/green]"
-            )
+            console.print(f"[green]✅ Device selected: {self.current_device}[/green]")
 
     def show_device_info(self, args: List[str]) -> None:
         """Show device information."""
@@ -392,24 +383,20 @@ class InteractiveSession:
 
         try:
             device = self.parser.get_device(self.current_device)
-            
+
             panel_content = f"""[bold]Device:[/bold] {self.current_device}
 [bold]Family:[/bold] {self.parser.device_family.value}
-[bold]Architecture:[/bold] {getattr(device, 'architecture', 'Not specified')}
-[bold]Package:[/bold] {getattr(device, 'package', 'Not specified')}
-[bold]Flash Size:[/bold] {getattr(device, 'flash_size', 'Not specified')}
-[bold]RAM Size:[/bold] {getattr(device, 'ram_size', 'Not specified')}"""
+[bold]Architecture:[/bold] {getattr(device, "architecture", "Not specified")}
+[bold]Package:[/bold] {getattr(device, "package", "Not specified")}
+[bold]Flash Size:[/bold] {getattr(device, "flash_size", "Not specified")}
+[bold]RAM Size:[/bold] {getattr(device, "ram_size", "Not specified")}"""
 
-            console.print(Panel(
-                panel_content, 
-                title="Device Information", 
-                border_style="green"
-            ))
+            console.print(
+                Panel(panel_content, title="Device Information", border_style="green")
+            )
 
         except Exception as e:
-            console.print(
-                f"[red]Error retrieving information: {e}[/red]"
-            )
+            console.print(f"[red]Error retrieving information: {e}[/red]")
 
     def show_memory(self, args: List[str]) -> None:
         """Show memory layout."""
@@ -418,7 +405,7 @@ class InteractiveSession:
 
         try:
             memory_segments = self.parser.get_device_memory(self.current_device)
-            
+
             table = Table(title=f"Memory Layout - {self.current_device}")
             table.add_column("Segment", style="cyan")
             table.add_column("Start Address", style="white")
@@ -428,10 +415,10 @@ class InteractiveSession:
             if memory_segments:
                 for segment in memory_segments[:20]:  # Limit display
                     table.add_row(
-                        getattr(segment, 'name', 'Unknown'),
+                        getattr(segment, "name", "Unknown"),
                         f"0x{getattr(segment, 'start', 0):04X}",
                         f"{getattr(segment, 'size', 0)} bytes",
-                        getattr(segment, 'description', '')[:50]
+                        getattr(segment, "description", "")[:50],
                     )
             else:
                 # Default memory layout
@@ -451,7 +438,7 @@ class InteractiveSession:
 
         try:
             registers = self.parser.get_device_registers(self.current_device)
-            
+
             table = Table(title=f"Registers - {self.current_device}")
             table.add_column("Module", style="cyan")
             table.add_column("Register", style="white")
@@ -462,11 +449,11 @@ class InteractiveSession:
             if registers:
                 for register in registers[:20]:  # Limit display
                     table.add_row(
-                        getattr(register, 'module_name', 'Unknown'),
-                        getattr(register, 'name', 'N/A'),
+                        getattr(register, "module_name", "Unknown"),
+                        getattr(register, "name", "N/A"),
                         f"0x{getattr(register, 'offset', 0):04X}",
                         f"{getattr(register, 'size', 0)} bits",
-                        getattr(register, 'description', '')[:40]
+                        getattr(register, "description", "")[:40],
                     )
             else:
                 # Default registers
@@ -487,8 +474,10 @@ class InteractiveSession:
 
         try:
             # Analyze AtPack structure
-            extracted_dir = self.current_atpack.parent / f"{self.current_atpack.stem}_dir_atpack"
-            
+            extracted_dir = (
+                self.current_atpack.parent / f"{self.current_atpack.stem}_dir_atpack"
+            )
+
             table = Table(title=f"Files in {self.current_atpack.name}")
             table.add_column("Type", style="cyan")
             table.add_column("Count", style="white")
@@ -500,7 +489,7 @@ class InteractiveSession:
                     ("PIC", "**/*.pic"),
                     ("Headers", "**/*.h"),
                     ("Linker Scripts", "**/*.ld"),
-                    ("XML", "**/*.xml")
+                    ("XML", "**/*.xml"),
                 ]
 
                 for file_type, pattern in file_types:
@@ -526,18 +515,16 @@ class InteractiveSession:
         panel_content = f"""[bold]AtPack File:[/bold] {self.current_atpack.name}
 [bold]Device Family:[/bold] {self.parser.device_family.value}
 [bold]Device Count:[/bold] {len(self.parser.get_devices())}
-[bold]Selected Device:[/bold] {self.current_device or 'None'}"""
+[bold]Selected Device:[/bold] {self.current_device or "None"}"""
 
-        console.print(Panel(
-            panel_content, 
-            title="AtPack Configuration", 
-            border_style="blue"
-        ))
+        console.print(
+            Panel(panel_content, title="AtPack Configuration", border_style="blue")
+        )
 
     def show_status(self, args: List[str]) -> None:
         """Show session status."""
         status_items = []
-        
+
         if self.current_atpack:
             status_items.append(
                 f"[green]✅ AtPack loaded:[/green] {self.current_atpack.name}"
@@ -559,22 +546,20 @@ class InteractiveSession:
             status_items.append("[yellow]⚠️ No device selected[/yellow]")
 
         status_content = "\n".join(status_items)
-        console.print(Panel(
-            status_content, 
-            title="Session Status", 
-            border_style="cyan"
-        ))
+        console.print(
+            Panel(status_content, title="Session Status", border_style="cyan")
+        )
 
     def _check_device_selected(self) -> bool:
         """Check if a device is selected."""
         if not self.parser:
             console.print("[red]No AtPack loaded. Use 'load <file>'[/red]")
             return False
-        
+
         if not self.current_device:
             console.print("[red]No device selected. Use 'select <device>'[/red]")
             return False
-        
+
         return True
 
 
