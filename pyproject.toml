@@ -66,7 +66,7 @@ docs = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/s-celles/atpack-python"
+"Homepage" = "https://s-celles.github.io/atpack-python-parser/"
 "Bug Reports" = "https://github.com/s-celles/atpack-python/issues"
 "Source" = "https://github.com/s-celles/atpack-python"
 
