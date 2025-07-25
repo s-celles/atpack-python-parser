@@ -71,5 +71,6 @@ nav:
   - Python API: api-usage.md
   - Examples: examples.md
   - API Reference: api-reference.md
+  - Device Specifications Extraction: device-specifications.md
   - Development: development.md
   - Legal Information: legal.md
