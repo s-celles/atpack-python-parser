@@ -15,7 +15,7 @@ from pathlib import Path
 # Add src to path for development
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from atpack_parser import AtPackParser, extract_device_specs_from_atpack, extract_all_device_specs_from_atpack
+from atpack_parser import AtPackParser
 
 
 def extract_single_device_specs():

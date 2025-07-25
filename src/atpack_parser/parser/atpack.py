@@ -139,13 +139,62 @@ class AtPackParser:
 
     def get_device_specs(self, device_name: str) -> "DeviceSpecs":
         """Get comprehensive device specifications for a specific device."""
-        from ..device_specs_extractor import extract_device_specs_from_atpack
-        return extract_device_specs_from_atpack(self, device_name)
+        from ..models import DeviceFamily
+        from .pic import PicParser
+        from pathlib import Path
+        
+        if self.device_family != DeviceFamily.PIC:
+            raise ValueError("Device specifications extraction is currently only supported for PIC devices")
+        
+        # Find PIC file for device
+        pic_files = self.extractor.find_pic_files()
+        
+        pic_file = None
+        for file_path in pic_files:
+            file_name = Path(file_path).stem
+            if file_name.upper() == device_name.upper():
+                pic_file = file_path
+                break
+        
+        if not pic_file:
+            raise ValueError(f"PIC file for device '{device_name}' not found")
+        
+        # Read PIC file content and extract specs
+        pic_content = self.extractor.read_file(pic_file)
+        parser = PicParser(pic_content)
+        return parser.extract_device_specs(device_name)
 
     def get_all_device_specs(self) -> List["DeviceSpecs"]:
         """Get comprehensive device specifications for all devices in the AtPack."""
-        from ..device_specs_extractor import extract_all_device_specs_from_atpack
-        return extract_all_device_specs_from_atpack(self)
+        from ..models import DeviceFamily
+        from .pic import PicParser
+        from pathlib import Path
+        
+        if self.device_family != DeviceFamily.PIC:
+            raise ValueError("Device specifications extraction is currently only supported for PIC devices")
+        
+        all_specs = []
+        pic_files = self.extractor.find_pic_files()
+        
+        for pic_file in pic_files:
+            device_name = Path(pic_file).stem
+            
+            # Skip Application Support files that start with AC162
+            if device_name.startswith("AC162"):
+                continue
+            
+            try:
+                pic_content = self.extractor.read_file(pic_file)
+                parser = PicParser(pic_content)
+                specs = parser.extract_device_specs(device_name)
+                all_specs.append(specs)
+            except Exception as e:
+                print(f"Warning: Failed to extract specs for {device_name}: {e}")
+                continue
+        
+        # Sort by device name
+        all_specs.sort(key=lambda x: x.device_name)
+        return all_specs
 
     def _parse_metadata(self) -> AtPackMetadata:
         """Parse AtPack metadata from PDSC file."""
