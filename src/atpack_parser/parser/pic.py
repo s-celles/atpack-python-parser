@@ -178,6 +178,37 @@ class PicParser:
                         )
                     )
 
+            # Parse GPRDataSector elements (General Purpose Registers)
+            gpr_sectors = self.parser.xpath(
+                './/edc:GPRDataSector | .//*[local-name()="GPRDataSector"]', ds
+            )
+            for gpr in gpr_sectors:
+                # Skip shadow sectors (they are mirrors of other memory regions)
+                # Check for shadowidref attribute with both namespace and local name approaches
+                shadow_ref = (
+                    self.parser.get_attr(gpr, "shadowidref")
+                    or self.parser.get_attr(gpr, "{http://crownking/edc}shadowidref")
+                    or gpr.get("{http://crownking/edc}shadowidref")
+                )
+                if shadow_ref is not None:
+                    continue
+                
+                start = self.parser.get_attr_hex(gpr, "beginaddr", 0)
+                end = self.parser.get_attr_hex(gpr, "endaddr", 0)
+                bank = self.parser.get_attr(gpr, "bank", "0")
+
+                if end > start:
+                    size = end - start
+                    segments.append(
+                        MemorySegment(
+                            name=f"GPR_BANK{bank}",
+                            start=start,
+                            size=size,
+                            type="gpr",
+                            address_space="data",
+                        )
+                    )
+
             # Parse general DataSector elements
             data_sectors = self.parser.xpath(
                 './/edc:DataSector | .//*[local-name()="DataSector"]', ds
@@ -1282,6 +1313,40 @@ class PicParser:
                             start=start,
                             size=size,
                             type="sfr",
+                            address_space="data",
+                            parent_name="DataSpace",
+                            level=1,
+                        )
+                    )
+
+            # Parse GPRDataSector elements (General Purpose Registers)
+            gpr_sectors = self.parser.xpath(
+                './/edc:GPRDataSector | .//*[local-name()="GPRDataSector"]', ds
+            )
+            for gpr in gpr_sectors:
+                # Skip shadow sectors (they are mirrors of other memory regions)
+                # Check for shadowidref attribute with both namespace and local name approaches
+                shadow_ref = (
+                    self.parser.get_attr(gpr, "shadowidref")
+                    or self.parser.get_attr(gpr, "{http://crownking/edc}shadowidref")
+                    or gpr.get("{http://crownking/edc}shadowidref")
+                )
+                if shadow_ref is not None:
+                    continue
+                
+                start = self.parser.get_attr_hex(gpr, "beginaddr", 0)
+                end = self.parser.get_attr_hex(gpr, "endaddr", 0)
+                bank = self.parser.get_attr(gpr, "bank", "0")
+                region_id = self.parser.get_attr(gpr, "regionid", "")
+
+                if end > start:
+                    size = end - start
+                    segments.append(
+                        MemorySegment(
+                            name=f"GPR_BANK{bank}",
+                            start=start,
+                            size=size,
+                            type="gpr",
                             address_space="data",
                             parent_name="DataSpace",
                             level=1,
