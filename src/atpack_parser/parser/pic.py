@@ -32,10 +32,17 @@ from .xml import XmlParser
 
 class PicParser:
     """Parser for Microchip PIC files."""
+    
+    # EDC namespace constant to avoid repetition
+    EDC_NS = "http://crownking/edc"
 
     def __init__(self, xml_content: str):
         """Initialize with XML content."""
         self.parser = XmlParser(xml_content)
+
+    def _edc_ns(self, attr: str) -> str:
+        """Helper method to format EDC namespace attributes."""
+        return f"{{{self.EDC_NS}}}{attr}"
 
     def parse_device(self, device_name: Optional[str] = None) -> Device:
         """Parse device information from PIC file."""
@@ -62,8 +69,8 @@ class PicParser:
         # Extract device name - try namespace and local name approaches
         name = (
             self.parser.get_attr(device_element, "name")
-            or self.parser.get_attr(device_element, "{http://crownking/edc}name")
-            or device_element.get("{http://crownking/edc}name")
+            or self.parser.get_attr(device_element, self._edc_ns("name"))
+            or device_element.get(self._edc_ns("name"))
             or ""
         )
 
