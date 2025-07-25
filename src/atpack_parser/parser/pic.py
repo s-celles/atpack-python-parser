@@ -44,6 +44,10 @@ class PicParser:
         """Helper method to format EDC namespace attributes."""
         return f"{{{self.EDC_NS}}}{attr}"
 
+    def _edc_ns_dict(self) -> dict:
+        """Helper method to get EDC namespace dictionary for find/findall."""
+        return {"edc": self.EDC_NS}
+
     def parse_device(self, device_name: Optional[str] = None) -> Device:
         """Parse device information from PIC file."""
         # Get device element - try with and without namespace
@@ -196,8 +200,8 @@ class PicParser:
                 # Check for shadowidref attribute with both namespace and local name approaches
                 shadow_ref = (
                     self.parser.get_attr(gpr, "shadowidref")
-                    or self.parser.get_attr(gpr, "{http://crownking/edc}shadowidref")
-                    or gpr.get("{http://crownking/edc}shadowidref")
+                    or self.parser.get_attr(gpr, self._edc_ns("shadowidref"))
+                    or gpr.get(self._edc_ns("shadowidref"))
                 )
                 if shadow_ref is not None:
                     continue
@@ -711,7 +715,7 @@ class PicParser:
         """Parse power supply specifications from PIC device."""
         # Look for Power element
         power_elem = device_element.find(
-            ".//edc:Power", {"edc": "http://crownking/edc"}
+            ".//edc:Power", self._edc_ns_dict()
         )
         if power_elem is None:
             power_elem = device_element.find('.//*[local-name()="Power"]')
@@ -727,7 +731,7 @@ class PicParser:
             power_spec.has_high_voltage_mclr = has_hv_mclr.lower() == "true"
 
         # VDD specifications
-        vdd_elem = power_elem.find(".//edc:VDD", {"edc": "http://crownking/edc"})
+        vdd_elem = power_elem.find(".//edc:VDD", self._edc_ns_dict())
         if vdd_elem is None:
             vdd_elem = power_elem.find('.//*[local-name()="VDD"]')
 
@@ -749,7 +753,7 @@ class PicParser:
             )
 
         # VPP specifications (programming voltage)
-        vpp_elem = power_elem.find(".//edc:VPP", {"edc": "http://crownking/edc"})
+        vpp_elem = power_elem.find(".//edc:VPP", self._edc_ns_dict())
         if vpp_elem is None:
             vpp_elem = power_elem.find('.//*[local-name()="VPP"]')
 
@@ -787,7 +791,7 @@ class PicParser:
 
         # Look for configuration words with oscillator settings
         config_sectors = device_element.findall(
-            ".//edc:ConfigFuseSector", {"edc": "http://crownking/edc"}
+            ".//edc:ConfigFuseSector", self._edc_ns_dict()
         )
         if not config_sectors:
             config_sectors = device_element.findall(
@@ -795,18 +799,18 @@ class PicParser:
             )
 
         for sector in config_sectors:
-            dcr_defs = sector.findall(".//edc:DCRDef", {"edc": "http://crownking/edc"})
+            dcr_defs = sector.findall(".//edc:DCRDef", self._edc_ns_dict())
             if not dcr_defs:
                 dcr_defs = sector.findall('.//*[local-name()="DCRDef"]')
 
             for dcr in dcr_defs:
-                modes = dcr.findall(".//edc:DCRMode", {"edc": "http://crownking/edc"})
+                modes = dcr.findall(".//edc:DCRMode", self._edc_ns_dict())
                 if not modes:
                     modes = dcr.findall('.//*[local-name()="DCRMode"]')
 
                 for mode in modes:
                     fields = mode.findall(
-                        ".//edc:DCRFieldDef", {"edc": "http://crownking/edc"}
+                        ".//edc:DCRFieldDef", self._edc_ns_dict()
                     )
                     if not fields:
                         fields = mode.findall('.//*[local-name()="DCRFieldDef"]')
@@ -822,7 +826,7 @@ class PicParser:
                             # Get semantic options for this field
                             semantics = field.findall(
                                 ".//edc:DCRFieldSemantic",
-                                {"edc": "http://crownking/edc"},
+                                self._edc_ns_dict(),
                             )
                             if not semantics:
                                 semantics = field.findall(
@@ -840,7 +844,7 @@ class PicParser:
                                     try:
                                         aliases = semantic.findall(
                                             ".//edc:LegacyAlias",
-                                            {"edc": "http://crownking/edc"},
+                                            self._edc_ns_dict(),
                                         )
                                         if not aliases:
                                             # Use safer XPath without predicates
@@ -878,7 +882,7 @@ class PicParser:
         """Parse programming interface specifications."""
         # Look for Programming element
         prog_elem = device_element.find(
-            ".//edc:Programming", {"edc": "http://crownking/edc"}
+            ".//edc:Programming", self._edc_ns_dict()
         )
         if prog_elem is None:
             prog_elem = device_element.find('.//*[local-name()="Programming"]')
@@ -914,7 +918,7 @@ class PicParser:
 
         # Parse programming wait times
         wait_times = prog_elem.findall(
-            ".//edc:ProgrammingWaitTime", {"edc": "http://crownking/edc"}
+            ".//edc:ProgrammingWaitTime", self._edc_ns_dict()
         )
         if not wait_times:
             wait_times = prog_elem.findall('.//*[local-name()="ProgrammingWaitTime"]')
@@ -932,7 +936,7 @@ class PicParser:
 
         # Parse programming row sizes
         row_sizes = prog_elem.findall(
-            ".//edc:ProgrammingRowSize", {"edc": "http://crownking/edc"}
+            ".//edc:ProgrammingRowSize", self._edc_ns_dict()
         )
         if not row_sizes:
             row_sizes = prog_elem.findall('.//*[local-name()="ProgrammingRowSize"]')
@@ -952,7 +956,7 @@ class PicParser:
 
         # Look for PinList element
         pin_list = device_element.find(
-            ".//edc:PinList", {"edc": "http://crownking/edc"}
+            ".//edc:PinList", self._edc_ns_dict()
         )
         if pin_list is None:
             pin_list = device_element.find('.//*[local-name()="PinList"]')
@@ -963,7 +967,7 @@ class PicParser:
         # Get PPS (Peripheral Pin Select) flavor
         pps_flavor = self.parser.get_attr(pin_list, "ppsflavor", "")
 
-        pin_elements = pin_list.findall(".//edc:Pin", {"edc": "http://crownking/edc"})
+        pin_elements = pin_list.findall(".//edc:Pin", self._edc_ns_dict())
         if not pin_elements:
             pin_elements = pin_list.findall('.//*[local-name()="Pin"]')
 
@@ -972,7 +976,7 @@ class PicParser:
 
             # Get virtual pins (pin functions)
             virtual_pins = pin_elem.findall(
-                ".//edc:VirtualPin", {"edc": "http://crownking/edc"}
+                ".//edc:VirtualPin", self._edc_ns_dict()
             )
             if not virtual_pins:
                 virtual_pins = pin_elem.findall('.//*[local-name()="VirtualPin"]')
@@ -1016,7 +1020,7 @@ class PicParser:
         """Parse debug and hardware tool capabilities."""
         # Look for Breakpoints element
         bp_elem = device_element.find(
-            ".//edc:Breakpoints", {"edc": "http://crownking/edc"}
+            ".//edc:Breakpoints", self._edc_ns_dict()
         )
         if bp_elem is None:
             bp_elem = device_element.find('.//*[local-name()="Breakpoints"]')
@@ -1051,7 +1055,7 @@ class PicParser:
 
         # Look for InstructionSet element
         instr_elem = device_element.find(
-            ".//edc:InstructionSet", {"edc": "http://crownking/edc"}
+            ".//edc:InstructionSet", self._edc_ns_dict()
         )
         if instr_elem is None:
             instr_elem = device_element.find('.//*[local-name()="InstructionSet"]')
@@ -1063,7 +1067,7 @@ class PicParser:
 
         # Look for MemTraits element for hardware stack info
         mem_traits = device_element.find(
-            ".//edc:MemTraits", {"edc": "http://crownking/edc"}
+            ".//edc:MemTraits", self._edc_ns_dict()
         )
         if mem_traits is None:
             mem_traits = device_element.find('.//*[local-name()="MemTraits"]')
@@ -1077,7 +1081,7 @@ class PicParser:
 
             # Code memory traits for word sizes
             code_traits = mem_traits.find(
-                ".//edc:CodeMemTraits", {"edc": "http://crownking/edc"}
+                ".//edc:CodeMemTraits", self._edc_ns_dict()
             )
             if code_traits is None:
                 code_traits = mem_traits.find('.//*[local-name()="CodeMemTraits"]')
@@ -1091,7 +1095,7 @@ class PicParser:
 
             # Data memory traits
             data_traits = mem_traits.find(
-                ".//edc:DataMemTraits", {"edc": "http://crownking/edc"}
+                ".//edc:DataMemTraits", self._edc_ns_dict()
             )
             if data_traits is None:
                 data_traits = mem_traits.find('.//*[local-name()="DataMemTraits"]')
@@ -1122,7 +1126,7 @@ class PicParser:
 
         # Extract peripheral info from SFR definitions
         sfr_defs = device_element.findall(
-            ".//edc:SFRDef", {"edc": "http://crownking/edc"}
+            ".//edc:SFRDef", self._edc_ns_dict()
         )
         if not sfr_defs:
             sfr_defs = device_element.findall('.//*[local-name()="SFRDef"]')
@@ -1337,8 +1341,8 @@ class PicParser:
                 # Check for shadowidref attribute with both namespace and local name approaches
                 shadow_ref = (
                     self.parser.get_attr(gpr, "shadowidref")
-                    or self.parser.get_attr(gpr, "{http://crownking/edc}shadowidref")
-                    or gpr.get("{http://crownking/edc}shadowidref")
+                    or self.parser.get_attr(gpr, self._edc_ns("shadowidref"))
+                    or gpr.get(self._edc_ns("shadowidref"))
                 )
                 if shadow_ref is not None:
                     continue
@@ -1490,8 +1494,8 @@ class PicParser:
         # Extract device name - try namespace and local name approaches
         name = (
             self.parser.get_attr(device_element, "name")
-            or self.parser.get_attr(device_element, "{http://crownking/edc}name")
-            or device_element.get("{http://crownking/edc}name")
+            or self.parser.get_attr(device_element, self._edc_ns("name"))
+            or device_element.get(self._edc_ns("name"))
             or device_name
             or "Unknown"
         )
@@ -1552,8 +1556,8 @@ class PicParser:
                 # Skip shadow sectors (they are mirrors of other memory regions)
                 shadow_ref = (
                     self.parser.get_attr(code_sector, "shadowidref")
-                    or self.parser.get_attr(code_sector, "{http://crownking/edc}shadowidref")
-                    or code_sector.get("{http://crownking/edc}shadowidref")
+                    or self.parser.get_attr(code_sector, self._edc_ns("shadowidref"))
+                    or code_sector.get(self._edc_ns("shadowidref"))
                 )
                 if shadow_ref is not None:
                     continue
@@ -1590,8 +1594,8 @@ class PicParser:
                 # Check for shadowidref attribute with both namespace and local name approaches
                 shadow_ref = (
                     self.parser.get_attr(gpr_sector, "shadowidref")
-                    or self.parser.get_attr(gpr_sector, "{http://crownking/edc}shadowidref")
-                    or gpr_sector.get("{http://crownking/edc}shadowidref")
+                    or self.parser.get_attr(gpr_sector, self._edc_ns("shadowidref"))
+                    or gpr_sector.get(self._edc_ns("shadowidref"))
                 )
                 if shadow_ref is not None:
                     continue
