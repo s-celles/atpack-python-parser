@@ -1,7 +1,7 @@
 """Main AtPack parser."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 from .atdf import AtdfParser
 from ..exceptions import (
@@ -13,6 +13,9 @@ from ..models import AtPackMetadata, Device, DeviceFamily
 from .pdsc import PdscParser
 from .pic import PicParser
 from ..atpack_extractor import AtPackExtractor
+
+if TYPE_CHECKING:
+    from ..models import DeviceSpecs
 
 
 class AtPackParser:
@@ -133,6 +136,16 @@ class AtPackParser:
     def read_file(self, file_path: str) -> str:
         """Read a file from the AtPack."""
         return self.extractor.read_file(file_path)
+
+    def get_device_specs(self, device_name: str) -> "DeviceSpecs":
+        """Get comprehensive device specifications for a specific device."""
+        from ..device_specs_extractor import extract_device_specs_from_atpack
+        return extract_device_specs_from_atpack(self, device_name)
+
+    def get_all_device_specs(self) -> List["DeviceSpecs"]:
+        """Get comprehensive device specifications for all devices in the AtPack."""
+        from ..device_specs_extractor import extract_all_device_specs_from_atpack
+        return extract_all_device_specs_from_atpack(self)
 
     def _parse_metadata(self) -> AtPackMetadata:
         """Parse AtPack metadata from PDSC file."""
