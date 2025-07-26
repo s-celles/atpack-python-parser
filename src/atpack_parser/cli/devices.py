@@ -951,19 +951,21 @@ def device_specs(
     try:
         parser = AtPackParser(atpack_path)
         device_family = parser.device_family
-        
+
         # Check if specs extraction is supported
         if device_family != DeviceFamily.PIC:
-            console.print(f"[red]Device specifications extraction is currently only supported for PIC devices, not {device_family.value}[/red]")
+            console.print(
+                f"[red]Device specifications extraction is currently only supported for PIC devices, not {device_family.value}[/red]"
+            )
             return
-        
+
         # Extract device specifications
         specs = parser.get_device_specs(device_name)
-        
+
         # Output formatting
         if format == "json":
             output_data = specs.model_dump()
-            
+
             json_output = json.dumps(output_data, indent=2)
             if output:
                 output.write_text(json_output, encoding="utf-8")
@@ -972,37 +974,45 @@ def device_specs(
                 )
             else:
                 print(json_output)
-        
+
         elif format == "csv":
             import csv
             import io
-            
+
             csv_output = io.StringIO()
             fieldnames = [
-                'device_name', 'f_cpu', 'maximum_ram_size', 'maximum_size',
-                'eeprom_addr', 'eeprom_size', 'config_addr', 'config_size',
-                'gpr_total_size', 'architecture', 'series'
+                "device_name",
+                "f_cpu",
+                "maximum_ram_size",
+                "maximum_size",
+                "eeprom_addr",
+                "eeprom_size",
+                "config_addr",
+                "config_size",
+                "gpr_total_size",
+                "architecture",
+                "series",
             ]
-            
+
             writer = csv.DictWriter(csv_output, fieldnames=fieldnames)
             writer.writeheader()
-            
+
             # Convert specs to dict for CSV
             row = {
-                'device_name': specs.device_name,
-                'f_cpu': specs.f_cpu,
-                'maximum_ram_size': specs.maximum_ram_size,
-                'maximum_size': specs.maximum_size,
-                'eeprom_addr': specs.eeprom_addr,
-                'eeprom_size': specs.eeprom_size,
-                'config_addr': specs.config_addr,
-                'config_size': specs.config_size,
-                'gpr_total_size': specs.gpr_total_size,
-                'architecture': specs.architecture,
-                'series': specs.series,
+                "device_name": specs.device_name,
+                "f_cpu": specs.f_cpu,
+                "maximum_ram_size": specs.maximum_ram_size,
+                "maximum_size": specs.maximum_size,
+                "eeprom_addr": specs.eeprom_addr,
+                "eeprom_size": specs.eeprom_size,
+                "config_addr": specs.config_addr,
+                "config_size": specs.config_size,
+                "gpr_total_size": specs.gpr_total_size,
+                "architecture": specs.architecture,
+                "series": specs.series,
             }
             writer.writerow(row)
-            
+
             csv_text = csv_output.getvalue()
             if output:
                 output.write_text(csv_text, encoding="utf-8")
@@ -1011,14 +1021,14 @@ def device_specs(
                 )
             else:
                 print(csv_text)
-        
+
         else:  # table format
             output_console = (
                 Console(force_terminal=not no_color)
                 if not no_color
                 else Console(force_terminal=False)
             )
-            
+
             # Format family display with emoji
             family_emoji = (
                 get_family_emoji(device_family)
@@ -1026,97 +1036,117 @@ def device_specs(
                 else f"[{device_family.value}]"
             )
             title = f"📊 {family_emoji} {device_name} Device Specifications"
-            
+
             # Main specifications table
             specs_table = Table(title=title)
-            specs_table.add_column("Specification", style="cyan" if not no_color else None)
+            specs_table.add_column(
+                "Specification", style="cyan" if not no_color else None
+            )
             specs_table.add_column("Value", style="green" if not no_color else None)
-            specs_table.add_column("Unit/Notes", style="yellow" if not no_color else None)
-            
+            specs_table.add_column(
+                "Unit/Notes", style="yellow" if not no_color else None
+            )
+
             # Add basic specifications
             specs_table.add_row("Device Name", specs.device_name, "")
             specs_table.add_row("Architecture", specs.architecture or "N/A", "")
             specs_table.add_row("Series", specs.series or "N/A", "")
             specs_table.add_row("CPU Frequency", specs.f_cpu or "N/A", "")
-            specs_table.add_row("Program Memory (Flash)", f"{specs.maximum_size:,}", "words")
+            specs_table.add_row(
+                "Program Memory (Flash)", f"{specs.maximum_size:,}", "words"
+            )
             specs_table.add_row("Total RAM", f"{specs.maximum_ram_size:,}", "bytes")
             specs_table.add_row("GPR Total", f"{specs.gpr_total_size:,}", "bytes")
-            
+
             if specs.eeprom_size > 0:
                 specs_table.add_row("EEPROM Size", f"{specs.eeprom_size:,}", "bytes")
                 specs_table.add_row("EEPROM Address", specs.eeprom_addr or "N/A", "")
             else:
                 specs_table.add_row("EEPROM", "Not available", "")
-            
+
             if specs.config_size > 0:
-                specs_table.add_row("Config Memory Size", f"{specs.config_size:,}", "bytes")
-                specs_table.add_row("Config Memory Address", specs.config_addr or "N/A", "")
+                specs_table.add_row(
+                    "Config Memory Size", f"{specs.config_size:,}", "bytes"
+                )
+                specs_table.add_row(
+                    "Config Memory Address", specs.config_addr or "N/A", ""
+                )
             else:
                 specs_table.add_row("Config Memory", "Not available", "")
-            
+
             output_console.print(specs_table)
-            
+
             # GPR details table (if requested)
             if show_gpr and specs.gpr_sectors:
-                gpr_table = Table(title=f"🏦 GPR Memory Banks ({len(specs.gpr_sectors)} sectors)")
+                gpr_table = Table(
+                    title=f"🏦 GPR Memory Banks ({len(specs.gpr_sectors)} sectors)"
+                )
                 gpr_table.add_column("Bank", style="cyan" if not no_color else None)
                 gpr_table.add_column("Name", style="green" if not no_color else None)
-                gpr_table.add_column("Start Address", style="yellow" if not no_color else None)
-                gpr_table.add_column("End Address", style="yellow" if not no_color else None)
+                gpr_table.add_column(
+                    "Start Address", style="yellow" if not no_color else None
+                )
+                gpr_table.add_column(
+                    "End Address", style="yellow" if not no_color else None
+                )
                 gpr_table.add_column("Size", style="magenta" if not no_color else None)
-                
+
                 for sector in specs.gpr_sectors:
                     gpr_table.add_row(
                         sector.bank or "N/A",
                         sector.name,
                         f"0x{sector.start_addr:04X}",
                         f"0x{sector.end_addr:04X}",
-                        f"{sector.size} bytes"
+                        f"{sector.size} bytes",
                     )
-                
+
                 output_console.print()
                 output_console.print(gpr_table)
-            
+
             # Summary note
             output_console.print()
             note_msg = "[dim]Note: Specifications extracted from AtPack file using shadowidref-aware parsing to avoid double-counting memory regions.[/dim]"
             if no_color:
                 note_msg = "Note: Specifications extracted from AtPack file using shadowidref-aware parsing to avoid double-counting memory regions."
             output_console.print(note_msg)
-            
+
             if output:
                 with output_console.capture() as capture:
                     # Re-capture all output for file export
                     output_console.print(specs_table)
-                    
+
                     if show_gpr and specs.gpr_sectors:
-                        gpr_table = Table(title=f"GPR Memory Banks ({len(specs.gpr_sectors)} sectors)")
+                        gpr_table = Table(
+                            title=f"GPR Memory Banks ({len(specs.gpr_sectors)} sectors)"
+                        )
                         gpr_table.add_column("Bank")
                         gpr_table.add_column("Name")
                         gpr_table.add_column("Start Address")
                         gpr_table.add_column("End Address")
                         gpr_table.add_column("Size")
-                        
+
                         for sector in specs.gpr_sectors:
                             gpr_table.add_row(
                                 sector.bank or "N/A",
                                 sector.name,
                                 f"0x{sector.start_addr:04X}",
                                 f"0x{sector.end_addr:04X}",
-                                f"{sector.size} bytes"
+                                f"{sector.size} bytes",
                             )
-                        
+
                         output_console.print()
                         output_console.print(gpr_table)
-                    
+
                     output_console.print()
-                    output_console.print("Note: Specifications extracted from AtPack file using shadowidref-aware parsing to avoid double-counting memory regions.")
-                
+                    output_console.print(
+                        "Note: Specifications extracted from AtPack file using shadowidref-aware parsing to avoid double-counting memory regions."
+                    )
+
                 output.write_text(capture.get(), encoding="utf-8")
                 console.print(
                     f"[green]Exported device specifications for {device_name} to {output}[/green]"
                 )
-    
+
     except DeviceNotFoundError as e:
         handle_device_not_found_error(e, parser, no_color)
     except AtPackError as e:

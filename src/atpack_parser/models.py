@@ -16,7 +16,7 @@ class DeviceFamily(str, Enum):
 
 class DeviceSpecs(BaseModel):
     """Comprehensive device specifications extracted from AtPack files."""
-    
+
     device_name: str
     f_cpu: Optional[str] = None  # CPU frequency (configurable for most PICs)
     maximum_ram_size: int = 0  # Total RAM size in bytes
@@ -26,14 +26,16 @@ class DeviceSpecs(BaseModel):
     config_addr: Optional[str] = None  # Configuration memory start address
     config_size: int = 0  # Configuration memory size in bytes
     gpr_total_size: int = 0  # Total General Purpose Register size in bytes
-    gpr_sectors: List["GprSector"] = Field(default_factory=list)  # List of GPR memory sectors
+    gpr_sectors: List["GprSector"] = Field(
+        default_factory=list
+    )  # List of GPR memory sectors
     architecture: Optional[str] = None
     series: Optional[str] = None
 
 
 class GprSector(BaseModel):
     """General Purpose Register memory sector information."""
-    
+
     name: str
     start_addr: int
     end_addr: int

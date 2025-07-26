@@ -142,23 +142,25 @@ class AtPackParser:
         from ..models import DeviceFamily
         from .pic import PicParser
         from pathlib import Path
-        
+
         if self.device_family != DeviceFamily.PIC:
-            raise ValueError("Device specifications extraction is currently only supported for PIC devices")
-        
+            raise ValueError(
+                "Device specifications extraction is currently only supported for PIC devices"
+            )
+
         # Find PIC file for device
         pic_files = self.extractor.find_pic_files()
-        
+
         pic_file = None
         for file_path in pic_files:
             file_name = Path(file_path).stem
             if file_name.upper() == device_name.upper():
                 pic_file = file_path
                 break
-        
+
         if not pic_file:
             raise ValueError(f"PIC file for device '{device_name}' not found")
-        
+
         # Read PIC file content and extract specs
         pic_content = self.extractor.read_file(pic_file)
         parser = PicParser(pic_content)
@@ -169,20 +171,22 @@ class AtPackParser:
         from ..models import DeviceFamily
         from .pic import PicParser
         from pathlib import Path
-        
+
         if self.device_family != DeviceFamily.PIC:
-            raise ValueError("Device specifications extraction is currently only supported for PIC devices")
-        
+            raise ValueError(
+                "Device specifications extraction is currently only supported for PIC devices"
+            )
+
         all_specs = []
         pic_files = self.extractor.find_pic_files()
-        
+
         for pic_file in pic_files:
             device_name = Path(pic_file).stem
-            
+
             # Skip Application Support files that start with AC162
             if device_name.startswith("AC162"):
                 continue
-            
+
             try:
                 pic_content = self.extractor.read_file(pic_file)
                 parser = PicParser(pic_content)
@@ -191,7 +195,7 @@ class AtPackParser:
             except Exception as e:
                 print(f"Warning: Failed to extract specs for {device_name}: {e}")
                 continue
-        
+
         # Sort by device name
         all_specs.sort(key=lambda x: x.device_name)
         return all_specs

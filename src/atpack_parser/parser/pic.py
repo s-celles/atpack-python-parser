@@ -32,7 +32,7 @@ from .xml import XmlParser
 
 class PicParser:
     """Parser for Microchip PIC files."""
-    
+
     # EDC namespace constant to avoid repetition
     EDC_NS = "http://crownking/edc"
 
@@ -205,7 +205,7 @@ class PicParser:
                 )
                 if shadow_ref is not None:
                     continue
-                
+
                 start = self.parser.get_attr_hex(gpr, "beginaddr", 0)
                 end = self.parser.get_attr_hex(gpr, "endaddr", 0)
                 bank = self.parser.get_attr(gpr, "bank", "0")
@@ -714,9 +714,7 @@ class PicParser:
     ) -> Optional[PowerSpecification]:
         """Parse power supply specifications from PIC device."""
         # Look for Power element
-        power_elem = device_element.find(
-            ".//edc:Power", self._edc_ns_dict()
-        )
+        power_elem = device_element.find(".//edc:Power", self._edc_ns_dict())
         if power_elem is None:
             power_elem = device_element.find('.//*[local-name()="Power"]')
 
@@ -809,9 +807,7 @@ class PicParser:
                     modes = dcr.findall('.//*[local-name()="DCRMode"]')
 
                 for mode in modes:
-                    fields = mode.findall(
-                        ".//edc:DCRFieldDef", self._edc_ns_dict()
-                    )
+                    fields = mode.findall(".//edc:DCRFieldDef", self._edc_ns_dict())
                     if not fields:
                         fields = mode.findall('.//*[local-name()="DCRFieldDef"]')
 
@@ -881,9 +877,7 @@ class PicParser:
     ) -> Optional[ProgrammingInterface]:
         """Parse programming interface specifications."""
         # Look for Programming element
-        prog_elem = device_element.find(
-            ".//edc:Programming", self._edc_ns_dict()
-        )
+        prog_elem = device_element.find(".//edc:Programming", self._edc_ns_dict())
         if prog_elem is None:
             prog_elem = device_element.find('.//*[local-name()="Programming"]')
 
@@ -935,9 +929,7 @@ class PicParser:
                 }
 
         # Parse programming row sizes
-        row_sizes = prog_elem.findall(
-            ".//edc:ProgrammingRowSize", self._edc_ns_dict()
-        )
+        row_sizes = prog_elem.findall(".//edc:ProgrammingRowSize", self._edc_ns_dict())
         if not row_sizes:
             row_sizes = prog_elem.findall('.//*[local-name()="ProgrammingRowSize"]')
 
@@ -955,9 +947,7 @@ class PicParser:
         pins = []
 
         # Look for PinList element
-        pin_list = device_element.find(
-            ".//edc:PinList", self._edc_ns_dict()
-        )
+        pin_list = device_element.find(".//edc:PinList", self._edc_ns_dict())
         if pin_list is None:
             pin_list = device_element.find('.//*[local-name()="PinList"]')
 
@@ -975,9 +965,7 @@ class PicParser:
             pin_info = PinInfo(physical_pin=pin_num)
 
             # Get virtual pins (pin functions)
-            virtual_pins = pin_elem.findall(
-                ".//edc:VirtualPin", self._edc_ns_dict()
-            )
+            virtual_pins = pin_elem.findall(".//edc:VirtualPin", self._edc_ns_dict())
             if not virtual_pins:
                 virtual_pins = pin_elem.findall('.//*[local-name()="VirtualPin"]')
 
@@ -1019,9 +1007,7 @@ class PicParser:
     ) -> Optional[DebugCapabilities]:
         """Parse debug and hardware tool capabilities."""
         # Look for Breakpoints element
-        bp_elem = device_element.find(
-            ".//edc:Breakpoints", self._edc_ns_dict()
-        )
+        bp_elem = device_element.find(".//edc:Breakpoints", self._edc_ns_dict())
         if bp_elem is None:
             bp_elem = device_element.find('.//*[local-name()="Breakpoints"]')
 
@@ -1054,9 +1040,7 @@ class PicParser:
         arch_info = ArchitectureInfo()
 
         # Look for InstructionSet element
-        instr_elem = device_element.find(
-            ".//edc:InstructionSet", self._edc_ns_dict()
-        )
+        instr_elem = device_element.find(".//edc:InstructionSet", self._edc_ns_dict())
         if instr_elem is None:
             instr_elem = device_element.find('.//*[local-name()="InstructionSet"]')
 
@@ -1066,9 +1050,7 @@ class PicParser:
                 arch_info.instruction_set = instr_set_id
 
         # Look for MemTraits element for hardware stack info
-        mem_traits = device_element.find(
-            ".//edc:MemTraits", self._edc_ns_dict()
-        )
+        mem_traits = device_element.find(".//edc:MemTraits", self._edc_ns_dict())
         if mem_traits is None:
             mem_traits = device_element.find('.//*[local-name()="MemTraits"]')
 
@@ -1080,9 +1062,7 @@ class PicParser:
                 arch_info.hardware_stack_depth = hwstack
 
             # Code memory traits for word sizes
-            code_traits = mem_traits.find(
-                ".//edc:CodeMemTraits", self._edc_ns_dict()
-            )
+            code_traits = mem_traits.find(".//edc:CodeMemTraits", self._edc_ns_dict())
             if code_traits is None:
                 code_traits = mem_traits.find('.//*[local-name()="CodeMemTraits"]')
 
@@ -1094,9 +1074,7 @@ class PicParser:
                     arch_info.code_word_size = word_size
 
             # Data memory traits
-            data_traits = mem_traits.find(
-                ".//edc:DataMemTraits", self._edc_ns_dict()
-            )
+            data_traits = mem_traits.find(".//edc:DataMemTraits", self._edc_ns_dict())
             if data_traits is None:
                 data_traits = mem_traits.find('.//*[local-name()="DataMemTraits"]')
 
@@ -1125,9 +1103,7 @@ class PicParser:
         peripherals = set()
 
         # Extract peripheral info from SFR definitions
-        sfr_defs = device_element.findall(
-            ".//edc:SFRDef", self._edc_ns_dict()
-        )
+        sfr_defs = device_element.findall(".//edc:SFRDef", self._edc_ns_dict())
         if not sfr_defs:
             sfr_defs = device_element.findall('.//*[local-name()="SFRDef"]')
 
@@ -1346,7 +1322,7 @@ class PicParser:
                 )
                 if shadow_ref is not None:
                     continue
-                
+
                 start = self.parser.get_attr_hex(gpr, "beginaddr", 0)
                 end = self.parser.get_attr_hex(gpr, "endaddr", 0)
                 bank = self.parser.get_attr(gpr, "bank", "0")
@@ -1455,22 +1431,22 @@ class PicParser:
 
     def extract_device_specs(self, device_name: Optional[str] = None) -> "DeviceSpecs":
         """Extract comprehensive device specifications from PIC file.
-        
+
         This method extracts detailed device specifications including memory layout,
         configuration, and EEPROM information. It integrates the functionality
         previously duplicated in device_specs_extractor.py and extractors/device_specs.py.
-        
+
         Args:
             device_name: Optional device name to search for. If None, uses first device found.
-            
+
         Returns:
             DeviceSpecs: Comprehensive device specifications
-            
+
         Raises:
             ParseError: If device not found or parsing fails
         """
         from ..models import DeviceSpecs, GprSector
-        
+
         # Get device element - try with and without namespace
         if device_name:
             device_elements = self.parser.xpath(f'//edc:PIC[@edc:name="{device_name}"]')
@@ -1520,7 +1496,7 @@ class PicParser:
             device_name=name,
             f_cpu="User configurable",  # PIC devices typically have configurable oscillators
             architecture="PIC",
-            series=series
+            series=series,
         )
 
         # Extract program memory size (Flash)
@@ -1537,7 +1513,9 @@ class PicParser:
 
         return specs
 
-    def _extract_specs_program_memory(self, device_element: etree._Element, specs: "DeviceSpecs") -> None:
+    def _extract_specs_program_memory(
+        self, device_element: etree._Element, specs: "DeviceSpecs"
+    ) -> None:
         """Extract program memory information with proper shadow sector handling."""
         program_space = self.parser.xpath(
             './/edc:ProgramSpace | .//*[local-name()="ProgramSpace"]', device_element
@@ -1569,10 +1547,12 @@ class PicParser:
 
         specs.maximum_size = max_flash
 
-    def _extract_specs_ram_memory(self, device_element: etree._Element, specs: "DeviceSpecs") -> None:
+    def _extract_specs_ram_memory(
+        self, device_element: etree._Element, specs: "DeviceSpecs"
+    ) -> None:
         """Extract RAM memory information including GPR sectors with shadow sector handling."""
         from ..models import GprSector
-        
+
         data_space = self.parser.xpath(
             './/edc:DataSpace | .//*[local-name()="DataSpace"]', device_element
         )
@@ -1613,7 +1593,7 @@ class PicParser:
                         start_addr=begin_addr,
                         end_addr=end_addr,
                         size=sector_size,
-                        bank=bank
+                        bank=bank,
                     )
                     gpr_sectors.append(gpr_info)
 
@@ -1621,7 +1601,9 @@ class PicParser:
         specs.gpr_total_size = total_ram
         specs.gpr_sectors = gpr_sectors
 
-    def _extract_specs_eeprom_memory(self, device_element: etree._Element, specs: "DeviceSpecs") -> None:
+    def _extract_specs_eeprom_memory(
+        self, device_element: etree._Element, specs: "DeviceSpecs"
+    ) -> None:
         """Extract EEPROM memory information."""
         # EEPROM is typically in ProgramSpace for PIC devices
         program_space = self.parser.xpath(
@@ -1642,7 +1624,9 @@ class PicParser:
                     specs.eeprom_size = eeprom_end - eeprom_begin
                     break  # Take the first EEPROM sector found
 
-    def _extract_specs_config_memory(self, device_element: etree._Element, specs: "DeviceSpecs") -> None:
+    def _extract_specs_config_memory(
+        self, device_element: etree._Element, specs: "DeviceSpecs"
+    ) -> None:
         """Extract configuration memory information."""
         program_space = self.parser.xpath(
             './/edc:ProgramSpace | .//*[local-name()="ProgramSpace"]', device_element
