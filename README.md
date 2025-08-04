@@ -1,3 +1,5 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/s-celles/atpack-python-parser)
+
 # AtPack Parser
 
 A Python library and CLI tool for parsing AtPack files with intelligent error handling and device suggestions.
